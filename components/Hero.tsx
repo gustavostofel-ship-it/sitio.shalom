@@ -1,9 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck } from 'lucide-react';
 
+const VIDEO_SRC =
+  'https://player.vimeo.com/video/1236343998?background=1&autoplay=1&muted=1&loop=1&playsinline=1&autopause=0&dnt=1';
+const VIDEO_POSTER =
+  'https://i.vimeocdn.com/video/2212820012-9a14f8182decc71ba85355d4265a5e3c019cd5d032f5cc2b39f94fcf3cec2f9c-d_640?region=us';
+
 export function Hero() {
+  const [loadVideo, setLoadVideo] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
+  // Carrega o player só depois que a página já renderizou, para não travar o celular
+  useEffect(() => {
+    const t = window.setTimeout(() => setLoadVideo(true), 300);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  // Se o evento load do player demorar, revela o vídeo mesmo assim
+  useEffect(() => {
+    if (!loadVideo) return;
+    const t = window.setTimeout(() => setVideoLoaded(true), 3000);
+    return () => window.clearTimeout(t);
+  }, [loadVideo]);
+
   return (
     <section className="relative min-h-[90vh] flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-gradient-to-b from-[#091811] via-[#0F291E] to-[#122F22]">
       {/* Subtle Ambient Glow Effects */}
@@ -75,16 +96,25 @@ export function Hero() {
           <div className="lg:col-span-5 flex flex-col items-center">
             <div className="relative w-full max-w-[300px] sm:max-w-[320px] rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60">
               <div className="relative w-full aspect-[9/16]">
-                <iframe
-                  src="https://player.vimeo.com/video/1236343998?autoplay=1&muted=1&loop=1&playsinline=1&title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
-                  className="absolute inset-0 w-full h-full"
-                  frameBorder="0"
-                  loading="eager"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                  allowFullScreen
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  title="Sítio Shalom Xerém"
+                {/* Capa instantânea: aparece na hora, enquanto o player do Vimeo carrega */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={VIDEO_POSTER}
+                  alt="Sítio Shalom Xerém"
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+                  fetchPriority="high"
                 />
+                {loadVideo && (
+                  <iframe
+                    src={VIDEO_SRC}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    title="Sítio Shalom Xerém"
+                    onLoad={() => setVideoLoaded(true)}
+                  />
+                )}
               </div>
             </div>
             <p className="text-[11px] text-stone-400 mt-2 text-center">
