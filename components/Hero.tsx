@@ -1,30 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck, Sparkles } from 'lucide-react';
-import { SafeImage } from './SafeImage';
-import { SUPABASE_IMAGES } from '@/lib/site-data';
+import React from 'react';
+import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck } from 'lucide-react';
 
 export function Hero() {
-  const [selectedPhoto, setSelectedPhoto] = useState<'auditorio' | 'salao'>('auditorio');
-
-  const photos = {
-    auditorio: {
-      url: SUPABASE_IMAGES.auditorio,
-      title: 'Auditório de Cultos & Ministrações',
-      tag: 'Espaço de Culto & Adoração',
-      caption: 'Estrutura com altar, púlpito e ambiente consagrado para vigílias e louvores',
-    },
-    salao: {
-      url: SUPABASE_IMAGES.salao,
-      title: 'Salão com Cozinha',
-      tag: 'Confraternização & Refeições',
-      caption: 'Salão aberto com mesas e cadeiras e cozinha para a igreja usar',
-    },
-  };
-
-  const current = photos[selectedPhoto];
-
   return (
     <section className="relative min-h-[90vh] flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-gradient-to-b from-[#091811] via-[#0F291E] to-[#122F22]">
       {/* Subtle Ambient Glow Effects */}
@@ -92,73 +71,23 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Column: High-Quality Photo Showcase with Switcher */}
+          {/* Right Column: Vídeo institucional */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            {/* Photo Selector Tabs */}
-            <div className="w-full flex items-center justify-center sm:justify-start gap-2 mb-3 bg-white/10 p-1.5 rounded-xl backdrop-blur-md border border-white/10">
-              <button
-                type="button"
-                onClick={() => setSelectedPhoto('auditorio')}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  selectedPhoto === 'auditorio'
-                    ? 'bg-amber-600 text-white shadow-md'
-                    : 'text-stone-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                <Church className="w-3.5 h-3.5" />
-                <span>Auditório de Cultos</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedPhoto('salao')}
-                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  selectedPhoto === 'salao'
-                    ? 'bg-amber-600 text-white shadow-md'
-                    : 'text-stone-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                <UtensilsCrossed className="w-3.5 h-3.5" />
-                <span>Salão com Mesas</span>
-              </button>
-            </div>
-
-            {/* Photo Card Container */}
-            <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60 group">
-              <div className="relative w-full aspect-[4/3] sm:aspect-[16/11]">
-                <SafeImage
-                  src={current.url}
-                  alt={current.title}
-                  fill
-                  priority
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60">
+              <div className="relative w-full aspect-video">
+                <iframe
+                  src="https://player.vimeo.com/video/1236343998?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
+                  className="absolute inset-0 w-full h-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  allowFullScreen
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  title="Sítio Shalom Xerém"
                 />
-                
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-                {/* Top Badge Overlay */}
-                <div className="absolute top-3 left-3 z-10">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-400/30 text-amber-300 text-xs font-semibold shadow-md">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{current.tag}</span>
-                  </span>
-                </div>
-
-                {/* Bottom Caption Overlay */}
-                <div className="absolute bottom-3 left-3 right-3 z-10 text-white">
-                  <h3 className="text-base sm:text-lg font-serif font-bold text-white drop-shadow-md">
-                    {current.title}
-                  </h3>
-                  <p className="text-xs text-stone-200/90 mt-0.5 line-clamp-2 drop-shadow-sm">
-                    {current.caption}
-                  </p>
-                </div>
               </div>
             </div>
-
-            {/* Sub-label */}
             <p className="text-[11px] text-stone-400 mt-2 text-center">
-              Fotos reais do Sítio Shalom Xerém · Alterne entre o auditório e o salão com mesas
+              Conheça o Sítio Shalom Xerém
             </p>
           </div>
 
