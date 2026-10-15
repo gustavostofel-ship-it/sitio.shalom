@@ -3,6 +3,7 @@
 import React from 'react';
 import { Church, Bed, Flame, CheckCircle2, Volume2, Sparkles, Shield, Users, Mic2 } from 'lucide-react';
 import { SafeImage } from './SafeImage';
+import { SUPABASE_IMAGES } from '@/lib/site-data';
 
 export function MinistryLogistics() {
   const pillars = [
@@ -10,7 +11,7 @@ export function MinistryLogistics() {
       id: 'templo',
       title: 'Templo & Ministração',
       icon: Church,
-      image: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=1000&q=80',
+      image: SUPABASE_IMAGES.salao,
       tag: 'Ambiente Consagrado',
       headline: 'Cultos e louvores sem eco, com conforto térmico e presença de Deus',
       description:
@@ -28,7 +29,7 @@ export function MinistryLogistics() {
       id: 'hospedagem',
       title: 'Hospedagem em Comunhão',
       icon: Bed,
-      image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1000&q=80',
+      image: SUPABASE_IMAGES.dormitorio,
       tag: 'Ordem & Descanso',
       headline: 'Alas setorizadas e banheiros dimensionados para alto fluxo',
       description:
@@ -46,7 +47,7 @@ export function MinistryLogistics() {
       id: 'lazer',
       title: 'Comunhão & Lazer Integrado',
       icon: Flame,
-      image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1000&q=80',
+      image: SUPABASE_IMAGES.piscina,
       tag: 'Conexão & Recreação',
       headline: 'Espaço vivo para amizades que duram para a eternidade',
       description:

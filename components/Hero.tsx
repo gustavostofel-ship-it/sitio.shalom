@@ -3,6 +3,7 @@
 import React from 'react';
 import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck } from 'lucide-react';
 import { SafeImage } from './SafeImage';
+import { SUPABASE_IMAGES } from '@/lib/site-data';
 
 export function Hero() {
   return (
@@ -10,7 +11,7 @@ export function Hero() {
       {/* Background Photography with Warm Scrim */}
       <div className="absolute inset-0 z-0">
         <SafeImage
-          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2000&q=85"
+          src={SUPABASE_IMAGES.vistaDoAlto}
           alt="Paisagem verdejante e serena do Sítio Shalom ao entardecer"
           fill
           priority

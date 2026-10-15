@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { CalendarHeart, Users2, Flame, Droplets, Clock, ArrowRight, Check } from 'lucide-react';
 import { SafeImage } from './SafeImage';
-import { SITE_INFO } from '@/lib/site-data';
+import { SITE_INFO, SUPABASE_IMAGES } from '@/lib/site-data';
 
 interface EventTypeData {
   id: string;
@@ -26,7 +26,7 @@ export function EventTypes() {
       shortLabel: 'Retiros Espirituais',
       icon: Flame,
       badge: 'Maior Procura do Ano',
-      image: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1000&q=80',
+      image: SUPABASE_IMAGES.salao,
       description:
         'O refúgio sagrado que sua igreja precisa para se afastar das distrações do mundo e mergulhar em oração, jejum e renovo no Espírito Santo durante os feriados prolongados.',
       capacityRecommendation: 'Ideal para 70 a 150 participantes (bloqueio exclusivo de 3 a 4 diárias).',
@@ -48,7 +48,7 @@ export function EventTypes() {
       shortLabel: 'Acampamentos de Jovens',
       icon: Users2,
       badge: 'Energia & Adoração',
-      image: 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1000&q=80',
+      image: SUPABASE_IMAGES.campo,
       description:
         'A estrutura robusta que a juventude precisa para queimar por Jesus: espaço aberto para gincanas épicas, som de alta performance para louvor jovem e noites memoráveis na fogueira.',
       capacityRecommendation: 'Suporta com tranquilidade até 150 jovens em alas masculina e feminina.',
@@ -92,7 +92,7 @@ export function EventTypes() {
       shortLabel: 'Congressos & Batismos',
       icon: Droplets,
       badge: 'Foco Ministerial',
-      image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1000&q=80',
+      image: SUPABASE_IMAGES.piscina,
       description:
         'Infraestrutura ponta a ponta para imersões de liderança, treinamentos de obreiros, imersões de bandas de louvor e celebrações históricas de batismos nas águas.',
       capacityRecommendation: 'Opções de Day Use para até 200 pessoas ou retiro com pernoite para 150.',
