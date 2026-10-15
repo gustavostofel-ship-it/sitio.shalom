@@ -36,6 +36,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${playfair.variable} ${plusJakarta.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://player.vimeo.com" />
+        <link rel="preconnect" href="https://f.vimeocdn.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
+      </head>
       <body className="bg-[#FAF8F5] text-[#1F2937] antialiased selection:bg-[#1B4332] selection:text-white" suppressHydrationWarning>
         {children}
       </body>

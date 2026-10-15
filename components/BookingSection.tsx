@@ -140,7 +140,7 @@ export function BookingSection() {
               </p>
 
               <a
-                href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20gostaria%20de%20consultar%20a%20disponibilidade%20do%20Sítio%20Shalom%20para%20o%20retiro%20da%20minha%20igreja.`}
+                href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20gostaria%20de%20consultar%20a%20disponibilidade%20do%20Sítio%20Shalom%20Xerém%20para%20o%20retiro%20da%20minha%20igreja.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-xs font-semibold bg-white text-stone-900 hover:bg-stone-100 transition-colors"

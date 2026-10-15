@@ -76,7 +76,7 @@ export function FaqSection() {
             </p>
           </div>
           <a
-            href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20tenho%20uma%20dúvida%20específica%20sobre%20a%20locação%20do%20Sítio%20Shalom.`}
+            href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20tenho%20uma%20dúvida%20específica%20sobre%20a%20locação%20do%20Sítio%20Shalom%20Xerém.`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#1B4332] text-amber-100 hover:bg-[#153427] transition-colors whitespace-nowrap shrink-0 shadow-xs"

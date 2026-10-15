@@ -25,7 +25,7 @@ export function FloatingWhatsApp() {
 
       {/* Floating Action Button */}
       <a
-        href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20gostaria%20de%20consultar%20datas%20e%20agendar%20uma%20visita%20ao%20Sítio%20Shalom%20para%20a%20nossa%20igreja.`}
+        href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20gostaria%20de%20consultar%20datas%20e%20agendar%20uma%20visita%20ao%20Sítio%20Shalom%20Xerém%20para%20a%20nossa%20igreja.`}
         target="_blank"
         rel="noopener noreferrer"
         className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-emerald-300"

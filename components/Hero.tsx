@@ -73,12 +73,13 @@ export function Hero() {
 
           {/* Right Column: Vídeo institucional */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60">
-              <div className="relative w-full aspect-video">
+            <div className="relative w-full max-w-[300px] sm:max-w-[320px] rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60">
+              <div className="relative w-full aspect-[9/16]">
                 <iframe
-                  src="https://player.vimeo.com/video/1236343998?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
+                  src="https://player.vimeo.com/video/1236343998?autoplay=1&muted=1&loop=1&playsinline=1&title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
                   className="absolute inset-0 w-full h-full"
                   frameBorder="0"
+                  loading="eager"
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                   allowFullScreen
                   referrerPolicy="strict-origin-when-cross-origin"
