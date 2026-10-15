@@ -9,9 +9,9 @@ export function MinistryLogistics() {
   const pillars = [
     {
       id: 'templo',
-      title: 'Templo & Ministração',
+      title: 'Auditório & Ministração',
       icon: Church,
-      image: SUPABASE_IMAGES.salao,
+      image: SUPABASE_IMAGES.auditorio,
       tag: 'Ambiente Consagrado',
       headline: 'Cultos e louvores sem eco, com conforto térmico e presença de Deus',
       description:

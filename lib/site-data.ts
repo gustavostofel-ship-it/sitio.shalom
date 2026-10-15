@@ -40,24 +40,34 @@ export const SITE_INFO = {
 };
 
 export const SUPABASE_IMAGES = {
+  auditorio: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/auditorio.jpeg',
+  salao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/salao.jpeg',
   banheiros: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/banheiros.jpeg',
   campo: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/campo.jpeg',
   dormitorio: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/dormitorio.jpeg',
   piscina: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/piscina.jpeg',
   quadra1: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/quadra%201.jpeg',
   quadra: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/quadra.jpeg',
-  salao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/salao.jpeg',
-  vistaDoAlto: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/salao.jpeg',
+  vistaDoAlto: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/auditorio.jpeg',
 };
 
 export const GALLERY_ITEMS: GalleryItem[] = [
   {
     id: 'culto-1',
-    title: 'Salão Principal de Cultos & Eventos',
+    title: 'Auditório de Cultos, Vigílias & Ministrações',
     category: 'culto',
-    categoryLabel: 'Espaço de Culto',
+    categoryLabel: 'Auditório de Cultos',
+    image: SUPABASE_IMAGES.auditorio,
+    description: 'Ambiente consagrado e climatizado com altar, sistema de som e acústica ideal para momentos de adoração e pregação.',
+    featured: true,
+  },
+  {
+    id: 'salao-1',
+    title: 'Salão de Eventos, Confraternização & Refeitório',
+    category: 'refeitorio',
+    categoryLabel: 'Salão & Refeitório',
     image: SUPABASE_IMAGES.salao,
-    description: 'Espaço coberto e climatizado com capacidade para até 200 pessoas sentadas, púlpito amplo, iluminação cênica e excelente acústica.',
+    description: 'Espaço nobre equipado com dezenas de mesas e cadeiras para refeições comunitárias, dinâmicas de casais e palestras.',
     featured: true,
   },
   {
