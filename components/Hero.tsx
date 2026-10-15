@@ -158,7 +158,7 @@ export function Hero() {
 
             {/* Sub-label */}
             <p className="text-[11px] text-stone-400 mt-2 text-center">
-              Fotos reais do Sítio Shalom · Alterne entre o auditório e o salão com mesas
+              Fotos reais do Sítio Shalom Xerém · Alterne entre o auditório e o salão com mesas
             </p>
           </div>
 

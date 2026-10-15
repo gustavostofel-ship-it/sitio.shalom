@@ -69,11 +69,11 @@ export function InteractiveGallery() {
               <div
                 key={item.id}
                 onClick={() => setSelectedPhoto(item)}
-                className={`group relative rounded-xl overflow-hidden cursor-pointer bg-stone-900 shadow-sm border border-stone-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                className={`group relative flex flex-col rounded-xl overflow-hidden cursor-pointer bg-stone-900 shadow-sm border border-stone-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                   isSpan2 ? 'md:col-span-2 md:row-span-1 lg:col-span-2' : ''
                 }`}
               >
-                <div className={`relative w-full ${isSpan2 ? 'h-80 sm:h-96' : 'h-72'}`}>
+                <div className={`relative w-full flex-1 ${isSpan2 ? 'min-h-80 sm:min-h-96' : 'min-h-72'}`}>
                   <SafeImage
                     src={item.image}
                     alt={item.title}

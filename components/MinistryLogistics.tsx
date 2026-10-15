@@ -84,13 +84,13 @@ export function MinistryLogistics() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
-            Estrutura Completa do Sítio Shalom
+            Estrutura Completa do Sítio Shalom Xerém
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
             Tudo o que sua congregação precisa para um evento abençoado
           </h2>
           <p className="mt-4 text-base sm:text-lg text-stone-600 leading-relaxed text-balance">
-            Cada espaço do Sítio Shalom foi pensado para proporcionar comunhão, momentos de culto e um retiro inesquecível com 100% de exclusividade.
+            Cada espaço do Sítio Shalom Xerém foi pensado para proporcionar comunhão, momentos de culto e um retiro inesquecível com 100% de exclusividade.
           </p>
         </div>
 

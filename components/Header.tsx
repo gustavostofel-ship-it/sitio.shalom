@@ -59,7 +59,7 @@ export function Header() {
                   isScrolled ? 'text-[#1B4332]' : 'text-white drop-shadow-xs'
                 }`}
               >
-                Sítio Shalom
+                Sítio Shalom Xerém
               </span>
               <span
                 className={`text-[10px] tracking-widest uppercase font-semibold transition-colors ${

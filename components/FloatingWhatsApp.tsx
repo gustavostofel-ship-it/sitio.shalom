@@ -29,7 +29,7 @@ export function FloatingWhatsApp() {
         target="_blank"
         rel="noopener noreferrer"
         className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-emerald-300"
-        aria-label="Falar com o Sítio Shalom pelo WhatsApp"
+        aria-label="Falar com o Sítio Shalom Xerém pelo WhatsApp"
       >
         <MessageSquare className="w-7 h-7 fill-white" />
       </a>

@@ -15,12 +15,11 @@ export interface FaqItem {
 }
 
 export const SITE_INFO = {
-  name: 'Sítio Shalom',
+  name: 'Sítio Shalom Xerém',
   tagline: 'Retiros & Eventos Cristãos',
-  whatsappNumber: '5511999887766',
-  displayPhone: '(11) 99988-7766',
-  email: 'contato@sitioshalom.com.br',
-  address: 'Região de São Paulo / SP — Consulte para agendamento de visita presencial',
+  whatsappNumber: '5521997242970',
+  displayPhone: '(21) 99724-2970',
+  address: 'Estrada São Lourenço, 3897 — Xerém, Duque de Caxias — RJ',
   maxCapacity: 150,
   rentalModel: 'Valor fechado por fim de semana (dias específicos sob negociação)',
 };
@@ -114,7 +113,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
 export const FAQ_ITEMS: FaqItem[] = [
   {
     id: 'faq-1',
-    question: 'Como funciona a locação do Sítio Shalom?',
+    question: 'Como funciona a locação do Sítio Shalom Xerém?',
     answer:
       'A locação é feita com valor fechado para o fim de semana completo (geralmente de sexta a domingo), garantindo exclusividade total para a sua igreja. Caso a sua congregação queira alugar apenas um dia específico (day use) ou outro período, os valores e horários são negociados diretamente conosco.',
   },
@@ -128,7 +127,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: 'faq-3',
     question: 'A igreja tem exclusividade na propriedade durante o retiro?',
     answer:
-      'Sim, 100% de exclusividade! O Sítio Shalom nunca aluga o espaço para mais de um grupo no mesmo período. Toda a propriedade fica reservada exclusivamente para o seu ministério.',
+      'Sim, 100% de exclusividade! O Sítio Shalom Xerém nunca aluga o espaço para mais de um grupo no mesmo período. Toda a propriedade fica reservada exclusivamente para o seu ministério.',
   },
   {
     id: 'faq-4',

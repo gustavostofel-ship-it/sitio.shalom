@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { MinistryLogistics } from '@/components/MinistryLogistics';
@@ -17,6 +18,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#FAF8F5] text-[#1F2937]">
       {/* Fixed Header with Glassmorphism */}
+      <ScrollToTop />
       <Header />
 
       {/* Hero Section */}

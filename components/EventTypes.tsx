@@ -101,7 +101,7 @@ export function EventTypes() {
       includedHighlights: [
         'Possibilidade de negociar dia avulso conforme a necessidade',
         'Uso das instalações de culto, alimentação e lazer',
-        'Atendimento direto com a administração do Sítio Shalom',
+        'Atendimento direto com a administração do Sítio Shalom Xerém',
       ],
     },
   ];
@@ -122,7 +122,7 @@ export function EventTypes() {
             Formatos Adaptados para Cada Ministério
           </h2>
           <p className="mt-4 text-base sm:text-lg text-stone-600 leading-relaxed text-balance">
-            Seja para a igreja inteira, a juventude ou os casais: o Sítio Shalom oferece o ambiente certo com valor fechado de fim de semana ou formatos sob consulta.
+            Seja para a igreja inteira, a juventude ou os casais: o Sítio Shalom Xerém oferece o ambiente certo com valor fechado de fim de semana ou formatos sob consulta.
           </p>
         </div>
 

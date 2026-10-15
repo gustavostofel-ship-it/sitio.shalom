@@ -46,7 +46,7 @@ export function Testimonials() {
             Garantias e Transparência
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
-            Por que escolher o Sítio Shalom
+            Por que escolher o Sítio Shalom Xerém
           </h2>
           <p className="mt-4 text-base sm:text-lg text-stone-600 leading-relaxed text-balance">
             Uma propriedade preparada para receber a sua igreja.

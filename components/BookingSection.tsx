@@ -48,7 +48,7 @@ export function BookingSection() {
 
     // Format WhatsApp message
     const message = encodeURIComponent(
-      `*SOLICITAÇÃO DE VISITA E ORÇAMENTO - SÍTIO SHALOM*\n\n` +
+      `*SOLICITAÇÃO DE VISITA E ORÇAMENTO - SÍTIO SHALOM XERÉM*\n\n` +
       `👤 *Líder / Pastor:* ${formData.leaderName}\n` +
       `⛪ *Igreja / Ministério:* ${formData.churchName}\n` +
       `📱 *WhatsApp:* ${formData.whatsapp}\n` +

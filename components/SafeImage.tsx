@@ -26,7 +26,7 @@ export function SafeImage({
   priority = false,
   sizes,
   fallbackIcon,
-  fallbackCategory = 'Sítio Shalom',
+  fallbackCategory = 'Sítio Shalom Xerém',
 }: SafeImageProps) {
   const [hasError, setHasError] = useState(false);
 

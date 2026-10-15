@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Church, MapPin, Phone, Mail, Clock, Heart, Shield, ArrowUp, Instagram, Facebook, Youtube } from 'lucide-react';
+import { Church, MapPin, Phone, Heart, Shield, ArrowUp } from 'lucide-react';
 import { SITE_INFO } from '@/lib/site-data';
 
 export function Footer() {
@@ -22,7 +22,7 @@ export function Footer() {
               </div>
               <div>
                 <span className="text-xl font-serif font-bold text-white tracking-tight block">
-                  Sítio Shalom
+                  Sítio Shalom Xerém
                 </span>
                 <span className="text-[10px] tracking-widest uppercase font-semibold text-amber-300">
                   Retiros & Eventos Cristãos
@@ -105,20 +105,6 @@ export function Footer() {
                   </a>
                 </div>
               </li>
-              <li className="flex items-start gap-2.5">
-                <Mail className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-                <div>
-                  <span className="text-stone-400 block text-[11px]">E-mail para Ofícios e Contratos:</span>
-                  <span className="text-stone-200">{SITE_INFO.email}</span>
-                </div>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Clock className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-                <div>
-                  <span className="text-stone-400 block text-[11px]">Horário de Visitas Técnicas:</span>
-                  <span className="text-stone-200">Terça a Sábado das 09h às 17h (com agendamento prévio)</span>
-                </div>
-              </li>
             </ul>
           </div>
 
@@ -138,24 +124,12 @@ export function Footer() {
               <p>Espaço reservado para veículos e vans da congregação.</p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-emerald-900/60 flex items-center gap-3 text-stone-400">
-              <span className="text-xs">Siga nossas redes:</span>
-              <a href="#" className="hover:text-amber-300 transition-colors" aria-label="Instagram">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="hover:text-amber-300 transition-colors" aria-label="Facebook">
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a href="#" className="hover:text-amber-300 transition-colors" aria-label="YouTube">
-                <Youtube className="w-4 h-4" />
-              </a>
-            </div>
           </div>
         </div>
 
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
-          <p>© {new Date().getFullYear()} Sítio Shalom — Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Sítio Shalom Xerém — Todos os direitos reservados.</p>
           <div className="flex items-center gap-6">
             <span>Uso Exclusivo para Retiros Cristãos</span>
             <button

@@ -15,17 +15,17 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Sítio Shalom | Retiros Espirituais & Eventos Cristãos',
-  description: 'Estrutura completa e exclusiva para igrejas, retiros espirituais, acampamentos, congressos e encontros de casais no Sítio Shalom. Acomodação para até 150 pessoas cercada pela natureza.',
+  title: 'Sítio Shalom Xerém | Retiros Espirituais & Eventos Cristãos',
+  description: 'Estrutura completa e exclusiva para igrejas, retiros espirituais, acampamentos, congressos e encontros de casais no Sítio Shalom Xerém. Acomodação para até 150 pessoas cercada pela natureza.',
   openGraph: {
-    title: 'Sítio Shalom | Retiros Espirituais & Eventos Cristãos',
-    description: 'Estrutura completa e exclusiva para igrejas, retiros espirituais, acampamentos, congressos e encontros de casais no Sítio Shalom.',
+    title: 'Sítio Shalom Xerém | Retiros Espirituais & Eventos Cristãos',
+    description: 'Estrutura completa e exclusiva para igrejas, retiros espirituais, acampamentos, congressos e encontros de casais no Sítio Shalom Xerém.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sítio Shalom | Retiros Espirituais & Eventos Cristãos',
-    description: 'Estrutura completa e exclusiva para igrejas, retiros espirituais, acampamentos, congressos e encontros de casais no Sítio Shalom.',
+    title: 'Sítio Shalom Xerém | Retiros Espirituais & Eventos Cristãos',
+    description: 'Estrutura completa e exclusiva para igrejas, retiros espirituais, acampamentos, congressos e encontros de casais no Sítio Shalom Xerém.',
   },
 };
 
