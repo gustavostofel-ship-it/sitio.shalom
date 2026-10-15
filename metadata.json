@@ -1,6 +1,6 @@
 {
-  "name": "Sítio Monte Moriá - Retiros e Eventos Cristãos",
-  "description": "Estrutura exclusiva para igrejas, retiros espirituais, congressos, acampamentos e encontros de casais com capacidade para até 150 pessoas.",
+  "name": "Sítio Shalom - Retiros e Eventos Cristãos",
+  "description": "Estrutura exclusiva para igrejas, retiros espirituais, acampamentos e encontros de casais com capacidade para até cerca de 150 pessoas.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

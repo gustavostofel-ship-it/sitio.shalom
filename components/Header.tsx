@@ -56,14 +56,14 @@ export function Header() {
             <div className="flex flex-col">
               <span
                 className={`text-lg font-serif font-bold tracking-tight transition-colors ${
-                  isScrolled ? 'text-[#1B4332]' : 'text-slate-950 md:text-white drop-shadow-xs'
+                  isScrolled ? 'text-[#1B4332]' : 'text-white drop-shadow-xs'
                 }`}
               >
                 Sítio Shalom
               </span>
               <span
                 className={`text-[10px] tracking-widest uppercase font-semibold transition-colors ${
-                  isScrolled ? 'text-stone-500' : 'text-slate-800 md:text-emerald-100/90'
+                  isScrolled ? 'text-stone-500' : 'text-emerald-100/90'
                 }`}
               >
                 Retiros & Eventos

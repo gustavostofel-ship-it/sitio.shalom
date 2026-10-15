@@ -1,122 +1,107 @@
 'use client';
 
 import React from 'react';
-import { Quote, Star, ShieldCheck, Users, Calendar, Building2 } from 'lucide-react';
-import { TESTIMONIALS, SITE_INFO } from '@/lib/site-data';
-import { SafeImage } from './SafeImage';
+import { ShieldCheck, Users, Calendar, HeartHandshake, Church, Sparkles } from 'lucide-react';
+import { SITE_INFO } from '@/lib/site-data';
 
 export function Testimonials() {
+  const differentials = [
+    {
+      icon: ShieldCheck,
+      title: '100% de Exclusividade',
+      subtitle: 'Uma única igreja por data',
+      description:
+        'Nunca dividimos o sítio com outros grupos. No período do seu retiro, todos os espaços (auditório, salão, piscina, campo e alojamentos) são de uso 100% exclusivo da sua congregação.',
+    },
+    {
+      icon: Users,
+      title: 'Capacidade até 150 Pessoas',
+      subtitle: 'Hospedagem em comunhão',
+      description:
+        'Estrutura para receber até 150 pessoas, com dormitórios com beliches separados para homens e mulheres.',
+    },
+    {
+      icon: Calendar,
+      title: 'Valor Fechado de Fim de Semana',
+      subtitle: 'Pacote completo e sem surpresas',
+      description:
+        'Trabalhamos com modelo de valor fechado para o fim de semana (geralmente sexta a domingo). E se a sua igreja precisar de apenas um dia específico, negociamos diretamente com você.',
+    },
+    {
+      icon: Church,
+      title: 'Auditório Dedicado para Cultos',
+      subtitle: 'Foco espiritual garantido',
+      description:
+        'Um espaço separado e preparado com altar e púlpito para que sua liderança possa realizar cultos, vigílias e louvores sem interferências externas.',
+    },
+  ];
+
   return (
     <section className="py-20 sm:py-28 bg-[#FAF8F5] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
-            Prova Social & Depoimentos Reais
+            Garantias e Transparência
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
-            A Confiança de Pastores e Líderes que Já Viveram Essa Experiência
+            Por que escolher o Sítio Shalom
           </h2>
           <p className="mt-4 text-base sm:text-lg text-stone-600 leading-relaxed text-balance">
-            Mais de uma década recebendo congregações evangélicas de todas as denominações com respeito, dedicação e zelo.
+            Uma propriedade preparada para receber a sua igreja.
           </p>
         </div>
 
-        {/* Quantified Rigor Trust Metrics Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 p-6 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
-          <div className="text-center p-2">
-            <span className="text-3xl sm:text-4xl font-serif font-bold text-[#1B4332] tabular-nums">
-              +12
-            </span>
-            <span className="block text-xs uppercase tracking-wider text-stone-500 font-semibold mt-1">
-              Anos de História
-            </span>
-            <p className="text-xs text-stone-600 mt-0.5">Exclusivo para ministérios</p>
-          </div>
-          <div className="text-center p-2">
-            <span className="text-3xl sm:text-4xl font-serif font-bold text-[#1B4332] tabular-nums">
-              +480
-            </span>
-            <span className="block text-xs uppercase tracking-wider text-stone-500 font-semibold mt-1">
-              Retiros Realizados
-            </span>
-            <p className="text-xs text-stone-600 mt-0.5">Jovens, casais e igrejas</p>
-          </div>
-          <div className="text-center p-2">
-            <span className="text-3xl sm:text-4xl font-serif font-bold text-[#1B4332] tabular-nums">
-              100%
-            </span>
-            <span className="block text-xs uppercase tracking-wider text-stone-500 font-semibold mt-1">
-              Exclusividade por Data
-            </span>
-            <p className="text-xs text-stone-600 mt-0.5">Nunca dividimos o espaço</p>
-          </div>
-          <div className="text-center p-2">
-            <span className="text-3xl sm:text-4xl font-serif font-bold text-[#1B4332] tabular-nums">
-              150
-            </span>
-            <span className="block text-xs uppercase tracking-wider text-stone-500 font-semibold mt-1">
-              Capacidade em Leitos
-            </span>
-            <p className="text-xs text-stone-600 mt-0.5">Alas masculinas e femininas</p>
-          </div>
-        </div>
-
-        {/* Testimonials 3-Card Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {TESTIMONIALS.map((t) => (
-            <div
-              key={t.id}
-              className="bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow relative"
-            >
-              <div>
-                {/* Header Stars + Quote Icon */}
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <Quote className="w-8 h-8 text-stone-200" />
-                </div>
-
-                {/* Event Context badge text */}
-                <div className="text-xs text-[#D97706] font-semibold mb-3 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 shrink-0" />
-                  <span>{t.event} ({t.attendees} participantes)</span>
-                </div>
-
-                {/* Testimonial Quote */}
-                <p className="text-stone-700 text-sm leading-relaxed italic mb-6">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </div>
-
-              {/* Author Footer */}
-              <div className="pt-4 border-t border-stone-100 flex items-center gap-3.5">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-emerald-100">
-                  <SafeImage
-                    src={t.avatar}
-                    alt={t.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+        {/* 4 Trust Pillars Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {differentials.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-7 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow"
+              >
                 <div>
-                  <h4 className="text-sm font-bold text-stone-900 leading-tight">
-                    {t.name}
-                  </h4>
-                  <p className="text-xs text-[#1B4332] font-medium">
-                    {t.role}
-                  </p>
-                  <p className="text-[11px] text-stone-500">
-                    {t.church} · {t.date}
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#1B4332] border border-emerald-100 flex items-center justify-center mb-5">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs text-[#D97706] font-semibold uppercase tracking-wider block mb-1">
+                    {item.subtitle}
+                  </span>
+                  <h3 className="text-lg font-serif font-bold text-stone-900 leading-snug mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">
+                    {item.description}
                   </p>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {/* Invitation Banner */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#1B4332] to-[#0F291E] text-white p-8 sm:p-10 text-center max-w-4xl mx-auto shadow-xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-semibold mb-4 backdrop-blur-xs">
+            <HeartHandshake className="w-4 h-4" />
+            <span>Visita Presencial sem Compromisso</span>
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white mb-3">
+            Venha Conhecer Pessoalmente com Sua Liderança
+          </h3>
+          <p className="text-stone-200 text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed">
+            Nada substitui caminhar pelos espaços, conferir o auditório, o salão, a piscina e os dormitórios. Agende uma visita para conversarmos sobre a melhor data para a sua igreja.
+          </p>
+          <a
+            href="#agendar"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg transition-all active:scale-[0.98]"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Agendar Visita com a Comissão</span>
+          </a>
+        </div>
+
       </div>
     </section>
   );

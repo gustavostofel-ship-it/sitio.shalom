@@ -133,9 +133,9 @@ export function Footer() {
             <div className="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800/40 text-[11px] text-stone-300 space-y-1">
               <p className="flex items-center gap-1.5 text-amber-200 font-semibold">
                 <Shield className="w-3.5 h-3.5" />
-                <span>Portaria 24 horas & Estacionamento</span>
+                <span>Estacionamento & Segurança</span>
               </p>
-              <p>Espaço para manobra de ônibus rodoviários e vans sem atolamento.</p>
+              <p>Espaço reservado para veículos e vans da congregação.</p>
             </div>
 
             <div className="mt-4 pt-3 border-t border-emerald-900/60 flex items-center gap-3 text-stone-400">
@@ -155,7 +155,7 @@ export function Footer() {
 
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
-          <p>© {new Date().getFullYear()} Sítio Shalom - Todos os direitos reservados. CNPJ: 42.189.765/0001-90.</p>
+          <p>© {new Date().getFullYear()} Sítio Shalom — Todos os direitos reservados.</p>
           <div className="flex items-center gap-6">
             <span>Uso Exclusivo para Retiros Cristãos</span>
             <button

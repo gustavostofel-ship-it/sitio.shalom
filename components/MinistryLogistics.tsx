@@ -1,85 +1,100 @@
 'use client';
 
 import React from 'react';
-import { Church, Bed, Flame, CheckCircle2, Volume2, Sparkles, Shield, Users, Mic2 } from 'lucide-react';
+import { Church, Bed, Flame, UtensilsCrossed, CheckCircle2, Sparkles, Shield } from 'lucide-react';
 import { SafeImage } from './SafeImage';
 import { SUPABASE_IMAGES } from '@/lib/site-data';
 
 export function MinistryLogistics() {
   const pillars = [
     {
-      id: 'templo',
-      title: 'Auditório & Ministração',
+      id: 'auditorio',
+      title: 'Auditório de Cultos & Ministração',
       icon: Church,
       image: SUPABASE_IMAGES.auditorio,
-      tag: 'Ambiente Consagrado',
-      headline: 'Cultos e louvores sem eco, com conforto térmico e presença de Deus',
+      tag: 'Espaço Consagrado',
+      headline: 'Ambiente dedicado para cultos, vigílias e louvores da igreja',
       description:
-        'Salão nobre com pé-direito alto, estrutura de madeira tratada e acústica projetada para evitar reverberações incômodas. Projetado especificamente para momentos de adoração intensa e pregação da Palavra.',
+        'Auditório estruturado especialmente para momentos de adoração profunda, ministração da Palavra e oração, proporcionando paz e foco espiritual para a sua congregação.',
       features: [
-        'Capacidade confortável para até 200 pessoas sentadas em cadeiras estofadas',
-        'Palco amplo com púlpito, pontos de força dedicados e tomadas estabilizadas',
-        'Mesa de som de 16 canais, projetor HD de alta luminosidade e telão motorizado',
-        'Ar-condicionado e ventilação cruzada para cultos em qualquer estação',
-        'Iluminação dimerizável e cênica quente para criar atmosfera de oração',
+        'Altar com púlpito para preletores e equipe de louvor',
+        'Capacidade para até 150 pessoas',
+        'Ar-condicionado',
+        'Ambiente tranquilo e silencioso para oração e vigílias',
       ],
-      highlightBadge: 'Som & Multimídia Inclusos',
+      highlightBadge: 'Ambiente de Adoração & Oração',
+    },
+    {
+      id: 'salao',
+      title: 'Salão com Cozinha',
+      icon: UtensilsCrossed,
+      image: SUPABASE_IMAGES.salao,
+      tag: 'Comunhão & Refeições',
+      headline: 'Salão aberto com mesas e cozinha para a igreja usar',
+      description:
+        'Salão aberto com mesas e cadeiras e cozinha à disposição. A igreja organiza e prepara as próprias refeições.',
+      features: [
+        'Salão aberto com mesas e cadeiras',
+        'Cozinha para a igreja utilizar',
+        'O sítio não fornece refeições: a igreja realiza tudo',
+        'Espaço para dinâmicas, encontros e palestras',
+      ],
+      highlightBadge: 'Confraternização & Comunhão',
     },
     {
       id: 'hospedagem',
       title: 'Hospedagem em Comunhão',
       icon: Bed,
       image: SUPABASE_IMAGES.dormitorio,
-      tag: 'Ordem & Descanso',
-      headline: 'Alas setorizadas e banheiros dimensionados para alto fluxo',
+      tag: 'Descanso dos Acampantes',
+      headline: 'Dormitórios separados para homens e mulheres',
       description:
-        'Sabemos que a organização dos quartos e a qualidade do banho definem a paz da liderança. Nossos blocos de alojamentos são separados por sexo e contam com suporte exclusivo para pastores e convidados especiais.',
+        'Dormitórios com beliches, separados por homens e mulheres, para acolher os participantes do seu retiro.',
       features: [
-        'Divisão em Ala Masculina e Ala Feminina com entradas e pátios independentes',
-        '4 Suítes Pastorais Privativas VIP (cama de casal queen, ar-condicionado e frigobar)',
-        'Colchões densidade D33 antialérgicos e beliches reforçados em madeira maciça',
-        'Baterias de banheiros com duchas aquecidas por sistema solar e a gás (sem banho frio)',
-        'Armários organizadores, tomadas para carregadores em cada leito e telas nas janelas',
+        'Dormitórios com beliches, separados por homens e mulheres',
+        'Ventiladores nos dormitórios',
+        'Dormitórios com banheiro e chuveiro quente',
+        'Mais de 4 banheiros espalhados pelo sítio',
       ],
-      highlightBadge: 'Banheiros sem Filas Pós-Culto',
+      highlightBadge: 'Até 150 Pessoas',
     },
     {
       id: 'lazer',
-      title: 'Comunhão & Lazer Integrado',
+      title: 'Área de Lazer',
       icon: Flame,
       image: SUPABASE_IMAGES.piscina,
-      tag: 'Conexão & Recreação',
-      headline: 'Espaço vivo para amizades que duram para a eternidade',
+      tag: 'Recreação Saudável',
+      headline: 'Lazer e integração para jovens, famílias e crianças',
       description:
-        'A comunhão do corpo de Cristo floresce nas conversas à beira da piscina, no futebol entre irmãos e ao redor da fogueira de testemunhos. Uma propriedade com 60.000m² de ar puro e paz.',
+        'A comunhão do corpo de Cristo floresce nas conversas à beira da piscina, no futebol entre irmãos e nas atividades esportivas integradas.',
       features: [
-        'Piscina semiolímpica com deck de solário e área com degraus para Batismos nas águas',
-        'Campo de Futebol Society gramado com refletores e quadra de vôlei de areia',
-        'Praça da Fogueira estilo anfiteatro para luau de jovens e vigílias estreladas',
-        'Salão de jogos coberto com mesas de pebolim, tênis de mesa e bilhar',
-        'Gramados planos e trilhas arborizadas para gincanas, dinâmicas e momentos a sós com Deus',
+        'Piscina ampla para recreação e momentos da igreja',
+        'Campo de futebol gramado, para torneios e gincanas',
+        'Estacionamento amplo, com bom espaço para organização',
+        'Área ao ar livre para caminhadas e momentos de reflexão',
       ],
-      highlightBadge: 'Batismo nas Águas com Dignidade',
+      highlightBadge: 'Lazer & Estacionamento',
     },
   ];
 
   return (
     <section id="espaco" className="py-20 sm:py-28 bg-[#FAF8F5] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
-            Pensado para a Logística do seu Ministério
+            Estrutura Completa do Sítio Shalom
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
-            Tudo o que a sua liderança precisa para um evento inesquecível
+            Tudo o que sua congregação precisa para um evento abençoado
           </h2>
           <p className="mt-4 text-base sm:text-lg text-stone-600 leading-relaxed text-balance">
-            Desenvolvemos cada metro quadrado do Sítio Shalom observando as reais necessidades de pastores, líderes de mocidade e coordenadores de eventos cristãos.
+            Cada espaço do Sítio Shalom foi pensado para proporcionar comunhão, momentos de culto e um retiro inesquecível com 100% de exclusividade.
           </p>
         </div>
 
-        {/* 3 Pillar Cards in Asymmetric Flow */}
+        {/* 4 Pillar Cards in Asymmetric Flow */}
         <div className="space-y-12 sm:space-y-16">
           {pillars.map((pillar, index) => {
             const Icon = pillar.icon;
@@ -88,13 +103,14 @@ export function MinistryLogistics() {
             return (
               <div
                 key={pillar.id}
-                id={pillar.id === 'templo' ? 'culto' : pillar.id === 'hospedagem' ? 'acomodacoes' : 'lazer'}
+                id={pillar.id === 'auditorio' ? 'culto' : pillar.id === 'hospedagem' ? 'acomodacoes' : pillar.id}
                 className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden transition-all duration-300 hover:shadow-md"
               >
                 <div className={`grid grid-cols-1 lg:grid-cols-12 gap-0 ${isReversed ? 'lg:flex-row-reverse' : ''}`}>
+                  
                   {/* Photo Column */}
                   <div
-                    className={`relative min-h-[300px] lg:min-h-[460px] lg:col-span-6 overflow-hidden ${
+                    className={`relative min-h-[300px] lg:min-h-[440px] lg:col-span-6 overflow-hidden ${
                       isReversed ? 'lg:order-2' : 'lg:order-1'
                     }`}
                   >
@@ -129,7 +145,7 @@ export function MinistryLogistics() {
                       <div className="hidden lg:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2">
                         <span>{pillar.tag}</span>
                         <span>·</span>
-                        <span>Pilar 0{index + 1}</span>
+                        <span>Espaço 0{index + 1}</span>
                       </div>
 
                       {/* Title */}
@@ -167,22 +183,24 @@ export function MinistryLogistics() {
                     <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-xs text-stone-500">
                         <Shield className="w-4 h-4 text-emerald-600" />
-                        <span>Verificado pela equipe técnica</span>
+                        <span>Visita presencial sem compromisso</span>
                       </div>
                       <a
                         href="#agendar"
                         className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#1B4332] hover:text-[#D97706] transition-colors"
                       >
-                        <span>Conferir de perto na visita</span>
+                        <span>Conhecer pessoalmente</span>
                         <span aria-hidden="true">&rarr;</span>
                       </a>
                     </div>
                   </div>
+
                 </div>
               </div>
             );
           })}
         </div>
+
       </div>
     </section>
   );

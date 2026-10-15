@@ -7,41 +7,41 @@ export function ReservationJourney() {
   const steps = [
     {
       number: '01',
-      title: 'Agende uma Visita Técnica',
+      title: 'Agende uma Visita Presencial',
       icon: Coffee,
       badge: 'Sem Compromisso',
       description:
-        'Traga a comissão organizadora ou os líderes de departamento. Tomamos um café quentinho, apresentamos cada ala, medimos o salão, testamos a acústica e esclarecemos todas as dúvidas.',
+        'Traga a comissão organizadora da igreja para conhecer o auditório de cultos, o salão com mesas, a piscina, o campo de futebol e os dormitórios.',
       perks: [
-        'Degustação de café colonial de boas-vindas',
-        'Checklist impresso das instalações para a liderança',
-        'Orientação técnica sobre distribuição de leitos',
+        'Apresentação de todas as instalações do sítio',
+        'Avaliação dos espaços para o cronograma da sua igreja',
+        'Conversa direta para esclarecer todas as dúvidas',
       ],
     },
     {
       number: '02',
-      title: 'Bloqueio de Data & Contrato Seguro',
+      title: 'Definição da Data & Valor Fechado',
       icon: CalendarCheck2,
-      badge: 'Garantia de Exclusividade',
+      badge: 'Exclusividade Total',
       description:
-        'Definiu a data no calendário da sua igreja? Formalizamos um contrato transparente e com segurança jurídica. O sítio fica 100% bloqueado para uso exclusivo da sua igreja.',
+        'Trabalhamos com pacote de valor fechado para o fim de semana (ou negociação de dia avulso). A data fica 100% reservada para a sua congregação.',
       perks: [
-        'Facilidade de pagamento parcelado até a data do evento',
-        'Contrato detalhado sem taxas ocultas ou surpresas',
-        'Garantia expressa de nunca alugar para dois grupos juntos',
+        'Exclusividade total: nunca alugamos para dois grupos simultâneos',
+        'Valor fechado para o período sem surpresas',
+        'Flexibilidade para negociar dias avulsos sob consulta',
       ],
     },
     {
       number: '03',
-      title: 'Realize seu Retiro com Foco nas Vidas',
+      title: 'Realize um Retiro Abençoado',
       icon: HeartHandshake,
-      badge: 'Suporte Contínuo',
+      badge: 'Foco Espiritual',
       description:
-        'No dia do evento, nossa equipe de apoio e caseiros experientes cuidam da infraestrutura, manutenção e limpeza das áreas comuns para que os líderes foquem 100% no propósito espiritual.',
+        'Com a propriedade reservada exclusivamente para a sua congregação, sua liderança tem liberdade total para focar nos cultos, comunhão e vidas.',
       perks: [
-        'Recepção calorosa e check-in ágil para os ônibus',
-        'Apoio em tempo integral para água, energia e zeladoria',
-        'Ambiente consagrado para que vidas sejam tocadas',
+        'Auditório de cultos e salão com mesas à disposição',
+        'Piscina, campo de futebol e quadra para lazer sadio',
+        'Dormitórios separados (homens e mulheres) para até 150 pessoas',
       ],
     },
   ];

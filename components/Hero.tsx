@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck, Sparkles, Check } from 'lucide-react';
+import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck, Sparkles } from 'lucide-react';
 import { SafeImage } from './SafeImage';
 import { SUPABASE_IMAGES } from '@/lib/site-data';
 
@@ -13,13 +13,13 @@ export function Hero() {
       url: SUPABASE_IMAGES.auditorio,
       title: 'Auditório de Cultos & Ministrações',
       tag: 'Espaço de Culto & Adoração',
-      caption: 'Estrutura com púlpito, som e ambiente consagrado para vigílias e louvores',
+      caption: 'Estrutura com altar, púlpito e ambiente consagrado para vigílias e louvores',
     },
     salao: {
       url: SUPABASE_IMAGES.salao,
-      title: 'Salão Social & Refeitório',
-      tag: 'Confraternização & Eventos',
-      caption: 'Salão amplo com diversas mesas e cadeiras para refeições e dinâmicas',
+      title: 'Salão com Cozinha',
+      tag: 'Confraternização & Refeições',
+      caption: 'Salão aberto com mesas e cadeiras e cozinha para a igreja usar',
     },
   };
 
@@ -27,7 +27,7 @@ export function Hero() {
 
   return (
     <section className="relative min-h-[90vh] flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-gradient-to-b from-[#091811] via-[#0F291E] to-[#122F22]">
-      {/* Subtle Ambient Glow Effects (No pixelated full-screen stretch) */}
+      {/* Subtle Ambient Glow Effects */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 right-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 left-1/3 w-72 h-72 bg-emerald-700/15 rounded-full blur-3xl pointer-events-none" />
@@ -41,7 +41,7 @@ export function Hero() {
             {/* Top Trust Label */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/30 text-emerald-200 text-xs sm:text-sm font-medium backdrop-blur-md shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Estrutura Exclusiva para Igrejas e Ministérios</span>
+              <span>Estrutura Exclusiva para Igrejas e Retiros Cristãos</span>
             </div>
 
             {/* Strong Headline */}
@@ -51,7 +51,7 @@ export function Hero() {
 
             {/* Subheadline */}
             <p className="text-base sm:text-lg text-stone-200/90 font-normal leading-relaxed max-w-2xl">
-              Ambiente consagrado, cercado pela exuberante natureza da serra, com estrutura completa para cultos, vigílias, ministrações, lazer sadio e hospedagem confortável para até 150 pessoas.
+              Ambiente de paz cercado pela natureza, com auditório para cultos, salão com mesas e cadeiras, área de lazer com piscina, campo de futebol gramado, estacionamento amplo e dormitórios para até 150 pessoas.
             </p>
 
             {/* Dual Action CTAs */}
@@ -82,12 +82,12 @@ export function Hero() {
               <span>·</span>
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
-                Acesso 100% Asfaltado para Ônibus
+                Capacidade para até 150 Pessoas
               </span>
               <span>·</span>
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
-                Gerador de Emergência Próprio
+                Pacote de Fim de Semana Fechado
               </span>
             </div>
           </div>
@@ -119,13 +119,12 @@ export function Hero() {
                 }`}
               >
                 <UtensilsCrossed className="w-3.5 h-3.5" />
-                <span>Salão & Refeitório</span>
+                <span>Salão com Mesas</span>
               </button>
             </div>
 
             {/* Photo Card Container */}
             <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60 group">
-              {/* Aspect Ratio Box */}
               <div className="relative w-full aspect-[4/3] sm:aspect-[16/11]">
                 <SafeImage
                   src={current.url}
@@ -135,7 +134,6 @@ export function Hero() {
                   className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 />
                 
-                {/* Subtle vignette scrim at bottom */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
                 {/* Top Badge Overlay */}
@@ -160,7 +158,7 @@ export function Hero() {
 
             {/* Sub-label */}
             <p className="text-[11px] text-stone-400 mt-2 text-center">
-              Fotos reais do Sítio Shalom · Clique nos botões acima para alternar os espaços
+              Fotos reais do Sítio Shalom · Alterne entre o auditório e o salão com mesas
             </p>
           </div>
 
@@ -181,7 +179,7 @@ export function Hero() {
                   Até 150 Pessoas
                 </h2>
                 <p className="text-xs text-stone-600 mt-0.5">
-                  Dormitórios divididos em alas e suítes pastorais
+                  Hospedagem em comunhão
                 </p>
               </div>
             </div>
@@ -193,10 +191,10 @@ export function Hero() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
-                  Auditório & Cultos
+                  Auditório de Cultos
                 </h2>
                 <p className="text-xs text-stone-600 mt-0.5">
-                  Salão dedicado para ministrações com acústica
+                  Salão dedicado para vigílias e louvores
                 </p>
               </div>
             </div>
@@ -208,10 +206,10 @@ export function Hero() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
-                  Piscina & Campo Society
+                  Piscina, Campo & Quadra
                 </h2>
                 <p className="text-xs text-stone-600 mt-0.5">
-                  Área para batismos nas águas e lazer sadio
+                  Lazer completo e integração saudável
                 </p>
               </div>
             </div>
@@ -223,10 +221,10 @@ export function Hero() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
-                  Salão & Refeitório
+                  Salão com Mesas
                 </h2>
                 <p className="text-xs text-stone-600 mt-0.5">
-                  Estrutura com mesas e cozinha industrial completa
+                  Salão aberto com cozinha
                 </p>
               </div>
             </div>

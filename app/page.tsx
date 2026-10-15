@@ -4,7 +4,6 @@ import React from 'react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { MinistryLogistics } from '@/components/MinistryLogistics';
-import { InvestmentCalculator } from '@/components/InvestmentCalculator';
 import { EventTypes } from '@/components/EventTypes';
 import { InteractiveGallery } from '@/components/InteractiveGallery';
 import { ReservationJourney } from '@/components/ReservationJourney';
@@ -25,9 +24,6 @@ export default function Home() {
 
       {/* Ministry Logistics Pillars */}
       <MinistryLogistics />
-
-      {/* Interactive Rateio & Investment Calculator for Leadership */}
-      <InvestmentCalculator />
 
       {/* Church Ministry Event Types (Tabs) */}
       <EventTypes />

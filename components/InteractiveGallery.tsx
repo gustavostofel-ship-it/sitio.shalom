@@ -11,11 +11,10 @@ export function InteractiveGallery() {
 
   const categories = [
     { id: 'todos', label: 'Todos os Ambientes' },
-    { id: 'culto', label: 'Espaço de Culto' },
-    { id: 'dormitorios', label: 'Dormitórios' },
-    { id: 'lazer', label: 'Piscina e Campo' },
-    { id: 'refeitorio', label: 'Refeitório & Cozinha' },
-    { id: 'natureza', label: 'Áreas Verdes & Fogueira' },
+    { id: 'culto', label: 'Auditório de Cultos' },
+    { id: 'refeitorio', label: 'Salão com Mesas' },
+    { id: 'lazer', label: 'Piscina & Esportes' },
+    { id: 'dormitorios', label: 'Acomodações & Banheiros' },
   ];
 
   const filteredItems =
