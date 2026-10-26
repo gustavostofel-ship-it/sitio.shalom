@@ -43,23 +43,6 @@ export function MinistryLogistics() {
       highlightBadge: 'Confraternização & Comunhão',
     },
     {
-      id: 'hospedagem',
-      title: 'Hospedagem em Comunhão',
-      icon: Bed,
-      image: SUPABASE_IMAGES.dormitorio,
-      tag: 'Descanso dos Acampantes',
-      headline: 'Dormitórios separados para homens e mulheres',
-      description:
-        'Dormitórios com beliches, separados por homens e mulheres, para acolher os participantes do seu retiro.',
-      features: [
-        'Dormitórios com beliches, separados por homens e mulheres',
-        'Ventiladores nos dormitórios',
-        'Dormitórios com banheiro e chuveiro quente',
-        'Mais de 4 banheiros espalhados pelo sítio',
-      ],
-      highlightBadge: 'Até 150 Pessoas',
-    },
-    {
       id: 'lazer',
       title: 'Área de Lazer',
       icon: Flame,

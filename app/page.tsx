@@ -5,7 +5,6 @@ import { ScrollToTop } from '@/components/ScrollToTop';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { MinistryLogistics } from '@/components/MinistryLogistics';
-import { EventTypes } from '@/components/EventTypes';
 import { InteractiveGallery } from '@/components/InteractiveGallery';
 import { ReservationJourney } from '@/components/ReservationJourney';
 import { Testimonials } from '@/components/Testimonials';
@@ -26,9 +25,6 @@ export default function Home() {
 
       {/* Ministry Logistics Pillars */}
       <MinistryLogistics />
-
-      {/* Church Ministry Event Types (Tabs) */}
-      <EventTypes />
 
       {/* Interactive Bento Gallery with Lightbox */}
       <InteractiveGallery />

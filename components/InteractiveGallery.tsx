@@ -14,7 +14,7 @@ export function InteractiveGallery() {
     { id: 'culto', label: 'Auditório de Cultos' },
     { id: 'refeitorio', label: 'Salão com Mesas' },
     { id: 'lazer', label: 'Piscina & Esportes' },
-    { id: 'dormitorios', label: 'Acomodações & Banheiros' },
+    { id: 'dormitorios', label: 'Banheiros' },
   ];
 
   const filteredItems =

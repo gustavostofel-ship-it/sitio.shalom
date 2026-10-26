@@ -22,9 +22,7 @@ export function Header() {
 
   const navLinks = [
     { label: 'O Espaço', href: '#espaco' },
-    { label: 'Acomodações', href: '#acomodacoes' },
     { label: 'Lazer', href: '#lazer' },
-    { label: 'Eventos', href: '#eventos' },
     { label: 'Galeria', href: '#galeria' },
     { label: 'Dúvidas', href: '#faq' },
   ];

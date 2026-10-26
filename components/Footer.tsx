@@ -58,18 +58,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#acomodacoes" className="hover:text-amber-300 transition-colors">
-                  Acomodações
-                </a>
-              </li>
-              <li>
                 <a href="#lazer" className="hover:text-amber-300 transition-colors">
                   Lazer & Batismo
-                </a>
-              </li>
-              <li>
-                <a href="#eventos" className="hover:text-amber-300 transition-colors">
-                  Tipos de Eventos
                 </a>
               </li>
               <li>
