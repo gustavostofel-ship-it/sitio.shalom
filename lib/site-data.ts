@@ -25,14 +25,17 @@ export const SITE_INFO = {
 };
 
 export const SUPABASE_IMAGES = {
-  auditorio: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/auditorio.jpeg',
-  salao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/salao.jpeg',
-  banheiros: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/banheiros.jpeg',
-  campo: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/campo.jpeg',
+  auditorio: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/auditorio-para-cultos.png',
+  salao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/area-gurmet.png',
+  banheiros: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/banheiros.png',
+  campo: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/campo.png',
   dormitorio: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/dormitorio.jpeg',
-  piscina: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/piscina.jpeg',
+  piscina: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/piscina.png',
   quadra: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/quadra.jpeg',
   quadra1: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/quadra%201.jpeg',
+  areaGourmet2: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/area-gurmet-2.png',
+  salaReuniao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/sala%20de%20reuniao.png',
+  salaJogos: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/sala-de-jogos.png',
 };
 
 export const GALLERY_ITEMS: GalleryItem[] = [
@@ -47,7 +50,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
   },
   {
     id: 'salao-1',
-    title: 'Salão com Mesas e Cozinha',
+    title: 'Área Gourmet com Mesas e Cozinha',
     category: 'refeitorio',
     categoryLabel: 'Salão & Refeitório',
     image: SUPABASE_IMAGES.salao,
@@ -106,6 +109,33 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     categoryLabel: 'Piscina e Esporte',
     image: SUPABASE_IMAGES.quadra1,
     description: 'Mais um espaço versátil para esportes e momentos ao ar livre.',
+    featured: false,
+  },
+  {
+    id: 'gourmet-2',
+    title: 'Área Gourmet — Outro Ângulo',
+    category: 'refeitorio',
+    categoryLabel: 'Salão & Refeitório',
+    image: SUPABASE_IMAGES.areaGourmet2,
+    description: 'Mais uma vista da área gourmet, com espaço para a igreja preparar e servir as refeições.',
+    featured: false,
+  },
+  {
+    id: 'reuniao-1',
+    title: 'Sala de Reuniões',
+    category: 'culto',
+    categoryLabel: 'Auditório de Cultos',
+    image: SUPABASE_IMAGES.salaReuniao,
+    description: 'Ambiente reservado para reuniões de liderança, estudos e encontros menores.',
+    featured: false,
+  },
+  {
+    id: 'jogos-1',
+    title: 'Sala de Jogos',
+    category: 'lazer',
+    categoryLabel: 'Piscina e Esporte',
+    image: SUPABASE_IMAGES.salaJogos,
+    description: 'Sala de jogos para momentos de descontração e confraternização da congregação.',
     featured: false,
   },
 ];
