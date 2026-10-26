@@ -26,15 +26,16 @@ export function MinistryLogistics() {
     },
     {
       id: 'salao',
-      title: 'Salão com Cozinha',
+      title: 'Área Gourmet e Salão',
       icon: UtensilsCrossed,
       image: SUPABASE_IMAGES.salao,
       tag: 'Comunhão & Refeições',
-      headline: 'Salão aberto com mesas e cozinha para a igreja usar',
+      headline: 'Área gourmet com churrasqueira, salão com mesas e cozinha para a igreja usar',
       description:
-        'Salão aberto com mesas e cadeiras e cozinha à disposição. A igreja organiza e prepara as próprias refeições.',
+        'Área externa coberta com churrasqueira, pia e freezer, além do salão com mesas e cadeiras e da cozinha à disposição. A igreja organiza e prepara as próprias refeições.',
       features: [
-        'Salão aberto com mesas e cadeiras',
+        'Área externa coberta com churrasqueira, pia e freezer',
+        'Salão com mesas e cadeiras',
         'Cozinha para a igreja utilizar',
         'O sítio não fornece refeições: a igreja realiza tudo',
         'Espaço para dinâmicas, encontros e palestras',

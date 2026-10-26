@@ -50,11 +50,11 @@ export const GALLERY_ITEMS: GalleryItem[] = [
   },
   {
     id: 'salao-1',
-    title: 'Área Gourmet com Mesas e Cozinha',
+    title: 'Área Gourmet com Churrasqueira',
     category: 'refeitorio',
     categoryLabel: 'Salão & Refeitório',
     image: SUPABASE_IMAGES.salao,
-    description: 'Salão aberto com mesas, cadeiras e cozinha para a igreja preparar as próprias refeições.',
+    description: 'Área externa coberta com churrasqueira, pia e freezer para a igreja preparar as próprias refeições. O sítio também tem salão com mesas e cadeiras e cozinha.',
     featured: true,
   },
   {
@@ -117,7 +117,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     category: 'refeitorio',
     categoryLabel: 'Salão & Refeitório',
     image: SUPABASE_IMAGES.areaGourmet2,
-    description: 'Mais uma vista da área gourmet, com espaço para a igreja preparar e servir as refeições.',
+    description: 'Mais uma vista da área gourmet, onde a igreja prepara e serve as próprias refeições.',
     featured: false,
   },
   {
