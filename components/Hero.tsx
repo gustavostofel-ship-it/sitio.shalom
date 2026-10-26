@@ -46,7 +46,7 @@ export function Hero() {
 
             {/* Strong Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-[1.14] text-balance">
-              O Cenário Perfeito para o Próximo Nível Espiritual da Sua Igreja.
+              Um lugar de paz e comunhão para o retiro ou evento da sua igreja.
             </h1>
 
             {/* Subheadline */}
