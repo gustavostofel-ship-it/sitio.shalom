@@ -91,7 +91,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
 .wl,.wr{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .wtitle{font:700 18px Georgia,serif;margin-bottom:8px}
 .instr{background:var(--free);border:1px solid var(--freeb);border-radius:10px;padding:10px 12px;font-size:15px;margin-bottom:12px}.instr.warn{background:#fffbeb;border-color:var(--amber);color:#92400e}
-.mini{font-size:12px;color:var(--mute);margin-top:8px}
+.mini{font-size:12px;color:var(--mute);margin-top:8px}.lp-more{margin:0 16px 16px;padding:14px;border:2px dashed var(--line);border-radius:12px;color:var(--mute);font-size:13px;text-align:center}
 .empty b{font:700 16px Georgia,serif;display:block;margin-bottom:6px}.empty div{font-size:14px;color:var(--mute)}
 .xt-title{font-weight:700;font-size:14px;margin:12px 0 6px}
 .xbtn{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;font-size:14px}
@@ -104,7 +104,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
 <body>
 <div class="wrap">
   <h1>Agendamento do Sítio Shalom — protótipo</h1>
-  <div class="note">Protótipo de design com <b>dados de exemplo</b> (hoje = 28/10/2026): nada é gravado. Tudo que o dono muda no painel aparece na hora na aba <b>Cliente</b>.</div>
+  <div class="note">Protótipo de design com <b>dados de exemplo</b> (hoje = 28/10/2026): nada é gravado. Esta é só a <b>maquete do bloco de agendamento</b>: a página de vendas real não foi alterada. Tudo que o dono muda no painel aparece na hora na aba <b>Cliente</b>.</div>
   <div class="tabs"><button id="t1" class="on">Cliente (site)</button><button id="t2">Painel do dono</button></div>
 
   <!-- ===================== CLIENTE ===================== -->
@@ -119,7 +119,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
         <div class="wl">
           <div class="wtitle">Escolha a data do seu retiro</div>
           <div id="chint" class="instr"></div>
-          <div class="head"><button class="sm" data-cnav="-1" aria-label="Mês anterior">◀ Anterior</button><button class="sm" data-cnav="1" aria-label="Próximo mês">Próximo ▶</button></div>
+          <div class="head"><button class="sm" data-cnav="-1" aria-label="Mês anterior">◀ Anterior</button><button class="sm hide" id="clr" data-clear="1">✕ Limpar datas</button><button class="sm" data-cnav="1" aria-label="Próximo mês">Próximo ▶</button></div>
           <div id="ccal" class="two"></div>
           <div class="legend"><span><i style="background:var(--free);border-color:var(--freeb)"></i>Disponível</span><span><i style="background:var(--closed)"></i>Indisponível</span><span><i style="background:var(--amber)"></i>Feriado (pacote fechado)</span></div>
           <div id="quick" class="quick"></div>
@@ -137,6 +137,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
           <div id="res"></div>
         </div>
       </div>
+    </div>
+      <div class="lp-more"><b>↓ Daqui para baixo continua a sua página de vendas atual, sem mudanças:</b> vídeo e fotos do sítio, o espaço, acomodações, lazer, depoimentos, perguntas frequentes e contato. O bloco de agendamento só entra na primeira tela.</div>
     </div>
   </section>
 
@@ -326,9 +328,9 @@ function renderClient(){
   const bq=ef?quote(ef.a,ef.b):null;selBad=!!(bq&&bq.err);
   const a=ym(cv.y,cv.m),b=ym(cv.y,cv.m+1);
   $('ccal').innerHTML=monthHTML(a.y,a.m,'c')+monthHTML(b.y,b.m,'c');
-  $('quick').innerHTML=sel.a?'':'<span class="sub" style="margin:0">Ou escolha um destes fins de semana livres:</span>'+quickPicks().map(q=>'<button class="sm" data-quick="'+q[0]+'|'+q[1]+'">'+wd(q[0])+' a '+wd(q[1])+' · '+R(q[2])+'</button>').join('');
+  $('quick').innerHTML=sel.b?'':'<span class="sub" style="margin:0">Atalho — fins de semana livres:</span>'+quickPicks().map(q=>'<button class="sm" data-quick="'+q[0]+'|'+q[1]+'">'+wd(q[0])+' a '+wd(q[1])+' · '+R(q[2])+'</button>').join('');
   const ins=$('chint');ins.className='instr'+(hint||selBad?' warn':'');
-  ins.innerHTML=hint||(selBad?'Essas datas não funcionam juntas. <b>Toque em outra data.</b>':!sel.a?'👆 <b>Toque no dia em que sua igreja vai chegar.</b>':!sel.b?'👆 <b>Agora toque no dia da saída.</b>':'✅ <b>Pronto!</b> Para mudar a saída, toque em outra data.');
+  ins.innerHTML=hint||(selBad?'Essas datas não funcionam juntas. <b>Toque em outra data.</b>':!sel.a?'👆 <b>Toque no dia em que sua igreja vai chegar.</b>':!sel.b?'👆 <b>Agora toque no dia da saída</b> (mínimo '+cfg.minDias+' dias). Para desfazer, toque na entrada de novo.':'✅ <b>Pronto!</b> Para mudar a saída, toque em outra data. Para recomeçar, toque na entrada.');
   let s='',ok=false;
   if(!sel.a){
     s='<div class="empty"><b>Sua reserva</b><div>Escolha as datas no calendário para ver o valor.</div><div class="mini">A partir de '+R(cfg.base)+' por '+cfg.minDias+' dias, para até '+cfg.cap+' pessoas. Cada dia a mais: '+R(cfg.extra)+'.</div></div>';
@@ -348,6 +350,7 @@ function renderClient(){
         '<div class="line"><span>Sinal para segurar a data ('+cfg.sinal+'%)</span><b>'+R(sinalDe(bq.total))+'</b></div>'+
         '<div class="mini" style="margin:2px 0 8px">Entrada à tarde, saída à tarde · até '+cfg.cap+' pessoas</div>';}
   }
+  $('clr').classList.toggle('hide',!sel.a);
   $('sum').innerHTML=s;$('go').disabled=!ok;$('fields').classList.toggle('hide',!ok);
 }
 
@@ -474,12 +477,18 @@ document.body.addEventListener('click',e=>{
   if(t.id==='sugg'){suggestYear(+$('sy').value);return}
   // clique em dia do cliente
   const day=d.d;if(!day)return;
+  const ef0=sel.a&&sel.b?effRange():null;
+  if(ef0&&sel.xb&&day===ef0.a){sel.xb=false;hint='';renderClient();return}
+  if(ef0&&sel.xa&&day===ef0.b){sel.xa=false;hint='';renderClient();return}
   if(!pickable(day)){hint=why(day);renderClient();return}
   hint='';
-  const p=periodOf(day),isPer=sel.a&&sel.b&&periods.some(x=>x.entrada===sel.a&&x.saida===sel.b);
-  if(p)sel={a:p.entrada,b:p.saida,xb:false,xa:false};
-  else if(sel.a&&day>sel.a&&!isPer){sel.b=day;sel.xa=false}
-  else{const e=add(day,cfg.minDias-1);sel={a:day,b:quote(day,e).err?null:e,xb:false,xa:false}}
+  const isPer=sel.a&&sel.b&&periods.some(x=>x.entrada===sel.a&&x.saida===sel.b),p=periodOf(day),none={a:null,b:null,xb:false,xa:false};
+  if(isPer&&day>=sel.a&&day<=sel.b)sel={...none};
+  else if(p)sel={a:p.entrada,b:p.saida,xb:false,xa:false};
+  else if(sel.a&&day===sel.a)sel={...none};
+  else if(sel.b&&day===sel.b){sel.b=null;sel.xa=false}
+  else if(sel.a&&day>sel.a){sel.b=day;sel.xa=false}
+  else sel={a:day,b:null,xb:false,xa:false};
   hov=null;$('res').innerHTML='';renderClient();
 });
 document.body.addEventListener('change',e=>{

@@ -78,12 +78,13 @@ Calendário no lugar do campo "Mês ou Data Pretendida". Dias fechados e reserva
 
 ### Escolha de datas (cliente, na primeira tela da página de vendas)
 
-O calendário fica **na primeira tela da página de vendas, abaixo do título**, sem login, sem cadastro e sem senha. Princípios: poucas palavras, nenhum termo técnico, um passo por vez.
+O calendário fica **na primeira tela da página de vendas, abaixo do título**, sem login, sem cadastro e sem senha. Todo o restante da página de vendas atual (vídeo, fotos, o espaço, depoimentos, perguntas frequentes) **permanece como está**; o bloco de agendamento só entra na primeira dobra. Princípios: poucas palavras, nenhum termo técnico, um passo por vez.
 
 - Duas cores no calendário: **disponível** (verde) e **indisponível** (cinza). O cliente não precisa saber se o dia está reservado, fechado ou fora do padrão. Feriado com pacote fechado tem um traço laranja e legenda.
-- **Um toque na data de chegada já marca o pacote normal (3 dias).** Para mudar a saída, toca em outra data. Uma frase de instrução no topo acompanha cada momento ("Toque no dia em que sua igreja vai chegar", "Pronto! Para mudar a saída, toque em outra data").
+- **Dois toques: entrada e saída.** O primeiro toque marca só a entrada (nada é preenchido sozinho); o segundo marca a saída (mínimo de 3 dias). Uma frase de instrução acompanha cada momento e ensina a desfazer.
+- **Sempre dá para desfazer:** tocar de novo na entrada **limpa tudo**; tocar na saída **tira só a saída**; tocar noutra data troca a saída (ou vira a nova entrada se for anterior); tocar num dia extra ligado o desliga; tocar num feriado escolhido o desmarca. Há também um botão "Limpar datas" sempre visível acima do calendário.
+- Atalhos de fins de semana livres (3) enquanto as datas não estão completas.
 - **Dia extra por botões, não por calendário:** depois de escolher, aparece "Quer ficar mais tempo?" com "Chegar 1 dia antes (qui 05/11) + R$ 1.500" e "Sair 1 dia depois (seg 09/11) + R$ 1.500", só quando disponíveis. Ficam fora dos feriados com pacote fechado.
-- Fins de semana livres sugeridos (3 atalhos) enquanto nada foi escolhido.
 - Resumo ao lado com entrada, saída, linhas de preço, total e sinal. Os campos (nome, igreja, WhatsApp, público) **só aparecem depois que as datas são válidas**.
 - Tocar numa data que não dá explica numa frase. No celular o calendário mostra um mês por vez.
 
