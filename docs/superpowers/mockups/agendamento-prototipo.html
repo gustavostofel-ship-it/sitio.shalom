@@ -91,7 +91,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
 .wl,.wr{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .wtitle{font:700 18px Georgia,serif;margin-bottom:8px}
 .instr{background:var(--free);border:1px solid var(--freeb);border-radius:10px;padding:10px 12px;font-size:15px;margin-bottom:12px}.instr.warn{background:#fffbeb;border-color:var(--amber);color:#92400e}
-.mini{font-size:12px;color:var(--mute);margin-top:8px}.lp-more{margin:0 16px 16px;padding:14px;border:2px dashed var(--line);border-radius:12px;color:var(--mute);font-size:13px;text-align:center}
+.d.hid{border-style:dashed;border-color:var(--amber)}.mini{font-size:12px;color:var(--mute);margin-top:8px}.lp-more{margin:0 16px 16px;padding:14px;border:2px dashed var(--line);border-radius:12px;color:var(--mute);font-size:13px;text-align:center}
 .empty b{font:700 16px Georgia,serif;display:block;margin-bottom:6px}.empty div{font-size:14px;color:var(--mute)}
 .xt-title{font-weight:700;font-size:14px;margin:12px 0 6px}
 .xbtn{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;font-size:14px}
@@ -143,7 +143,9 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
   </section>
 
   <!-- ===================== DONO ===================== -->
+  <section id="vlogin" class="hide"><div class="card" style="max-width:380px;margin:24px auto"><h3 style="font:700 20px Georgia,serif;color:var(--green)">Painel do dono</h3><p class="sub">Área interna do sistema, separada da página de vendas. Só entra quem tem login. O cliente nunca passa por aqui.</p><label>E-mail</label><input value="dono@sitioshalom.com.br"><label>Senha</label><input type="password" value="12345678"><button class="btn" id="enter" style="background:var(--green)">Entrar</button></div></section>
   <section id="v2" class="hide">
+    <div class="head"><b>Painel do dono · acesso interno</b><button class="sm" id="logout">Sair</button></div>
     <div class="sub-tabs" id="stabs">
       <button data-tab="resumo" class="on">Resumo</button><button data-tab="cal">Calendário</button><button data-tab="rsv">Reservas</button><button data-tab="cfg">Regras e preços</button>
     </div>
@@ -164,7 +166,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
           <div class="seg" id="omode"><button data-omode="1" class="on">1 mês</button><button data-omode="3">3 meses</button><button data-omode="12">12 meses</button></div>
         </div>
         <div id="ocal" class="m1"></div>
-        <div class="legend"><span><i style="background:var(--ok)"></i>Reserva confirmada</span><span><i style="background:var(--wait)"></i>Aguardando sinal</span><span><i style="background:var(--free);border-color:var(--freeb)"></i>Livre</span><span><i style="background:var(--closed)"></i>Fechado</span><span><i style="background:var(--amber)"></i>Período especial</span></div>
+        <div class="legend"><span><i style="background:var(--ok)"></i>Reserva confirmada</span><span><i style="background:var(--wait)"></i>Aguardando sinal</span><span><i style="background:var(--free);border-color:var(--freeb)"></i>Livre</span><span><i style="background:var(--closed)"></i>Fechado</span><span><i style="background:var(--amber)"></i>Período especial</span><span><i style="background:var(--free);border:1px dashed var(--amber)"></i>Aberto mas <b>oculto</b> do cliente (menos de 3 dias seguidos)</span></div>
         <div class="hint">Clique num dia ou <b>arraste</b> para selecionar vários. A gaveta ao lado mostra a reserva ou deixa você fechar, abrir ou criar uma reserva.</div>
       </div>
     </div>
@@ -244,8 +246,11 @@ function status(d){
   return defs[D(d).getUTCDay()]?'livre':'padrao';
 }
 const isExtra=d=>status(d)==='padrao'&&(status(add(d,-1))==='livre'||status(add(d,1))==='livre');
-const pickable=d=>status(d)==='livre';
+const pickable=d=>status(d)==='livre'&&visible(d);
 function why(d){return'Essa data não está disponível. Toque numa data verde.'}
+const runLen=d=>{let n=1,x=add(d,-1);while(status(x)==='livre'){n++;x=add(x,-1)}x=add(d,1);while(status(x)==='livre'){n++;x=add(x,1)}return n};
+const visible=d=>status(d)==='livre'&&(!!periodOf(d)||runLen(d)>=cfg.minDias);
+function windowFor(day){for(let off=0;off<cfg.minDias;off++){const a=add(day,-off),b=add(a,cfg.minDias-1);if(range(a,b).every(x=>status(x)==='livre')&&!quote(a,b).err)return[a,b]}return null}
 function suggest(a,b){
   const n=diff(a,b),p=periods.find(p=>p.entrada===a&&p.saida===b);
   if(p)return p.preco;
@@ -290,7 +295,7 @@ function monthHTML(y,m,who){
   const os=osel?[osel.a,osel.b].sort():null;
   for(let i=1;i<=n;i++){
     const d=S(new Date(Date.UTC(y,m,i))),st=status(d),r=resOf(d),p=periodOf(d),o=over[d];
-    let cls='d '+(who==='c'?(st==='livre'?'livre':st==='passado'?'passado fechado':'fechado'):(st==='padrao'?'fechado':st))+(p?' per':''),inner='';
+    let cls='d '+(who==='c'?(st==='livre'&&visible(d)?'livre':st==='passado'?'passado fechado':'fechado'):(st==='padrao'?'fechado':st))+(p?' per':''),inner='';
     if(who==='c'){
       const ef=sel.a&&sel.b?effRange():null;
       const inSel=ef?(d>=ef.a&&d<=ef.b):d===sel.a;
@@ -300,7 +305,8 @@ function monthHTML(y,m,who){
       inner='<span class="n">'+i+'</span>'+(inSel&&d===(ef?ef.a:sel.a)?'<span class="lab">entrada</span>':ef&&inSel&&d===ef.b?'<span class="lab">saída</span>':'');
     }else{
       if(os&&d>=os[0]&&d<=os[1])cls+=' osel';
-      inner='<span class="n">'+i+'</span>';
+      const hid=st==='livre'&&!visible(d);if(hid)cls+=' hid';
+      inner='<span class="n">'+i+'</span>'+(hid?'<span class="lock" title="Aberto, mas oculto para o cliente: menos de '+cfg.minDias+' dias seguidos">oculto</span>':'');
       if(r){const s=d===r.entrada,e=d===r.saida,lab=(s||D(d).getUTCDay()===0||i===1)?esc(r.igreja):'';
         inner+='<div class="bar '+r.status+(s?' s':'')+(e?' e':'')+'">'+lab+'</div>';}
       else if(st==='fechado'&&o&&!o.aberto)inner+='<span class="lock">🔒 '+esc(o.motivo||'Fechado')+'</span>';
@@ -330,7 +336,7 @@ function renderClient(){
   $('ccal').innerHTML=monthHTML(a.y,a.m,'c')+monthHTML(b.y,b.m,'c');
   $('quick').innerHTML=sel.b?'':'<span class="sub" style="margin:0">Atalho — fins de semana livres:</span>'+quickPicks().map(q=>'<button class="sm" data-quick="'+q[0]+'|'+q[1]+'">'+wd(q[0])+' a '+wd(q[1])+' · '+R(q[2])+'</button>').join('');
   const ins=$('chint');ins.className='instr'+(hint||selBad?' warn':'');
-  ins.innerHTML=hint||(selBad?'Essas datas não funcionam juntas. <b>Toque em outra data.</b>':!sel.a?'👆 <b>Toque no dia em que sua igreja vai chegar.</b>':!sel.b?'👆 <b>Agora toque no dia da saída</b> (mínimo '+cfg.minDias+' dias). Para desfazer, toque na entrada de novo.':'✅ <b>Pronto!</b> Para mudar a saída, toque em outra data. Para recomeçar, toque na entrada.');
+  ins.innerHTML=hint||(selBad?'Essas datas não funcionam juntas. <b>Toque em outra data.</b>':!sel.a?'👆 <b>Toque no dia em que sua igreja vai chegar.</b>':!sel.b?'👆 <b>Agora toque no dia da saída</b> (mínimo '+cfg.minDias+' dias). Para desfazer, toque na entrada de novo.':'✅ <b>Pronto!</b> Já marcamos '+diff(sel.a,sel.b)+' dias. Para mudar a saída, toque em outra data. Para recomeçar, toque na entrada.');
   let s='',ok=false;
   if(!sel.a){
     s='<div class="empty"><b>Sua reserva</b><div>Escolha as datas no calendário para ver o valor.</div><div class="mini">A partir de '+R(cfg.base)+' por '+cfg.minDias+' dias, para até '+cfg.cap+' pessoas. Cada dia a mais: '+R(cfg.extra)+'.</div></div>';
@@ -482,13 +488,14 @@ document.body.addEventListener('click',e=>{
   if(ef0&&sel.xa&&day===ef0.b){sel.xa=false;hint='';renderClient();return}
   if(!pickable(day)){hint=why(day);renderClient();return}
   hint='';
-  const isPer=sel.a&&sel.b&&periods.some(x=>x.entrada===sel.a&&x.saida===sel.b),p=periodOf(day),none={a:null,b:null,xb:false,xa:false};
+  const none={a:null,b:null,xb:false,xa:false},isPer=sel.a&&sel.b&&periods.some(x=>x.entrada===sel.a&&x.saida===sel.b),p=periodOf(day);
   if(isPer&&day>=sel.a&&day<=sel.b)sel={...none};
   else if(p)sel={a:p.entrada,b:p.saida,xb:false,xa:false};
   else if(sel.a&&day===sel.a)sel={...none};
   else if(sel.b&&day===sel.b){sel.b=null;sel.xa=false}
-  else if(sel.a&&day>sel.a){sel.b=day;sel.xa=false}
-  else sel={a:day,b:null,xb:false,xa:false};
+  else if(sel.a&&sel.b&&day>sel.a){if(diff(sel.a,day)<cfg.minDias)hint='O mínimo são '+cfg.minDias+' dias: a saída mais cedo é '+wd(add(sel.a,cfg.minDias-1))+'.';else{sel.b=day;sel.xa=false}}
+  else if(sel.a&&!sel.b&&day>sel.a){sel.b=day;sel.xa=false}
+  else{const w=windowFor(day);sel=w?{a:w[0],b:w[1],xb:false,xa:false}:{...none};if(!w)hint='Não há '+cfg.minDias+' dias seguidos livres a partir desta data.'}
   hov=null;$('res').innerHTML='';renderClient();
 });
 document.body.addEventListener('change',e=>{
@@ -527,8 +534,12 @@ function showTab(t){
   [...$('stabs').children].forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t!=='cal')closeDrawer();
 }
-$('t1').onclick=()=>{$('v1').classList.remove('hide');$('v2').classList.add('hide');$('t1').classList.add('on');$('t2').classList.remove('on');closeDrawer();renderAll()};
-$('t2').onclick=()=>{$('v2').classList.remove('hide');$('v1').classList.add('hide');$('t2').classList.add('on');$('t1').classList.remove('on');renderAll()};
+$('t1').onclick=()=>{$('v1').classList.remove('hide');$('v2').classList.add('hide');$('vlogin').classList.add('hide');$('t1').classList.add('on');$('t2').classList.remove('on');closeDrawer();renderAll()};
+let logged=false;
+function showOwner(){$('v1').classList.add('hide');$('vlogin').classList.toggle('hide',logged);$('v2').classList.toggle('hide',!logged);$('t2').classList.add('on');$('t1').classList.remove('on');renderAll()}
+$('t2').onclick=showOwner;
+$('enter').onclick=()=>{logged=true;showOwner()};
+$('logout').onclick=()=>{logged=false;closeDrawer();showOwner()};
 $('sy').innerHTML=[2026,2027,2028,2029].map(y=>'<option>'+y+'</option>').join('');
 periods.sort((a,b)=>a.entrada<b.entrada?-1:1);
 renderAll();
