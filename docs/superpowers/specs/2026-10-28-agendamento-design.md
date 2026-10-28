@@ -146,10 +146,13 @@ Mínimo de 3 dias pelo site; dia avulso e 2 dias por WhatsApp. Retenção da dat
 
 ## Status da implementação (2026-10-28)
 
-**Feito e no site:** calendário do cliente na página de vendas, logo abaixo do Hero (`components/AgendaReserva.tsx`), com as regras de datas e preço em `lib/agenda.ts` (9 testes: `npm test`), rotas `GET /api/agenda` e `POST /api/agenda/reservar` (o servidor recalcula o preço e a disponibilidade) e o SQL em `supabase/agenda.sql`. Se o banco não responder, o bloco mostra um convite para o WhatsApp e o resto da página continua normal. Aviso no Telegram é opcional (variáveis `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`).
+**Infraestrutura: Docker + Postgres, sem Supabase.** Decisão do usuário: o sistema roda por conta própria, por enquanto só neste computador (`docker-compose.yml`: contêiner do site + Postgres 16 com volume). Passo a passo em `docs/docker.md`. As fotos da galeria continuam vindo do Supabase Storage (não faz parte deste sistema).
 
-**Calls tomadas:** sem troca no mesmo dia; teto de 7 dias fora de períodos especiais; janela de reserva de 18 meses; máximo de 2 pedidos aguardando por WhatsApp; data segurada por 24 horas.
+**Feito:**
+- Calendário do cliente na página de vendas, logo abaixo do Hero (`components/AgendaReserva.tsx`), sem nenhuma alteração nas seções existentes. Se o banco não responder, vira um convite para o WhatsApp e a página segue normal.
+- Regras de datas e preço em `lib/agenda.ts` (testadas), rotas `GET /api/agenda` e `POST /api/agenda/reservar` (o servidor recalcula preço e disponibilidade; pedidos entram um por vez com trava do Postgres; o banco impede duas reservas ativas no mesmo dia).
+- Painel do administrador em `/painel` (noindex), com login próprio: senha com hash (scrypt) na tabela `agenda_admins`, sessão em cookie assinado (HttpOnly, SameSite=Strict), limite de tentativas por IP. Abas: Resumo, Calendário (1, 3 ou 12 meses, reservas em barras, arrastar para selecionar, gaveta lateral), Reservas (filtros e busca), Regras e preços (preços, dias abertos por padrão, períodos especiais, sugestão de feriados pela Páscoa).
+- Backup do banco (`scripts/backup.sh`) testado com restauração.
+- Testes: `npm test` (regras, senha e sessão) e verificação de ponta a ponta no Docker (corrida de 10 pedidos simultâneos: 1 vence, 9 recebem mensagem clara).
 
-**Painel do administrador (feito):** `/painel`, com login do Supabase Auth, fora dos buscadores (noindex). Só entra quem tem usuário no Supabase **e** e-mail na tabela `agenda_admins`; todas as ações passam por `/api/admin`, que confere o login a cada chamada e valida tudo no servidor. Abas: Resumo, Calendário (1, 3 ou 12 meses, reservas em barras, arrastar para selecionar, gaveta lateral), Reservas (filtros e busca) e Regras e preços (preços, dias abertos por padrão, períodos especiais e sugestão de feriados pela Páscoa). O cliente não tem acesso a nada disso.
-
-**Ainda não feito:** confirmação automática do sinal pelo Asaas (fase 2) e limite de requisições por IP.
+**Ainda não feito:** confirmação automática do sinal pelo Asaas (fase 2), publicação em servidor com domínio e HTTPS, e backup automático agendado.

@@ -37,7 +37,7 @@ test('período especial é pacote fechado: nem menos, nem mais dias', () => {
   assert.match(String(total('2027-02-04', '2027-02-10')), /inteiro/);
 });
 test('dia reservado, bloqueado e passado não são escolhidos', () => {
-  assert.match(String(total('2026-11-20', '2026-11-22')), /indispon|disponível/);
+  assert.match(String(total('2026-11-20', '2026-11-22')), /reservadas por outra pessoa/);
   assert.equal(statusDia('2026-12-25', base()), 'fechado'); // Natal bloqueado
   assert.equal(statusDia('2026-10-20', base()), 'passado');
 });
@@ -64,6 +64,9 @@ test('atalhos sugerem pacotes livres', () => {
   const p = proximas(base(), 3);
   assert.equal(p.length, 3);
   assert.ok(p.every((q) => q.total === 7500));
+});
+test('data que acabou de ser reservada por outra pessoa dá mensagem clara', () => {
+  assert.match(String(total('2026-11-20', '2026-11-22')), /reservadas por outra pessoa/);
 });
 test('feriados do ano são calculados pela Páscoa', () => {
   assert.equal(pascoa(2027), '2027-03-28');

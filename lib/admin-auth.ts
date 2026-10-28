@@ -1,4 +1,5 @@
-import { supabaseAdmin } from '@/lib/agenda-server';
+import { db } from '@/lib/db';
+import { COOKIE, lerCookie, verificar } from '@/lib/sessao';
 
 export class HttpErro extends Error {
   constructor(
@@ -9,16 +10,20 @@ export class HttpErro extends Error {
   }
 }
 
-// Só entra no painel quem fez login no Supabase Auth E está na tabela agenda_admins.
-// Sem isso, qualquer pessoa com conta (ou se o cadastro público estiver ligado) entraria.
-export async function exigirAdmin(req: Request) {
-  const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (!token) throw new HttpErro(401, 'Faça login para continuar.');
-  const db = supabaseAdmin();
-  const { data, error } = await db.auth.getUser(token);
-  const email = data.user?.email?.toLowerCase();
-  if (error || !email) throw new HttpErro(401, 'Sua sessão expirou. Entre de novo.');
-  const { data: adm } = await db.from('agenda_admins').select('email').eq('email', email).maybeSingle();
-  if (!adm) throw new HttpErro(403, 'Este usuário não tem acesso ao painel.');
-  return db;
+export function segredo() {
+  const s = process.env.SESSION_SECRET;
+  if (!s || s.length < 32) throw new Error('SESSION_SECRET ausente ou com menos de 32 caracteres.');
+  return s;
 }
+
+// Só entra no painel quem tem sessão válida (cookie assinado) E continua na tabela agenda_admins.
+export async function exigirAdmin(req: Request) {
+  const email = verificar(lerCookie(req.headers.get('cookie'), COOKIE), segredo());
+  if (!email) throw new HttpErro(401, 'Faça login para continuar.');
+  const pool = db();
+  const r = await pool.query('select 1 from agenda_admins where email = $1', [email]);
+  if (!r.rowCount) throw new HttpErro(403, 'Este usuário não tem acesso ao painel.');
+  return pool;
+}
+
+export const https = (req: Request) => new URL(req.url).protocol === 'https:' || req.headers.get('x-forwarded-proto') === 'https';

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import supabase from '@/lib/supabase';
 import { brl, br, diff, faixa, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { ListaReservas, Pilula, Resumo, statusReal } from './Visoes';
@@ -12,7 +11,7 @@ type Aba = 'resumo' | 'cal' | 'rsv' | 'cfg';
 const campo = 'w-full rounded-lg border border-stone-300 px-3 py-2 text-sm';
 const botao = 'rounded-lg border border-stone-300 px-3 py-2 text-sm hover:border-emerald-500';
 
-function Login() {
+function Login({ aoEntrar }: { aoEntrar: () => void }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
@@ -21,8 +20,14 @@ function Login() {
     e.preventDefault();
     setOcupado(true);
     setErro('');
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
-    if (error) setErro('E-mail ou senha incorretos.');
+    try {
+      const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, senha }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok) aoEntrar();
+      else setErro(j.erro || 'Não foi possível entrar.');
+    } catch {
+      setErro('Sem conexão. Tente de novo.');
+    }
     setOcupado(false);
   };
   return (
@@ -137,7 +142,7 @@ function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: s
 }
 
 export function Painel() {
-  const [token, setToken] = useState<string | null | undefined>(undefined);
+  const [sessao, setSessao] = useState<'carregando' | 'fora' | 'dentro'>('carregando');
   const [dados, setDados] = useState<AdminData | null>(null);
   const [aviso, setAviso] = useState('');
   const [aba, setAba] = useState<Aba>('resumo');
@@ -152,41 +157,44 @@ export function Painel() {
     setTimeout(() => setToast(''), 3500);
   };
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setToken(s?.access_token ?? null));
-    return () => data.subscription.unsubscribe();
-  }, []);
-
-  const carregar = useCallback(async (t: string) => {
-    const r = await fetch('/api/admin', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' });
-    const j = await r.json().catch(() => ({}));
-    if (r.ok) {
-      setDados(j);
-      setAviso('');
-      setIni((m) => m ?? hojeComoMes(j.hoje));
-      return;
+  // O login fica num cookie seguro (HttpOnly); o navegador o envia sozinho a cada chamada.
+  const carregar = useCallback(async () => {
+    try {
+      const r = await fetch('/api/admin', { cache: 'no-store' });
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 401) {
+        setSessao('fora');
+        setDados(null);
+        return;
+      }
+      setSessao('dentro');
+      if (r.ok) {
+        setDados(j);
+        setAviso('');
+        setIni((m) => m ?? hojeComoMes(j.hoje));
+      } else {
+        setDados(null);
+        setAviso(j.erro || 'Não foi possível carregar o painel.');
+      }
+    } catch {
+      setSessao('dentro');
+      setAviso('Sem conexão com o servidor.');
     }
-    setDados(null);
-    setAviso(j.erro || 'Não foi possível carregar o painel.');
-    if (r.status === 401) await supabase.auth.signOut();
   }, []);
   useEffect(() => {
-    if (token) carregar(token);
-    else setDados(null);
-  }, [token, carregar]);
+    carregar();
+  }, [carregar]);
 
   const chamar: Chamar = async (acao, corpo = {}) => {
-    if (!token) return { erro: 'Sessão expirada.' };
     try {
-      const r = await fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ acao, ...corpo }) });
+      const r = await fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ acao, ...corpo }) });
       const j: Resposta = await r.json().catch(() => ({}));
       if (!r.ok) {
         avisar(j.erro || 'Não foi possível concluir.');
-        if (r.status === 401) await supabase.auth.signOut();
+        if (r.status === 401) setSessao('fora');
         return { erro: j.erro || 'erro' };
       }
-      await carregar(token);
+      await carregar();
       avisar(
         acao === 'dias' ? `${j.alterados} dia(s) atualizados${j.ignorados ? ` · ${j.ignorados} mantidos (reserva ou passado)` : ''}.` :
         acao === 'sugerir' ? (j.criados ? `${j.criados} período(s) sugerido(s). Confira datas e preços.` : 'Esses períodos já existem.') :
@@ -218,10 +226,14 @@ export function Painel() {
     [dados]
   );
 
-  if (token === undefined) return <p className="p-8 text-stone-500">Carregando…</p>;
-  if (token === null) return <main className="min-h-screen bg-[#FAF8F5] px-4"><Login /></main>;
+  if (sessao === 'carregando') return <p className="p-8 text-stone-500">Carregando…</p>;
+  if (sessao === 'fora') return <main className="min-h-screen bg-[#FAF8F5] px-4"><Login aoEntrar={carregar} /></main>;
 
-  const sair = () => supabase.auth.signOut();
+  const sair = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    setSessao('fora');
+    setDados(null);
+  };
   if (!dados || !ag || !ini) {
     return (
       <main className="min-h-screen bg-[#FAF8F5] px-4">

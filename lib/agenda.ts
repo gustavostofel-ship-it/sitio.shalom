@@ -82,7 +82,7 @@ export function cotar(a: string, b: string, x: AgendaData): Cotacao {
   const abertos = st.map((s) => s === 'livre');
   const first = abertos.indexOf(true),
     last = abertos.lastIndexOf(true);
-  if (first < 0) return erro('Inclua pelo menos um dia disponível.');
+  if (first < 0) return erro(st.includes('reservado') ? 'Essas datas acabaram de ser reservadas por outra pessoa. Escolha outras.' : 'Inclua pelo menos um dia disponível.');
   const meio = dias.slice(first, last + 1).find((d) => statusDia(d, x) !== 'livre');
   if (meio) return erro('O dia ' + br(meio) + ' está indisponível.');
   const ext = [...dias.slice(0, first), ...dias.slice(last + 1)];
