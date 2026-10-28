@@ -3,7 +3,10 @@
 import pg from 'pg';
 import { hashSenha } from '../lib/senha.mjs';
 
-const [email, senha] = process.argv.slice(2);
+// Aceita os dados pelos argumentos ou, em base64, pela variável ADMIN_B64 (usada pelo criar-admin.bat,
+// para que aspas, espaços e acentos na senha não quebrem a linha de comando).
+let [email, senha] = process.argv.slice(2);
+if (process.env.ADMIN_B64) ({ email, senha } = JSON.parse(Buffer.from(process.env.ADMIN_B64, 'base64').toString('utf8')));
 if (!email || !senha || senha.length < 10) {
   console.error("Uso: node scripts/criar-admin.mjs email@exemplo.com 'senha-com-10-ou-mais-caracteres'");
   process.exit(1);
