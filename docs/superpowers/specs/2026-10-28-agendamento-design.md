@@ -76,9 +76,16 @@ O dono aluga o sítio por dias. Hoje o site só recebe um pedido por WhatsApp, c
 
 Calendário no lugar do campo "Mês ou Data Pretendida". Dias fechados e reservados ficam apagados. Ao escolher entrada e saída aparecem total e sinal. Se a escolha toca um período especial, o calendário seleciona o período inteiro. O envio grava a reserva `aguardando_sinal`, segura a data (**24 horas [proposta]**) e abre o WhatsApp com os dados e a data, como hoje. A leitura pública mostra só o estado de cada dia, sem dados pessoais.
 
-### Escolha de datas (usabilidade)
+### Escolha de datas (cliente, na primeira tela da página de vendas)
 
-Passos visíveis (Entrada, Saída, Confirmar); datas livres sugeridas para escolher com um toque; dias extras destacados com a etiqueta "extra"; "entrada" e "saída" marcadas no calendário; prévia do período ao passar o mouse; botão para limpar; ao tocar num dia que não pode ser escolhido, uma frase explica o motivo (reservado, indisponível, só vale como extra). O resumo detalha o pacote base, os dias extras e o sinal. No celular o calendário mostra um mês por vez.
+O calendário fica **na primeira tela da página de vendas, abaixo do título**, sem login, sem cadastro e sem senha. Princípios: poucas palavras, nenhum termo técnico, um passo por vez.
+
+- Duas cores no calendário: **disponível** (verde) e **indisponível** (cinza). O cliente não precisa saber se o dia está reservado, fechado ou fora do padrão. Feriado com pacote fechado tem um traço laranja e legenda.
+- **Um toque na data de chegada já marca o pacote normal (3 dias).** Para mudar a saída, toca em outra data. Uma frase de instrução no topo acompanha cada momento ("Toque no dia em que sua igreja vai chegar", "Pronto! Para mudar a saída, toque em outra data").
+- **Dia extra por botões, não por calendário:** depois de escolher, aparece "Quer ficar mais tempo?" com "Chegar 1 dia antes (qui 05/11) + R$ 1.500" e "Sair 1 dia depois (seg 09/11) + R$ 1.500", só quando disponíveis. Ficam fora dos feriados com pacote fechado.
+- Fins de semana livres sugeridos (3 atalhos) enquanto nada foi escolhido.
+- Resumo ao lado com entrada, saída, linhas de preço, total e sinal. Os campos (nome, igreja, WhatsApp, público) **só aparecem depois que as datas são válidas**.
+- Tocar numa data que não dá explica numa frase. No celular o calendário mostra um mês por vez.
 
 ### Painel do dono
 
