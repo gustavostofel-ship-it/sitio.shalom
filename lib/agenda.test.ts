@@ -1,7 +1,7 @@
 // Roda com: node --test lib/agenda.test.ts
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cotar, janela, visivel, statusDia, proximas, type AgendaData } from './agenda.ts';
+import { cotar, janela, visivel, statusDia, proximas, pascoa, sugerirPeriodos, type AgendaData } from './agenda.ts';
 
 const base = (): AgendaData => ({
   hoje: '2026-10-28',
@@ -64,4 +64,17 @@ test('atalhos sugerem pacotes livres', () => {
   const p = proximas(base(), 3);
   assert.equal(p.length, 3);
   assert.ok(p.every((q) => q.total === 7500));
+});
+test('feriados do ano são calculados pela Páscoa', () => {
+  assert.equal(pascoa(2027), '2027-03-28');
+  const x = base();
+  const carnaval = sugerirPeriodos(2027, x.cfg).find((q) => q.nome.startsWith('Carnaval'))!;
+  assert.deepEqual([carnaval.entrada, carnaval.saida, carnaval.preco], ['2027-02-05', '2027-02-10', 25000]);
+  const sem = sugerirPeriodos(2027, x.cfg).find((q) => q.nome.startsWith('Semana Santa'))!;
+  assert.deepEqual([sem.entrada, sem.saida], ['2027-03-25', '2027-03-28']);
+  const cc = sugerirPeriodos(2027, x.cfg).find((q) => q.nome.startsWith('Corpus'))!;
+  assert.deepEqual([cc.entrada, cc.saida, cc.preco], ['2027-05-26', '2027-05-30', 10500]);
+  const ny = sugerirPeriodos(2026, x.cfg).find((q) => q.nome.startsWith('Ano Novo'))!;
+  assert.deepEqual([ny.entrada, ny.saida], ['2026-12-30', '2027-01-03']);
+  assert.equal(sugerirPeriodos(2026, x.cfg).find((q) => q.nome.startsWith('Natal'))!.bloqueado, true);
 });

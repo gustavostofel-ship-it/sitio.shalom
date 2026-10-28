@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { AgendaData } from '@/lib/agenda';
+import type { AgendaData, Cfg } from '@/lib/agenda';
 
 // Só no servidor: usa a chave service_role, que nunca vai para o navegador.
 export function supabaseAdmin() {
@@ -10,6 +10,18 @@ export function supabaseAdmin() {
 }
 
 export const hojeSP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
+
+// Linha da tabela agenda_config -> Cfg
+export const cfgDeLinha = (c: Record<string, any>): Cfg => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+  base: Number(c.base),
+  minDias: c.min_dias,
+  extra: Number(c.extra),
+  sinalPct: c.sinal_pct,
+  holdHoras: c.hold_horas,
+  capacidade: c.capacidade,
+  maxDias: c.max_dias,
+  diasPadrao: c.dias_padrao,
+});
 
 export async function carregarAgenda(): Promise<AgendaData> {
   const db = supabaseAdmin();
@@ -26,19 +38,9 @@ export async function carregarAgenda(): Promise<AgendaData> {
       .or(`status.eq.confirmada,and(status.eq.aguardando_sinal,segura_ate.gt.${agora})`),
   ]);
   for (const x of [c, p, d, r]) if (x.error) throw new Error(x.error.message);
-  const cfg = c.data!;
   return {
     hoje,
-    cfg: {
-      base: Number(cfg.base),
-      minDias: cfg.min_dias,
-      extra: Number(cfg.extra),
-      sinalPct: cfg.sinal_pct,
-      holdHoras: cfg.hold_horas,
-      capacidade: cfg.capacidade,
-      maxDias: cfg.max_dias,
-      diasPadrao: cfg.dias_padrao,
-    },
+    cfg: cfgDeLinha(c.data!),
     periodos: (p.data ?? []).map((x) => ({ ...x, preco: Number(x.preco) })),
     dias: Object.fromEntries((d.data ?? []).map((x) => [x.data as string, x.aberto as boolean])),
     ocupadas: r.data ?? [],

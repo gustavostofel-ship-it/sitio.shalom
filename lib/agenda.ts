@@ -132,3 +132,69 @@ export function proximas(x: AgendaData, quantas: number): { a: string; b: string
   }
   return out;
 }
+
+// ---------- Painel do administrador ----------
+export type StatusReserva = 'aguardando_sinal' | 'confirmada' | 'cancelada' | 'expirada';
+export interface Reserva {
+  id: number;
+  entrada: string;
+  saida: string;
+  status: StatusReserva;
+  total: number;
+  sinal: number;
+  segura_ate: string | null;
+  nome: string;
+  igreja: string | null;
+  whatsapp: string;
+  publico: string | null;
+  origem: string;
+  criada_em: string;
+}
+export interface PeriodoAdm extends Periodo {
+  id: number;
+}
+export interface AdminData {
+  hoje: string;
+  agora: string;
+  cfg: Cfg;
+  periodos: PeriodoAdm[];
+  dias: Record<string, { aberto: boolean; motivo: string | null }>;
+  reservas: Reserva[];
+}
+
+// A reserva segura as datas se está confirmada, ou aguardando sinal dentro do prazo.
+export const segura = (r: Reserva, agora: string) =>
+  r.status === 'confirmada' || (r.status === 'aguardando_sinal' && !!r.segura_ate && r.segura_ate > agora);
+
+// Mesma visão que o cliente tem, montada a partir dos dados do painel.
+export const paraAgenda = (a: AdminData): AgendaData => ({
+  hoje: a.hoje,
+  cfg: a.cfg,
+  periodos: a.periodos,
+  dias: Object.fromEntries(Object.entries(a.dias).map(([d, v]) => [d, v.aberto])),
+  ocupadas: a.reservas.filter((r) => segura(r, a.agora)).map(({ entrada, saida }) => ({ entrada, saida })),
+});
+
+// Domingo de Páscoa (algoritmo de Meeus/Jones/Butcher)
+export function pascoa(ano: number): string {
+  const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100, d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1;
+  return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+}
+
+// Períodos sugeridos para um ano. O dono confere datas e preços antes de valer.
+export function sugerirPeriodos(ano: number, cfg: Cfg): Periodo[] {
+  const p = pascoa(ano), cc = add(p, 60), ny = `${ano}-12-30`;
+  let domingo = `${ano + 1}-01-01`;
+  while (dow(domingo) !== 0) domingo = add(domingo, 1);
+  const p5 = (nome: string, entrada: string, saida: string, preco: number, bloqueado = false): Periodo => ({ nome, entrada, saida, preco, bloqueado });
+  return [
+    p5(`Carnaval ${ano}`, add(p, -51), add(p, -46), 25000),
+    p5(`Semana Santa ${ano}`, add(p, -3), p, 10000),
+    p5(`Corpus Christi ${ano}`, add(cc, -1), add(cc, 3), cfg.base + 2 * cfg.extra),
+    p5(`Ano Novo ${ano}/${String(ano + 1).slice(2)}`, ny, domingo < add(ny, 4) ? domingo : add(ny, 4), 10000),
+    p5(`Natal ${ano}`, `${ano}-12-24`, `${ano}-12-26`, 0, true),
+  ];
+}

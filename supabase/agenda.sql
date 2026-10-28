@@ -77,3 +77,14 @@ alter table public.agenda_reservas enable row level security;
 --   ('Semana Santa 2027','2027-03-25', '2027-03-28', 10000, false),
 --   ('Natal 2026',      '2026-12-24', '2026-12-26', 0,     true),
 --   ('Ano Novo 2026/27','2026-12-30', '2027-01-03', 10000, false);
+
+-- ============================================================
+-- Administradores do painel (/painel)
+-- ============================================================
+-- Quem entra no painel: 1) crie o usuário em Authentication > Users > Add user
+-- (e-mail + senha); 2) rode a linha abaixo com o MESMO e-mail, em minúsculas.
+create table if not exists public.agenda_admins (
+  email text primary key check (email = lower(email))
+);
+alter table public.agenda_admins enable row level security;
+-- insert into public.agenda_admins (email) values ('seu-email@exemplo.com') on conflict do nothing;

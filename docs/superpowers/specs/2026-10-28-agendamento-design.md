@@ -150,4 +150,6 @@ Mínimo de 3 dias pelo site; dia avulso e 2 dias por WhatsApp. Retenção da dat
 
 **Calls tomadas:** sem troca no mesmo dia; teto de 7 dias fora de períodos especiais; janela de reserva de 18 meses; máximo de 2 pedidos aguardando por WhatsApp; data segurada por 24 horas.
 
-**Ainda não feito:** painel do administrador com login (por enquanto, o dono gerencia as tabelas `agenda_*` no Table Editor do Supabase), confirmação automática do sinal pelo Asaas (fase 2), limite de requisições por IP.
+**Painel do administrador (feito):** `/painel`, com login do Supabase Auth, fora dos buscadores (noindex). Só entra quem tem usuário no Supabase **e** e-mail na tabela `agenda_admins`; todas as ações passam por `/api/admin`, que confere o login a cada chamada e valida tudo no servidor. Abas: Resumo, Calendário (1, 3 ou 12 meses, reservas em barras, arrastar para selecionar, gaveta lateral), Reservas (filtros e busca) e Regras e preços (preços, dias abertos por padrão, períodos especiais e sugestão de feriados pela Páscoa). O cliente não tem acesso a nada disso.
+
+**Ainda não feito:** confirmação automática do sinal pelo Asaas (fase 2) e limite de requisições por IP.
