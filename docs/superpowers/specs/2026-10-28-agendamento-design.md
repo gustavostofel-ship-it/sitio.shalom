@@ -57,7 +57,8 @@ O dono aluga o sítio por dias. Hoje o site só recebe um pedido por WhatsApp, c
 
 ### Dados (Supabase) **[proposta]**
 
-- `dias_override(data date primary key, aberto boolean)` — exceção à regra padrão. Sem linha, vale o padrão (sexta/sábado/domingo abertos).
+- `dias_override(data date primary key, aberto boolean)` — escolha do dono para o dia (abrir ou fechar). Sem linha, vale o período ou o padrão.
+- `config(chave text primary key, valor jsonb)` — inclui `dias_abertos_padrao` (lista de dias da semana), editável no painel.
 - `periodos(id, nome, entrada date, saida date, preco numeric, bloqueado boolean)` — períodos especiais, editáveis pelo dono.
 - `reservas(id, entrada date, saida date, status, total numeric, sinal numeric, segura_ate timestamptz, nome, igreja, whatsapp, publico, obs, periodo_id, criada_em)` com `status` em `aguardando_sinal`, `confirmada`, `cancelada`.
 - Um dia está **ocupado** se alguma reserva `confirmada`, ou `aguardando_sinal` ainda dentro de `segura_ate`, cobre esse dia. Uma restrição no banco impede duas reservas ativas sobrepostas.
@@ -76,7 +77,7 @@ Calendário no lugar do campo "Mês ou Data Pretendida". Dias fechados e reserva
 
 ### Painel do dono
 
-Página com login (Supabase Auth). Telas: calendário para fechar e abrir dias; lista de períodos especiais com criar, editar e excluir; lista de reservas com confirmar e cancelar. Toda mudança aparece no calendário do cliente.
+Página com login (Supabase Auth). **Tudo é definido pelo dono, nada é imposto pelo sistema:** (1) calendário em que ele clica em **qualquer dia** para fechar ou abrir; (2) **bloqueio em intervalo** (de/até): fechar, abrir ou voltar ao padrão, mantendo os dias com reserva; (3) **dias da semana abertos por padrão**, configuráveis (o padrão inicial é sexta a domingo, mas é só um ponto de partida); (4) **períodos especiais** com nome, entrada, saída, preço e "bloqueado", com criar, editar e remover (mudar a entrada leva a saída junto, mantendo a duração; aviso se dois períodos se sobrepõem); (5) lista de reservas com confirmar e cancelar. Toda mudança aparece no calendário do cliente. Protótipo navegável: `docs/superpowers/mockups/agendamento-prototipo.html`.
 
 ### Segurança
 
@@ -106,7 +107,7 @@ Mínimo de 3 dias pelo site; dia avulso e 2 dias por WhatsApp. Retenção da dat
 - **Contagem:** dias inclusivos (sexta a domingo = 3). Cada dia pertence a uma só reserva ativa (sem troca no mesmo dia), salvo o dono decidir o contrário (pergunta 1).
 - **Concorrência:** no banco, restrição de exclusão (`btree_gist`) sobre `daterange(entrada, saida, '[]')` para reservas ativas. Antes de gravar, a rota cancela as reservas `aguardando_sinal` com `segura_ate` vencido, na mesma transação (função SQL). Status `expirada` separado de `cancelada`.
 - **Fuso:** `America/Sao_Paulo` fixo; não aceita entrada no passado; janela máxima de **18 meses** à frente.
-- **Precedência de disponibilidade:** reserva ativa > dia fechado pelo dono > período especial > padrão (sexta a domingo). Um período especial abre os dias dele mesmo fora do padrão (Carnaval de sexta a quarta). Se o dono fecha um dia dentro de um período, o período inteiro fica indisponível. O painel **não deixa fechar** dia coberto por reserva ativa e avisa.
+- **Precedência de disponibilidade:** reserva ativa > **escolha do dono para o dia (abrir ou fechar)** > período especial > dias abertos por padrão. O dono tem a última palavra sobre qualquer dia, inclusive abrir um dia dentro de um período bloqueado. Um período especial abre os dias dele mesmo fora do padrão (Carnaval de sexta a quarta). Se o dono fecha um dia dentro de um período, o período inteiro fica indisponível (o cliente só leva o período inteiro). O painel **não deixa fechar** dia coberto por reserva ativa e avisa.
 - **Períodos:** por data absoluta, **um por ano**, sem recorrência (resolve a virada do Ano Novo). O painel rejeita períodos sobrepostos e avisa que é preciso recadastrar a cada ano.
 - **"Toca um período"** = interseção de dias inclusivos. Reserva que termina no dia anterior à entrada do período **não** toca.
 - **Dias de semana:** o cliente só seleciona dias contíguos **todos abertos**; o dono abre os dias de semana que quiser.

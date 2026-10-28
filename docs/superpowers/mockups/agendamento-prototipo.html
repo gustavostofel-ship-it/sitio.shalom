@@ -8,37 +8,46 @@
 :root{--bg:#FAF8F5;--card:#fff;--ink:#1F2937;--mute:#6b7280;--green:#1B4332;--amber:#D97706;--line:#e5e7eb;--free:#ecfdf5;--freeb:#34d399;--closed:#f3f4f6;--busy:#fee2e2;--sel:#1B4332}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1713;--card:#16211b;--ink:#e5e7eb;--mute:#9ca3af;--line:#2a3a31;--free:#0f2a1e;--closed:#1b2620;--busy:#3b1d1d;--green:#34d399;--sel:#34d399}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
-.wrap{max-width:1000px;margin:0 auto;padding:16px}
+.wrap{max-width:1040px;margin:0 auto;padding:16px}
 h1{font:700 22px/1.2 Georgia,serif;margin:8px 0 4px;color:var(--green)}
 .note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;border-radius:10px;font-size:13px;margin:10px 0}
 @media (prefers-color-scheme:dark){.note{background:#3a2a10;border-color:#7c4a10;color:#fdba74}}
 .tabs{display:flex;gap:6px;margin:14px 0}.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font-weight:600;cursor:pointer}
 .tabs button.on{background:var(--green);color:#fff;border-color:var(--green)}
 @media (prefers-color-scheme:dark){.tabs button.on{color:#0f1713}}
-.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.col{display:grid;gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
 .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.head b::first-letter{text-transform:uppercase}
 .head button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.dow{font-size:11px;color:var(--mute);text-align:center}
 .d{aspect-ratio:1;border-radius:8px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;position:relative;background:var(--card);color:var(--ink)}
 .d.livre{background:var(--free);border-color:var(--freeb);cursor:pointer;font-weight:600}.d.fechado{background:var(--closed);color:var(--mute)}.d.reservado{background:var(--busy);color:#b91c1c;text-decoration:line-through}
+#c2 .d.fechado{cursor:pointer}
 .d.sel{background:var(--sel);color:#fff;border-color:var(--sel)}@media (prefers-color-scheme:dark){.d.sel{color:#0f1713}}
 .d.per::after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:3px;border-radius:2px;background:var(--amber)}
+.d.ov::before{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#2563eb}
 .d.blank{border:0;background:none}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mute);margin-top:10px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-2px;border:1px solid var(--line)}
 .sum{font-size:14px}.sum .big{font:700 26px Georgia,serif;color:var(--green)}.err{color:#b91c1c;font-size:13px;margin:6px 0}.ok{background:var(--free);border:1px solid var(--freeb);padding:10px;border-radius:10px;font-size:13px;margin-top:10px}
 label{display:block;font-size:12px;color:var(--mute);margin:8px 0 2px}input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
 .btn{width:100%;margin-top:10px;padding:11px;border:0;border-radius:10px;background:var(--amber);color:#fff;font-weight:700;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}
 table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:middle}th{color:var(--mute);font-weight:600}
-td input[type=number]{width:96px}td input[type=checkbox]{width:auto}.pill{padding:2px 8px;border-radius:999px;font-size:12px;background:var(--closed)}.pill.aguardando_sinal{background:#fef3c7;color:#92400e}.pill.confirmada{background:var(--free);color:#065f46}.pill.cancelada{background:var(--busy);color:#991b1b}
+.pill{padding:2px 8px;border-radius:999px;font-size:12px;background:var(--closed)}.pill.aguardando_sinal{background:#fef3c7;color:#92400e}.pill.confirmada{background:var(--free);color:#065f46}.pill.cancelada{background:var(--busy);color:#991b1b}
 .sm{padding:3px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;font-size:12px}
-h3{margin:0 0 8px;font-size:15px}.hide{display:none}.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none}.toast.show{opacity:1}
+h3{margin:0 0 4px;font-size:15px}.sub{font-size:12px;color:var(--mute);margin:0 0 8px}.hide{display:none}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}.toast.show{opacity:1}
+.days{display:flex;gap:6px;flex-wrap:wrap}.days label{display:flex;align-items:center;gap:4px;margin:0;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--ink);cursor:pointer}.days input{width:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.three{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.pbox{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}.pbox .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.pbox .row label{display:flex;align-items:center;gap:4px;margin:0;color:var(--ink)}.pbox .row input[type=checkbox]{width:auto}
+.warn{color:#b45309;font-size:12px;margin-top:6px}
+.add{width:100%;padding:9px;border:1px dashed var(--freeb);background:none;color:var(--green);border-radius:10px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Agendamento do Sítio Shalom — protótipo</h1>
-  <div class="note">Protótipo de design com <b>dados de exemplo</b>: nada é gravado e os preços dos períodos são só ilustrativos. O que você muda no <b>Painel do dono</b> aparece na hora na aba <b>Cliente</b>.</div>
+  <div class="note">Protótipo de design com <b>dados de exemplo</b>: nada é gravado. No <b>Painel do dono</b> tudo é decidido por ele (dias, períodos e preços) e aparece na hora na aba <b>Cliente</b>.</div>
   <div class="tabs"><button id="t1" class="on">Cliente (site)</button><button id="t2">Painel do dono</button></div>
 
   <section id="v1" class="grid">
@@ -60,15 +69,36 @@ h3{margin:0 0 8px;font-size:15px}.hide{display:none}.toast{position:fixed;bottom
 
   <section id="v2" class="hide">
     <div class="grid">
-      <div class="card">
-        <div class="head"><button data-nav="-1">◀</button><b id="m2"></b><button data-nav="1">▶</button></div>
-        <div id="c2" class="cal"></div>
-        <div class="legend"><span>Clique num dia para <b>fechar</b> ou <b>abrir</b>. Dia com reserva não fecha.</span></div>
+      <div class="col">
+        <div class="card">
+          <div class="head"><button data-nav="-1">◀</button><b id="m2"></b><button data-nav="1">▶</button></div>
+          <div id="c2" class="cal"></div>
+          <div class="legend"><span>Clique em <b>qualquer dia</b> para fechar ou abrir. <i style="background:#2563eb;border-radius:50%"></i>= definido por você. Dia com reserva não fecha.</span></div>
+        </div>
+        <div class="card">
+          <h3>Bloquear ou abrir vários dias</h3>
+          <p class="sub">Para férias, manutenção, uso da família… ou para abrir uma semana inteira.</p>
+          <div class="three">
+            <div><label>De</label><input type="date" id="r1"></div>
+            <div><label>Até</label><input type="date" id="r2"></div>
+            <button class="sm" id="rf" style="padding:9px">Fechar</button>
+          </div>
+          <button class="sm" id="ra" style="margin-top:8px;padding:7px 10px">Abrir esse intervalo</button>
+          <button class="sm" id="rl" style="margin-top:8px;padding:7px 10px">Voltar ao padrão</button>
+        </div>
       </div>
-      <div class="card">
-        <h3>Períodos especiais</h3>
-        <table><thead><tr><th>Período</th><th>Preço</th><th>Bloq.</th></tr></thead><tbody id="per"></tbody></table>
-        <div class="legend">Cliente leva o período inteiro. “Bloq.” = ninguém reserva (ex.: Natal).</div>
+      <div class="col">
+        <div class="card">
+          <h3>Dias abertos por padrão</h3>
+          <p class="sub">Escolha quais dias da semana o cliente vê como livres. Você ainda pode abrir ou fechar qualquer dia à parte.</p>
+          <div class="days" id="defs"></div>
+        </div>
+        <div class="card">
+          <h3>Períodos especiais</h3>
+          <p class="sub">Você define nome, datas e preço. O cliente leva o período inteiro. “Bloqueado” = ninguém reserva (ex.: Natal).</p>
+          <div id="per"></div>
+          <button class="add" id="addp">+ Novo período</button>
+        </div>
       </div>
     </div>
     <div class="card" style="margin-top:16px">
@@ -85,30 +115,31 @@ const diff=(a,b)=>Math.round((D(b)-D(a))/864e5)+1;
 const R=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const br=s=>s.slice(8)+'/'+s.slice(5,7);
 const $=id=>document.getElementById(id);
+const range=(a,b)=>[...Array(Math.max(0,diff(a,b)))].map((_,i)=>add(a,i));
 
-// ---- dados de exemplo ----
-const periods=[
+// ---- dados de exemplo (tudo editável no painel) ----
+let periods=[
  {nome:'Natal 2026',entrada:'2026-12-24',saida:'2026-12-26',preco:0,bloqueado:true},
  {nome:'Ano Novo 2026/27',entrada:'2026-12-30',saida:'2027-01-03',preco:10000,bloqueado:false},
  {nome:'Carnaval 2027',entrada:'2027-02-05',saida:'2027-02-10',preco:25000,bloqueado:false},
  {nome:'Semana Santa 2027',entrada:'2027-03-25',saida:'2027-03-28',preco:10000,bloqueado:false}];
-const over={};
+const over={};                       // dia -> true (aberto) | false (fechado), definido pelo dono
+const defs=[true,false,false,false,false,true,true]; // dom..sáb abertos por padrão
 let reservas=[
  {id:1,nome:'Igreja Videira',entrada:'2026-11-20',saida:'2026-11-22',total:7500,status:'confirmada'},
  {id:2,nome:'Min. Jovens Sião',entrada:'2026-11-13',saida:'2026-11-15',total:7500,status:'aguardando_sinal'}];
 let view={y:2026,m:10},sel={a:null,b:null},nextId=3;
 
-// ---- regras ----
+// ---- regras: reserva > escolha do dono > período > padrão ----
 const periodOf=d=>periods.find(p=>d>=p.entrada&&d<=p.saida);
 function status(d){
   if(reservas.some(r=>r.status!=='cancelada'&&d>=r.entrada&&d<=r.saida))return'reservado';
-  if(over[d]===false)return'fechado';
+  if(d in over)return over[d]?'livre':'fechado';
   const p=periodOf(d); if(p)return p.bloqueado?'fechado':'livre';
-  if(over[d]===true)return'livre';
-  return[5,6,0].includes(D(d).getUTCDay())?'livre':'fechado';
+  return defs[D(d).getUTCDay()]?'livre':'fechado';
 }
 function quote(a,b){
-  const n=diff(a,b),days=[...Array(n)].map((_,i)=>add(a,i));
+  const n=diff(a,b),days=range(a,b);
   const bad=days.find(d=>status(d)!=='livre');
   if(bad)return{err:'Há um dia indisponível no intervalo ('+br(bad)+').'};
   const hit=periods.filter(p=>!(b<p.entrada||a>p.saida));
@@ -120,7 +151,7 @@ function quote(a,b){
 }
 
 // ---- calendário ----
-function cal(el,title,click){
+function cal(el,title,who){
   const first=new Date(Date.UTC(view.y,view.m,1)),days=new Date(Date.UTC(view.y,view.m+1,0)).getUTCDate();
   $(title).textContent=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'});
   let h=['D','S','T','Q','Q','S','S'].map(x=>'<div class="dow">'+x+'</div>').join('');
@@ -128,25 +159,38 @@ function cal(el,title,click){
   for(let i=1;i<=days;i++){
     const d=S(new Date(Date.UTC(view.y,view.m,i))),st=status(d);
     const inSel=sel.a&&(sel.b?d>=sel.a&&d<=sel.b:d===sel.a);
-    h+='<div class="d '+st+(periodOf(d)?' per':'')+(click==='c1'&&inSel?' sel':'')+'" data-d="'+d+'" title="'+(periodOf(d)?periodOf(d).nome:'')+'">'+i+'</div>';
+    h+='<div class="d '+st+(periodOf(d)?' per':'')+(who==='c1'&&inSel?' sel':'')+(who==='c2'&&d in over?' ov':'')+'" data-d="'+d+'" title="'+(periodOf(d)?periodOf(d).nome:'')+'">'+i+'</div>';
   }
   $(el).innerHTML=h;
 }
 function render(){
   cal('c1','m1','c1');cal('c2','m2','c2');
-  // resumo
   let s='Escolha a <b>entrada</b> e depois a <b>saída</b> no calendário. Em período especial, o período inteiro é selecionado.',ok=false;
   if(sel.a&&!sel.b)s='Entrada: <b>'+br(sel.a)+'</b>. Agora escolha a saída.';
   if(sel.a&&sel.b){const q=quote(sel.a,sel.b);
     if(q.err)s='<div class="err">'+q.err+'</div>';
     else{ok=true;s='<div>'+br(sel.a)+' → '+br(sel.b)+' · <b>'+q.n+' dias</b>'+(q.periodo?' · '+q.periodo:'')+'</div><div class="big">'+R(q.total)+'</div><div>Sinal para segurar a data (20%): <b>'+R(q.total*0.2)+'</b></div><div style="color:var(--mute);font-size:12px;margin-top:4px">Entrada à tarde, saída à tarde. Até 150 pessoas.'+(q.periodo?'':' Base R$ 7.500 para 3 dias + R$ 1.500 por dia extra.')+'</div>';}}
   $('sum').innerHTML=s;$('go').disabled=!ok;
-  // períodos
-  $('per').innerHTML=periods.map((p,i)=>'<tr><td><b>'+p.nome+'</b><br><small>'+br(p.entrada)+' a '+br(p.saida)+'</small></td><td><input type="number" step="500" value="'+p.preco+'" data-p="'+i+'"></td><td><input type="checkbox" data-b="'+i+'" '+(p.bloqueado?'checked':'')+'></td></tr>').join('');
-  // reservas
+  $('defs').innerHTML=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((n,i)=>'<label><input type="checkbox" data-def="'+i+'" '+(defs[i]?'checked':'')+'>'+n+'</label>').join('');
+  $('per').innerHTML=periods.map((p,i)=>{
+    const clash=periods.some((q,j)=>j!==i&&!(p.saida<q.entrada||p.entrada>q.saida));
+    return '<div class="pbox"><input data-f="nome" data-i="'+i+'" value="'+p.nome+'"><div class="two"><div><label>Entrada</label><input type="date" data-f="entrada" data-i="'+i+'" value="'+p.entrada+'"></div><div><label>Saída</label><input type="date" data-f="saida" data-i="'+i+'" value="'+p.saida+'"></div></div><div class="row"><div style="flex:1"><label>Preço (R$)</label><input type="number" step="500" data-f="preco" data-i="'+i+'" value="'+p.preco+'"></div><label><input type="checkbox" data-f="bloqueado" data-i="'+i+'" '+(p.bloqueado?'checked':'')+'>Bloqueado</label><button class="sm" data-del="'+i+'">Remover</button></div>'+(clash?'<div class="warn">⚠ Este período se sobrepõe a outro.</div>':'')+'</div>';}).join('');
   $('rsv').innerHTML=reservas.map((r,i)=>'<tr><td>'+r.nome+'</td><td>'+br(r.entrada)+' a '+br(r.saida)+'</td><td>'+R(r.total)+'</td><td>'+R(r.total*0.2)+'</td><td><span class="pill '+r.status+'">'+r.status.replace('_',' ')+'</span></td><td>'+(r.status==='aguardando_sinal'?'<button class="sm" data-ok="'+i+'">Confirmar</button> ':'')+(r.status!=='cancelada'?'<button class="sm" data-cx="'+i+'">Cancelar</button>':'')+'</td></tr>').join('');
 }
-function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2400)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600)}
+
+// ---- bloqueio em intervalo ----
+function applyRange(mode){
+  const a=$('r1').value,b=$('r2').value;
+  if(!a||!b||b<a){toast('Escolha as datas: “Até” não pode ser antes de “De”.');return}
+  let skipped=0,n=0;
+  range(a,b).forEach(d=>{
+    if(mode==='reset'){delete over[d];n++;return}
+    if(status(d)==='reservado'){skipped++;return}
+    over[d]=(mode==='open');n++;});
+  render();toast(n+' dia(s) '+(mode==='open'?'abertos':mode==='close'?'fechados':'voltaram ao padrão')+(skipped?' · '+skipped+' com reserva foram mantidos':'')+'.');
+}
+$('rf').onclick=()=>applyRange('close');$('ra').onclick=()=>applyRange('open');$('rl').onclick=()=>applyRange('reset');
 
 // ---- eventos ----
 document.body.addEventListener('click',e=>{
@@ -154,9 +198,11 @@ document.body.addEventListener('click',e=>{
   if(t.dataset.nav){view.m+=+t.dataset.nav;if(view.m<0){view.m=11;view.y--}if(view.m>11){view.m=0;view.y++}render();return}
   if(t.dataset.ok){reservas[t.dataset.ok].status='confirmada';render();toast('Reserva confirmada: a data fica bloqueada para todos.');return}
   if(t.dataset.cx){reservas[t.dataset.cx].status='cancelada';render();toast('Reserva cancelada: as datas foram liberadas.');return}
+  if(t.dataset.del){periods.splice(t.dataset.del,1);render();toast('Período removido.');return}
+  if(t.id==='addp'){const a=S(new Date(Date.UTC(view.y,view.m,1)));periods.push({nome:'Novo período',entrada:a,saida:add(a,2),preco:0,bloqueado:false});render();toast('Período criado: ajuste nome, datas e preço.');return}
   const d=t.dataset.d;if(!d)return;
   if(t.closest('#c2')){const s=status(d);
-    if(s==='reservado'){toast('Esse dia está coberto por uma reserva e não pode ser fechado.');return}
+    if(s==='reservado'){toast('Esse dia está coberto por uma reserva e não pode ser alterado.');return}
     over[d]=(s==='fechado');render();return}
   if(status(d)!=='livre')return;
   const p=periodOf(d);
@@ -167,8 +213,13 @@ document.body.addEventListener('click',e=>{
 });
 document.body.addEventListener('change',e=>{
   const t=e.target;
-  if(t.dataset.p){periods[t.dataset.p].preco=+t.value||0;render()}
-  if(t.dataset.b){periods[t.dataset.b].bloqueado=t.checked;render()}
+  if(t.dataset.def!==undefined){defs[t.dataset.def]=t.checked;render();return}
+  if(t.dataset.f){const p=periods[t.dataset.i],f=t.dataset.f;
+    const v=t.type==='checkbox'?t.checked:t.type==='number'?(+t.value||0):t.value;
+    if((f==='entrada'||f==='saida')&&!v){render();return}
+    if(f==='saida'&&v<p.entrada){toast('A saída não pode ser antes da entrada.');render();return}
+    if(f==='entrada'){const dur=diff(p.entrada,p.saida)-1;p.entrada=v;p.saida=add(v,dur);render();return}
+    p[f]=v;render();}
 });
 $('go').onclick=()=>{
   const q=quote(sel.a,sel.b);if(q.err)return;
