@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protótipo do agendamento — Sítio Shalom</title>
+<style>
+:root{--bg:#FAF8F5;--card:#fff;--ink:#1F2937;--mute:#6b7280;--green:#1B4332;--amber:#D97706;--line:#e5e7eb;--free:#ecfdf5;--freeb:#34d399;--closed:#f3f4f6;--busy:#fee2e2;--sel:#1B4332}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1713;--card:#16211b;--ink:#e5e7eb;--mute:#9ca3af;--line:#2a3a31;--free:#0f2a1e;--closed:#1b2620;--busy:#3b1d1d;--green:#34d399;--sel:#34d399}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+h1{font:700 22px/1.2 Georgia,serif;margin:8px 0 4px;color:var(--green)}
+.note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px 12px;border-radius:10px;font-size:13px;margin:10px 0}
+@media (prefers-color-scheme:dark){.note{background:#3a2a10;border-color:#7c4a10;color:#fdba74}}
+.tabs{display:flex;gap:6px;margin:14px 0}.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--green);color:#fff;border-color:var(--green)}
+@media (prefers-color-scheme:dark){.tabs button.on{color:#0f1713}}
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.head b::first-letter{text-transform:uppercase}
+.head button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.dow{font-size:11px;color:var(--mute);text-align:center}
+.d{aspect-ratio:1;border-radius:8px;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;position:relative;background:var(--card);color:var(--ink)}
+.d.livre{background:var(--free);border-color:var(--freeb);cursor:pointer;font-weight:600}.d.fechado{background:var(--closed);color:var(--mute)}.d.reservado{background:var(--busy);color:#b91c1c;text-decoration:line-through}
+.d.sel{background:var(--sel);color:#fff;border-color:var(--sel)}@media (prefers-color-scheme:dark){.d.sel{color:#0f1713}}
+.d.per::after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:3px;border-radius:2px;background:var(--amber)}
+.d.blank{border:0;background:none}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mute);margin-top:10px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-2px;border:1px solid var(--line)}
+.sum{font-size:14px}.sum .big{font:700 26px Georgia,serif;color:var(--green)}.err{color:#b91c1c;font-size:13px;margin:6px 0}.ok{background:var(--free);border:1px solid var(--freeb);padding:10px;border-radius:10px;font-size:13px;margin-top:10px}
+label{display:block;font-size:12px;color:var(--mute);margin:8px 0 2px}input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.btn{width:100%;margin-top:10px;padding:11px;border:0;border-radius:10px;background:var(--amber);color:#fff;font-weight:700;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:middle}th{color:var(--mute);font-weight:600}
+td input[type=number]{width:96px}td input[type=checkbox]{width:auto}.pill{padding:2px 8px;border-radius:999px;font-size:12px;background:var(--closed)}.pill.aguardando_sinal{background:#fef3c7;color:#92400e}.pill.confirmada{background:var(--free);color:#065f46}.pill.cancelada{background:var(--busy);color:#991b1b}
+.sm{padding:3px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;font-size:12px}
+h3{margin:0 0 8px;font-size:15px}.hide{display:none}.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none}.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Agendamento do Sítio Shalom — protótipo</h1>
+  <div class="note">Protótipo de design com <b>dados de exemplo</b>: nada é gravado e os preços dos períodos são só ilustrativos. O que você muda no <b>Painel do dono</b> aparece na hora na aba <b>Cliente</b>.</div>
+  <div class="tabs"><button id="t1" class="on">Cliente (site)</button><button id="t2">Painel do dono</button></div>
+
+  <section id="v1" class="grid">
+    <div class="card">
+      <div class="head"><button data-nav="-1">◀</button><b id="m1"></b><button data-nav="1">▶</button></div>
+      <div id="c1" class="cal"></div>
+      <div class="legend"><span><i style="background:var(--free);border-color:var(--freeb)"></i>Livre</span><span><i style="background:var(--closed)"></i>Fechado</span><span><i style="background:var(--busy)"></i>Reservado</span><span><i style="background:var(--sel)"></i>Sua escolha</span><span><i style="background:var(--amber)"></i>Período especial</span></div>
+    </div>
+    <div class="card sum">
+      <h3>Sua reserva</h3>
+      <div id="sum">Escolha a <b>entrada</b> e depois a <b>saída</b> no calendário. Em período especial, o período inteiro é selecionado.</div>
+      <label>Nome do líder / pastor</label><input id="nome" placeholder="Seu nome">
+      <label>WhatsApp</label><input id="zap" placeholder="(21) 90000-0000">
+      <label>Público estimado</label><select id="pub"><option>Até 50 pessoas</option><option>50 a 100 pessoas</option><option>100 a 150 pessoas</option></select>
+      <button id="go" class="btn" disabled>Pedir reserva e segurar a data por 24h</button>
+      <div id="res"></div>
+    </div>
+  </section>
+
+  <section id="v2" class="hide">
+    <div class="grid">
+      <div class="card">
+        <div class="head"><button data-nav="-1">◀</button><b id="m2"></b><button data-nav="1">▶</button></div>
+        <div id="c2" class="cal"></div>
+        <div class="legend"><span>Clique num dia para <b>fechar</b> ou <b>abrir</b>. Dia com reserva não fecha.</span></div>
+      </div>
+      <div class="card">
+        <h3>Períodos especiais</h3>
+        <table><thead><tr><th>Período</th><th>Preço</th><th>Bloq.</th></tr></thead><tbody id="per"></tbody></table>
+        <div class="legend">Cliente leva o período inteiro. “Bloq.” = ninguém reserva (ex.: Natal).</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Reservas</h3>
+      <table><thead><tr><th>Cliente</th><th>Datas</th><th>Total</th><th>Sinal 20%</th><th>Status</th><th></th></tr></thead><tbody id="rsv"></tbody></table>
+    </div>
+  </section>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const D=s=>new Date(s+'T00:00:00Z'),S=d=>d.toISOString().slice(0,10);
+const add=(s,n)=>{const d=D(s);d.setUTCDate(d.getUTCDate()+n);return S(d)};
+const diff=(a,b)=>Math.round((D(b)-D(a))/864e5)+1;
+const R=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const br=s=>s.slice(8)+'/'+s.slice(5,7);
+const $=id=>document.getElementById(id);
+
+// ---- dados de exemplo ----
+const periods=[
+ {nome:'Natal 2026',entrada:'2026-12-24',saida:'2026-12-26',preco:0,bloqueado:true},
+ {nome:'Ano Novo 2026/27',entrada:'2026-12-30',saida:'2027-01-03',preco:10000,bloqueado:false},
+ {nome:'Carnaval 2027',entrada:'2027-02-05',saida:'2027-02-10',preco:25000,bloqueado:false},
+ {nome:'Semana Santa 2027',entrada:'2027-03-25',saida:'2027-03-28',preco:10000,bloqueado:false}];
+const over={};
+let reservas=[
+ {id:1,nome:'Igreja Videira',entrada:'2026-11-20',saida:'2026-11-22',total:7500,status:'confirmada'},
+ {id:2,nome:'Min. Jovens Sião',entrada:'2026-11-13',saida:'2026-11-15',total:7500,status:'aguardando_sinal'}];
+let view={y:2026,m:10},sel={a:null,b:null},nextId=3;
+
+// ---- regras ----
+const periodOf=d=>periods.find(p=>d>=p.entrada&&d<=p.saida);
+function status(d){
+  if(reservas.some(r=>r.status!=='cancelada'&&d>=r.entrada&&d<=r.saida))return'reservado';
+  if(over[d]===false)return'fechado';
+  const p=periodOf(d); if(p)return p.bloqueado?'fechado':'livre';
+  if(over[d]===true)return'livre';
+  return[5,6,0].includes(D(d).getUTCDay())?'livre':'fechado';
+}
+function quote(a,b){
+  const n=diff(a,b),days=[...Array(n)].map((_,i)=>add(a,i));
+  const bad=days.find(d=>status(d)!=='livre');
+  if(bad)return{err:'Há um dia indisponível no intervalo ('+br(bad)+').'};
+  const hit=periods.filter(p=>!(b<p.entrada||a>p.saida));
+  if(hit.length){const p=hit[0];
+    if(hit.length>1||a!==p.entrada||b!==p.saida)return{err:'O intervalo toca o período “'+p.nome+'”. Esse período só pode ser reservado inteiro: '+br(p.entrada)+' a '+br(p.saida)+'.'};
+    return{n,total:p.preco,periodo:p.nome};}
+  if(n<3)return{err:'Mínimo de 3 dias pelo site. Para 1 ou 2 dias, fale com a gente pelo WhatsApp.'};
+  return{n,total:7500+(n-3)*1500};
+}
+
+// ---- calendário ----
+function cal(el,title,click){
+  const first=new Date(Date.UTC(view.y,view.m,1)),days=new Date(Date.UTC(view.y,view.m+1,0)).getUTCDate();
+  $(title).textContent=first.toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'});
+  let h=['D','S','T','Q','Q','S','S'].map(x=>'<div class="dow">'+x+'</div>').join('');
+  for(let i=0;i<first.getUTCDay();i++)h+='<div class="d blank"></div>';
+  for(let i=1;i<=days;i++){
+    const d=S(new Date(Date.UTC(view.y,view.m,i))),st=status(d);
+    const inSel=sel.a&&(sel.b?d>=sel.a&&d<=sel.b:d===sel.a);
+    h+='<div class="d '+st+(periodOf(d)?' per':'')+(click==='c1'&&inSel?' sel':'')+'" data-d="'+d+'" title="'+(periodOf(d)?periodOf(d).nome:'')+'">'+i+'</div>';
+  }
+  $(el).innerHTML=h;
+}
+function render(){
+  cal('c1','m1','c1');cal('c2','m2','c2');
+  // resumo
+  let s='Escolha a <b>entrada</b> e depois a <b>saída</b> no calendário. Em período especial, o período inteiro é selecionado.',ok=false;
+  if(sel.a&&!sel.b)s='Entrada: <b>'+br(sel.a)+'</b>. Agora escolha a saída.';
+  if(sel.a&&sel.b){const q=quote(sel.a,sel.b);
+    if(q.err)s='<div class="err">'+q.err+'</div>';
+    else{ok=true;s='<div>'+br(sel.a)+' → '+br(sel.b)+' · <b>'+q.n+' dias</b>'+(q.periodo?' · '+q.periodo:'')+'</div><div class="big">'+R(q.total)+'</div><div>Sinal para segurar a data (20%): <b>'+R(q.total*0.2)+'</b></div><div style="color:var(--mute);font-size:12px;margin-top:4px">Entrada à tarde, saída à tarde. Até 150 pessoas.'+(q.periodo?'':' Base R$ 7.500 para 3 dias + R$ 1.500 por dia extra.')+'</div>';}}
+  $('sum').innerHTML=s;$('go').disabled=!ok;
+  // períodos
+  $('per').innerHTML=periods.map((p,i)=>'<tr><td><b>'+p.nome+'</b><br><small>'+br(p.entrada)+' a '+br(p.saida)+'</small></td><td><input type="number" step="500" value="'+p.preco+'" data-p="'+i+'"></td><td><input type="checkbox" data-b="'+i+'" '+(p.bloqueado?'checked':'')+'></td></tr>').join('');
+  // reservas
+  $('rsv').innerHTML=reservas.map((r,i)=>'<tr><td>'+r.nome+'</td><td>'+br(r.entrada)+' a '+br(r.saida)+'</td><td>'+R(r.total)+'</td><td>'+R(r.total*0.2)+'</td><td><span class="pill '+r.status+'">'+r.status.replace('_',' ')+'</span></td><td>'+(r.status==='aguardando_sinal'?'<button class="sm" data-ok="'+i+'">Confirmar</button> ':'')+(r.status!=='cancelada'?'<button class="sm" data-cx="'+i+'">Cancelar</button>':'')+'</td></tr>').join('');
+}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2400)}
+
+// ---- eventos ----
+document.body.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.nav){view.m+=+t.dataset.nav;if(view.m<0){view.m=11;view.y--}if(view.m>11){view.m=0;view.y++}render();return}
+  if(t.dataset.ok){reservas[t.dataset.ok].status='confirmada';render();toast('Reserva confirmada: a data fica bloqueada para todos.');return}
+  if(t.dataset.cx){reservas[t.dataset.cx].status='cancelada';render();toast('Reserva cancelada: as datas foram liberadas.');return}
+  const d=t.dataset.d;if(!d)return;
+  if(t.closest('#c2')){const s=status(d);
+    if(s==='reservado'){toast('Esse dia está coberto por uma reserva e não pode ser fechado.');return}
+    over[d]=(s==='fechado');render();return}
+  if(status(d)!=='livre')return;
+  const p=periodOf(d);
+  if(p)sel={a:p.entrada,b:p.saida};
+  else if(!sel.a||sel.b||d<sel.a)sel={a:d,b:null};
+  else sel.b=d;
+  $('res').innerHTML='';render();
+});
+document.body.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.p){periods[t.dataset.p].preco=+t.value||0;render()}
+  if(t.dataset.b){periods[t.dataset.b].bloqueado=t.checked;render()}
+});
+$('go').onclick=()=>{
+  const q=quote(sel.a,sel.b);if(q.err)return;
+  reservas.push({id:nextId++,nome:$('nome').value||'Novo pedido (você)',entrada:sel.a,saida:sel.b,total:q.total,status:'aguardando_sinal'});
+  $('res').innerHTML='<div class="ok"><b>Pedido nº '+(nextId-1)+' registrado.</b><br>A data está segurada por 24 horas, até confirmarmos o sinal de '+R(q.total*0.2)+'. <br><button class="sm" style="margin-top:6px" onclick="toast(\'No site real, abre o WhatsApp com os dados.\')">Abrir WhatsApp</button></div>';
+  sel={a:null,b:null};render();
+};
+$('t1').onclick=()=>{$('v1').classList.remove('hide');$('v2').classList.add('hide');$('t1').classList.add('on');$('t2').classList.remove('on');render()};
+$('t2').onclick=()=>{$('v2').classList.remove('hide');$('v1').classList.add('hide');$('t2').classList.add('on');$('t1').classList.remove('on');render()};
+render();
+</script>
+</body>
+</html>
