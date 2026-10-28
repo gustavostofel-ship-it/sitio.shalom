@@ -21,6 +21,7 @@ export function Header() {
   }, []);
 
   const navLinks = [
+    { label: 'Datas', href: '#datas' },
     { label: 'O Espaço', href: '#espaco' },
     { label: 'Lazer', href: '#lazer' },
     { label: 'Galeria', href: '#galeria' },

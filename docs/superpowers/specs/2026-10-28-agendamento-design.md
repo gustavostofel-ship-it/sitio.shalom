@@ -143,3 +143,11 @@ Mínimo de 3 dias pelo site; dia avulso e 2 dias por WhatsApp. Retenção da dat
 5. **Aviso de nova reserva:** quem recebe e por qual canal (Telegram, WhatsApp, e-mail)? Sem resposta, só o painel mostra as pendentes.
 6. **Desistência com sinal pago:** perde, devolve ou remarca? (Entra só como texto/termos.)
 7. **Painel:** só o dono entra, ou mais alguém?
+
+## Status da implementação (2026-10-28)
+
+**Feito e no site:** calendário do cliente na página de vendas, logo abaixo do Hero (`components/AgendaReserva.tsx`), com as regras de datas e preço em `lib/agenda.ts` (9 testes: `npm test`), rotas `GET /api/agenda` e `POST /api/agenda/reservar` (o servidor recalcula o preço e a disponibilidade) e o SQL em `supabase/agenda.sql`. Se o banco não responder, o bloco mostra um convite para o WhatsApp e o resto da página continua normal. Aviso no Telegram é opcional (variáveis `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`).
+
+**Calls tomadas:** sem troca no mesmo dia; teto de 7 dias fora de períodos especiais; janela de reserva de 18 meses; máximo de 2 pedidos aguardando por WhatsApp; data segurada por 24 horas.
+
+**Ainda não feito:** painel do administrador com login (por enquanto, o dono gerencia as tabelas `agenda_*` no Table Editor do Supabase), confirmação automática do sinal pelo Asaas (fase 2), limite de requisições por IP.

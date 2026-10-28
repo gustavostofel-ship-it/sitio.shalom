@@ -4,6 +4,7 @@ import React from 'react';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { AgendaReserva } from '@/components/AgendaReserva';
 import { MinistryLogistics } from '@/components/MinistryLogistics';
 import { InteractiveGallery } from '@/components/InteractiveGallery';
 import { ReservationJourney } from '@/components/ReservationJourney';
@@ -22,6 +23,9 @@ export default function Home() {
 
       {/* Hero Section */}
       <Hero />
+
+      {/* Available dates calendar and booking (public, no login) */}
+      <AgendaReserva />
 
       {/* Ministry Logistics Pillars */}
       <MinistryLogistics />
