@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
-import { COOKIE, lerCookie, verificar } from '@/lib/sessao';
+import type { NextResponse } from 'next/server';
+import { COOKIE, DURACAO, assinar, lerCookie, verificar } from '@/lib/sessao';
 
 export class HttpErro extends Error {
   constructor(
@@ -22,8 +23,14 @@ export async function exigirAdmin(req: Request) {
   if (!email) throw new HttpErro(401, 'Faça login para continuar.');
   const pool = db();
   const r = await pool.query('select 1 from agenda_admins where email = $1', [email]);
-  if (!r.rowCount) throw new HttpErro(403, 'Este usuário não tem acesso ao painel.');
-  return pool;
+  // Acesso removido (ou cookie antigo): a sessão deixa de valer e o painel volta para a tela de login.
+  if (!r.rowCount) throw new HttpErro(401, 'Este acesso não vale mais. Entre de novo.');
+  return { pool, email };
 }
 
 export const https = (req: Request) => new URL(req.url).protocol === 'https:' || req.headers.get('x-forwarded-proto') === 'https';
+
+// Grava o login num cookie seguro (HttpOnly) na resposta.
+export function iniciarSessao(res: NextResponse, req: Request, email: string) {
+  res.cookies.set(COOKIE, assinar(email, segredo()), { httpOnly: true, sameSite: 'strict', path: '/', maxAge: DURACAO, secure: https(req) });
+}

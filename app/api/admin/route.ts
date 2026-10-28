@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { Pool } from 'pg';
 import { exigirAdmin, HttpErro } from '@/lib/admin-auth';
+import { hashSenha } from '@/lib/senha.mjs';
+import { emailValido } from '@/lib/sessao';
 import { SEGURA_SQL, cfgDeLinha, hojeSP } from '@/lib/agenda-server';
 import { sugerirPeriodos, type AdminData } from '@/lib/agenda';
 
@@ -25,12 +27,13 @@ function erro(e: unknown) {
   return NextResponse.json({ erro: 'Não foi possível concluir agora. Tente de novo.' }, { status: 500 });
 }
 
-async function carregar(p: Pool): Promise<AdminData> {
-  const [c, per, d, r] = await Promise.all([
+async function carregar(p: Pool, eu: string): Promise<AdminData> {
+  const [c, per, d, r, adm] = await Promise.all([
     p.query('select * from agenda_config where id = 1'),
     p.query('select id, nome, entrada, saida, preco, bloqueado from agenda_periodos order by entrada'),
     p.query('select data, aberto, motivo from agenda_dias'),
     p.query('select * from agenda_reservas order by entrada'),
+    p.query('select email, criado_em from agenda_admins order by criado_em'),
   ]);
   return {
     hoje: hojeSP(),
@@ -39,12 +42,15 @@ async function carregar(p: Pool): Promise<AdminData> {
     periodos: per.rows,
     dias: Object.fromEntries(d.rows.map((x) => [x.data as string, { aberto: x.aberto as boolean, motivo: x.motivo as string | null }])),
     reservas: r.rows,
+    admins: adm.rows,
+    eu,
   };
 }
 
 export async function GET(req: Request) {
   try {
-    return NextResponse.json(await carregar(await exigirAdmin(req)), { headers: { 'Cache-Control': 'no-store' } });
+    const { pool, email } = await exigirAdmin(req);
+    return NextResponse.json(await carregar(pool, email), { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     return erro(e);
   }
@@ -154,9 +160,37 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string) {
   );
 }
 
+// ---------- Administradores ----------
+const emailDe = (v: unknown) => String(v ?? '').trim().toLowerCase().slice(0, 120);
+function senhaDe(v: unknown) {
+  const s = String(v ?? '').slice(0, 200);
+  if (s.length < 10) throw invalido('A senha precisa ter pelo menos 10 caracteres.');
+  return s;
+}
+
+async function criarAdmin(p: Pool, b: Corpo) {
+  const email = emailDe(b.email);
+  if (!emailValido(email)) throw invalido('Informe um e-mail válido.');
+  const r = await p.query('insert into agenda_admins (email, senha_hash) values ($1, $2) on conflict (email) do nothing', [email, hashSenha(senhaDe(b.senha))]);
+  if (!r.rowCount) throw new HttpErro(409, 'Este e-mail já é administrador.');
+}
+
+async function trocarSenha(p: Pool, b: Corpo) {
+  const r = await p.query('update agenda_admins set senha_hash = $1 where email = $2', [hashSenha(senhaDe(b.senha)), emailDe(b.email)]);
+  if (!r.rowCount) throw new HttpErro(404, 'Administrador não encontrado.');
+}
+
+async function removerAdmin(p: Pool, b: Corpo, eu: string) {
+  const email = emailDe(b.email);
+  if (email === eu) throw invalido('Você não pode remover o seu próprio acesso.');
+  const total = (await p.query('select count(*) as n from agenda_admins')).rows[0].n;
+  if (total <= 1) throw invalido('Precisa sobrar pelo menos um administrador.');
+  await p.query('delete from agenda_admins where email = $1', [email]);
+}
+
 export async function POST(req: Request) {
   try {
-    const p = await exigirAdmin(req);
+    const { pool: p, email: eu } = await exigirAdmin(req);
     const b = (await req.json().catch(() => null)) as Corpo | null;
     if (!b || typeof b.acao !== 'string') throw invalido('Pedido inválido.');
     const hoje = hojeSP();
@@ -182,6 +216,15 @@ export async function POST(req: Request) {
         return ok();
       case 'reserva.criar':
         await criarReserva(p, b, hoje);
+        return ok();
+      case 'admin.criar':
+        await criarAdmin(p, b);
+        return ok();
+      case 'admin.senha':
+        await trocarSenha(p, b);
+        return ok();
+      case 'admin.remover':
+        await removerAdmin(p, b, eu);
         return ok();
       default:
         throw invalido('Ação desconhecida.');

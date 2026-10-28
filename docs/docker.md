@@ -11,9 +11,9 @@ Dois contêineres: **app** (o site, com o calendário e o painel) e **db** (Post
    docker compose up -d --build
    ```
 4. O site abre em **http://localhost:3200** (mude a porta com `APP_PORT` no `.env`).
-5. Crie o seu administrador: **dê dois cliques no arquivo `criar-admin.bat`** (na pasta do projeto). Ele pergunta o e-mail e a senha (mínimo 10 caracteres; ao digitar a senha nada aparece na tela, é normal) e cria o acesso. O Docker precisa estar ligado. Rode de novo para trocar a senha, ou com outro e-mail para criar mais um administrador.
-   O painel fica em **http://localhost:3200/painel**.
-   *(Alternativa pelo terminal: `docker compose exec app node scripts/criar-admin.mjs seu-email@exemplo.com 'sua-senha-longa'`.)*
+5. Abra **http://localhost:3200/painel**. Na primeira vez, como ainda não existe nenhum login, a própria tela pede para **criar o primeiro administrador**: digite e-mail e senha (mínimo 10 caracteres), repita a senha e clique em **Criar e entrar**. Pronto, você já entra no painel. Essa tela só aparece enquanto não houver nenhum administrador; depois disso ela nunca mais funciona, por segurança.
+   - **Mais pessoas:** no painel, aba **Administradores** (adicionar, trocar senha, remover).
+   - **Esqueceu a senha de todos?** Dê dois cliques em `criar-admin.bat` (ou use o comando `docker compose exec app node scripts/criar-admin.mjs seu-email@exemplo.com 'sua-senha-longa'`) para criar um acesso novo ou trocar a senha de um e-mail.
 6. No painel, em **Regras e preços**, clique em **Sugerir feriados do ano** e confira datas e preços.
 
 ## Dia a dia

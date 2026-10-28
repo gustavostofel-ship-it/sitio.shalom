@@ -1,7 +1,7 @@
 // Roda com: node --test lib/sessao.test.ts
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assinar, verificar, lerCookie, DURACAO } from './sessao.ts';
+import { assinar, verificar, lerCookie, emailValido, DURACAO } from './sessao.ts';
 import { hashSenha, confereSenha } from './senha.mjs';
 
 const segredo = 'segredo-de-teste-com-mais-de-32-caracteres!!';
@@ -27,6 +27,10 @@ test('sessão: adulterada, com outro segredo ou vencida é recusada', () => {
   assert.equal(verificar(t, segredo, Date.now() + (DURACAO + 60) * 1000), null);
   assert.equal(verificar(undefined, segredo), null);
   assert.equal(verificar('sem-ponto', segredo), null);
+});
+test('e-mail: aceita o formato certo e recusa o errado', () => {
+  for (const ok of ['dono@teste.com', 'a.b+c@sub.dominio.com.br']) assert.equal(emailValido(ok), true, ok);
+  for (const ruim of ['', 'ruim', 'a@b', 'a b@c.com', '@x.com', 'a@@b.com']) assert.equal(emailValido(ruim), false, ruim);
 });
 test('cookie: lê o valor certo entre vários', () => {
   assert.equal(lerCookie('a=1; painel=abc.def; b=2'), 'abc.def');

@@ -5,23 +5,27 @@ import { brl, br, diff, faixa, paraAgenda, segura, statusDia, type AdminData, ty
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { ListaReservas, Pilula, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
+import { Admins } from './Admins';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
-type Aba = 'resumo' | 'cal' | 'rsv' | 'cfg';
+type Aba = 'resumo' | 'cal' | 'rsv' | 'cfg' | 'adm';
 const campo = 'w-full rounded-lg border border-stone-300 px-3 py-2 text-sm';
 const botao = 'rounded-lg border border-stone-300 px-3 py-2 text-sm hover:border-emerald-500';
 
-function Login({ aoEntrar }: { aoEntrar: () => void }) {
+// Primeiro acesso (nenhum administrador ainda): cria o primeiro. Depois: login normal.
+function Login({ aoEntrar, primeiro }: { aoEntrar: () => void; primeiro: boolean }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [senha2, setSenha2] = useState('');
   const [erro, setErro] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const entrar = async (e: React.FormEvent) => {
     e.preventDefault();
-    setOcupado(true);
     setErro('');
+    if (primeiro && senha !== senha2) return setErro('As senhas não são iguais.');
+    setOcupado(true);
     try {
-      const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, senha }) });
+      const r = await fetch(primeiro ? '/api/admin/setup' : '/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, senha }) });
       const j = await r.json().catch(() => ({}));
       if (r.ok) aoEntrar();
       else setErro(j.erro || 'Não foi possível entrar.');
@@ -32,12 +36,17 @@ function Login({ aoEntrar }: { aoEntrar: () => void }) {
   };
   return (
     <form onSubmit={entrar} className="max-w-sm mx-auto mt-16 bg-white rounded-2xl border border-stone-200 shadow-sm p-6">
-      <h1 className="font-serif text-2xl font-bold text-[#1B4332]">Painel do administrador</h1>
-      <p className="text-sm text-stone-500 mt-1 mb-4">Sítio Shalom Xerém · área interna</p>
+      <h1 className="font-serif text-2xl font-bold text-[#1B4332]">{primeiro ? 'Criar o primeiro administrador' : 'Painel do administrador'}</h1>
+      <p className="text-sm text-stone-500 mt-1 mb-4">
+        {primeiro ? 'Ainda não existe nenhum login. Crie o seu para começar.' : 'Sítio Shalom Xerém · área interna'}
+      </p>
       <label className="text-xs text-stone-500">E-mail<input type="email" required autoComplete="username" className={campo} value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-      <label className="text-xs text-stone-500 block mt-3">Senha<input type="password" required autoComplete="current-password" className={campo} value={senha} onChange={(e) => setSenha(e.target.value)} /></label>
+      <label className="text-xs text-stone-500 block mt-3">Senha{primeiro && ' (mínimo 10 caracteres)'}<input type="password" required minLength={primeiro ? 10 : undefined} autoComplete={primeiro ? 'new-password' : 'current-password'} className={campo} value={senha} onChange={(e) => setSenha(e.target.value)} /></label>
+      {primeiro && (
+        <label className="text-xs text-stone-500 block mt-3">Repita a senha<input type="password" required autoComplete="new-password" className={campo} value={senha2} onChange={(e) => setSenha2(e.target.value)} /></label>
+      )}
       {erro && <p className="text-sm text-red-700 mt-3">{erro}</p>}
-      <button disabled={ocupado} className="mt-4 w-full rounded-xl bg-[#1B4332] text-white py-2.5 font-bold disabled:opacity-60">{ocupado ? 'Entrando…' : 'Entrar'}</button>
+      <button disabled={ocupado} className="mt-4 w-full rounded-xl bg-[#1B4332] text-white py-2.5 font-bold disabled:opacity-60">{ocupado ? 'Aguarde…' : primeiro ? 'Criar e entrar' : 'Entrar'}</button>
     </form>
   );
 }
@@ -143,6 +152,7 @@ function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: s
 
 export function Painel() {
   const [sessao, setSessao] = useState<'carregando' | 'fora' | 'dentro'>('carregando');
+  const [primeiro, setPrimeiro] = useState(false);
   const [dados, setDados] = useState<AdminData | null>(null);
   const [aviso, setAviso] = useState('');
   const [aba, setAba] = useState<Aba>('resumo');
@@ -163,6 +173,8 @@ export function Painel() {
       const r = await fetch('/api/admin', { cache: 'no-store' });
       const j = await r.json().catch(() => ({}));
       if (r.status === 401) {
+        const st = await fetch('/api/admin/setup', { cache: 'no-store' }).then((x) => x.json()).catch(() => ({}));
+        setPrimeiro(!!st.precisa);
         setSessao('fora');
         setDados(null);
         return;
@@ -227,7 +239,7 @@ export function Painel() {
   );
 
   if (sessao === 'carregando') return <p className="p-8 text-stone-500">Carregando…</p>;
-  if (sessao === 'fora') return <main className="min-h-screen bg-[#FAF8F5] px-4"><Login aoEntrar={carregar} /></main>;
+  if (sessao === 'fora') return <main className="min-h-screen bg-[#FAF8F5] px-4"><Login aoEntrar={carregar} primeiro={primeiro} /></main>;
 
   const sair = async () => {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -250,7 +262,7 @@ export function Painel() {
     const t = ini.y * 12 + ini.m + d * modo;
     setIni({ y: Math.floor(t / 12), m: ((t % 12) + 12) % 12 });
   };
-  const abas: [Aba, string][] = [['resumo', 'Resumo'], ['cal', 'Calendário'], ['rsv', 'Reservas'], ['cfg', 'Regras e preços']];
+  const abas: [Aba, string][] = [['resumo', 'Resumo'], ['cal', 'Calendário'], ['rsv', 'Reservas'], ['cfg', 'Regras e preços'], ['adm', 'Administradores']];
   const reservaAberta = gaveta?.tipo === 'reserva' ? dados.reservas.find((r) => r.id === gaveta.id) : undefined;
   const rotuloMes = (m: Mes) => new Date(Date.UTC(m.y, m.m, 1)).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
@@ -300,6 +312,7 @@ export function Painel() {
         )}
         {aba === 'rsv' && <ListaReservas dados={dados} abrir={abrirReserva} />}
         {aba === 'cfg' && <Regras dados={dados} chamar={chamar} />}
+        {aba === 'adm' && <Admins dados={dados} chamar={chamar} />}
       </div>
 
       {gaveta && (

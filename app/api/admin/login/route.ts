@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { confereSenha, hashSenha } from '@/lib/senha.mjs';
-import { COOKIE, DURACAO, assinar } from '@/lib/sessao';
-import { https, segredo } from '@/lib/admin-auth';
+import { iniciarSessao } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +27,7 @@ export async function POST(req: Request) {
     }
     falhas.delete(ip);
     const res = NextResponse.json({ ok: true });
-    res.cookies.set(COOKIE, assinar(email, segredo()), { httpOnly: true, sameSite: 'strict', path: '/', maxAge: DURACAO, secure: https(req) });
+    iniciarSessao(res, req, email);
     return res;
   } catch (e) {
     console.error('login:', e);

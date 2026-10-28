@@ -160,6 +160,8 @@ export interface AdminData {
   periodos: PeriodoAdm[];
   dias: Record<string, { aberto: boolean; motivo: string | null }>;
   reservas: Reserva[];
+  admins: { email: string; criado_em: string }[];
+  eu: string; // e-mail de quem está logado
 }
 
 // A reserva segura as datas se está confirmada, ou aguardando sinal dentro do prazo.

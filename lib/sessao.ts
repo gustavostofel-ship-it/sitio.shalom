@@ -30,3 +30,6 @@ export const lerCookie = (cabecalho: string | null, nome = COOKIE) =>
     ?.split(';')
     .map((c) => c.trim().split('='))
     .find(([k]) => k === nome)?.[1];
+
+// E-mail com o formato mínimo certo (algo@dominio.ext, sem espaços).
+export const emailValido = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
