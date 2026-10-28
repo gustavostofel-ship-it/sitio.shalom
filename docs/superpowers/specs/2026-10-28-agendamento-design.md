@@ -31,6 +31,7 @@ O dono aluga o sítio por dias. Hoje o site só recebe um pedido por WhatsApp, c
 
 - Preço base: **3 dias = R$ 7.500**, até 150 pessoas. **Cada dia a mais = R$ 1.500**, em qualquer dia da semana. Exemplos: 4 dias R$ 9.000; 5 dias R$ 10.500.
 - Pode alugar **dias de semana**, não só fim de semana (ex.: segunda a quarta).
+- **Dia extra:** o cliente pode estender **1 dia antes e 1 dia depois** dos dias abertos (ex.: quinta e segunda, com sexta a domingo abertos), pagando a diária extra de R$ 1.500. Só vale para dias fechados **pelo padrão**. Dias fechados pelo dono, bloqueados ou reservados nunca podem ser escolhidos, e a extensão não vale colada num período especial (que é sempre inteiro).
 - Por padrão ficam abertos 3 dias na semana (sexta, sábado, domingo); o dono abre e fecha qualquer dia.
 - **Período especial** = pacote fechado: nome, entrada, saída, preço. O cliente leva **o período inteiro**, nunca menos. Exemplos ditos: Semana Santa R$ 10.000; Carnaval de sexta até quarta de cinzas R$ 25.000; Ano Novo R$ 10.000 (entra no dia 30 até domingo). Natal: **bloqueado**.
 - Feriados em geral: a pessoa entra um dia antes e sai no domingo, **sem passar de 5 dias**.
@@ -75,6 +76,10 @@ O dono aluga o sítio por dias. Hoje o site só recebe um pedido por WhatsApp, c
 
 Calendário no lugar do campo "Mês ou Data Pretendida". Dias fechados e reservados ficam apagados. Ao escolher entrada e saída aparecem total e sinal. Se a escolha toca um período especial, o calendário seleciona o período inteiro. O envio grava a reserva `aguardando_sinal`, segura a data (**24 horas [proposta]**) e abre o WhatsApp com os dados e a data, como hoje. A leitura pública mostra só o estado de cada dia, sem dados pessoais.
 
+### Escolha de datas (usabilidade)
+
+Passos visíveis (Entrada, Saída, Confirmar); datas livres sugeridas para escolher com um toque; dias extras destacados com a etiqueta "extra"; "entrada" e "saída" marcadas no calendário; prévia do período ao passar o mouse; botão para limpar; ao tocar num dia que não pode ser escolhido, uma frase explica o motivo (reservado, indisponível, só vale como extra). O resumo detalha o pacote base, os dias extras e o sinal. No celular o calendário mostra um mês por vez.
+
 ### Painel do dono
 
 Página com login (Supabase Auth). **Tudo é definido pelo dono, nada é imposto pelo sistema:** (1) calendário em que ele clica em **qualquer dia** para fechar ou abrir; (2) **bloqueio em intervalo** (de/até): fechar, abrir ou voltar ao padrão, mantendo os dias com reserva; (3) **dias da semana abertos por padrão**, configuráveis (o padrão inicial é sexta a domingo, mas é só um ponto de partida); (4) **períodos especiais** com nome, entrada, saída, preço e "bloqueado", com criar, editar e remover (mudar a entrada leva a saída junto, mantendo a duração; aviso se dois períodos se sobrepõem); (5) lista de reservas com confirmar e cancelar. Toda mudança aparece no calendário do cliente. Protótipo navegável: `docs/superpowers/mockups/agendamento-prototipo.html`.
@@ -110,7 +115,8 @@ Mínimo de 3 dias pelo site; dia avulso e 2 dias por WhatsApp. Retenção da dat
 - **Precedência de disponibilidade:** reserva ativa > **escolha do dono para o dia (abrir ou fechar)** > período especial > dias abertos por padrão. O dono tem a última palavra sobre qualquer dia, inclusive abrir um dia dentro de um período bloqueado. Um período especial abre os dias dele mesmo fora do padrão (Carnaval de sexta a quarta). Se o dono fecha um dia dentro de um período, o período inteiro fica indisponível (o cliente só leva o período inteiro). O painel **não deixa fechar** dia coberto por reserva ativa e avisa.
 - **Períodos:** por data absoluta, **um por ano**, sem recorrência (resolve a virada do Ano Novo). O painel rejeita períodos sobrepostos e avisa que é preciso recadastrar a cada ano.
 - **"Toca um período"** = interseção de dias inclusivos. Reserva que termina no dia anterior à entrada do período **não** toca.
-- **Dias de semana:** o cliente só seleciona dias contíguos **todos abertos**; o dono abre os dias de semana que quiser.
+- **Dias de semana:** o cliente seleciona dias contíguos **abertos**, mais no máximo 1 dia extra antes e 1 depois (ver regra de Dia extra); o dono abre os dias de semana que quiser.
+- **Dia extra vizinho de dia reservado ou fechado pelo dono:** não está disponível (a extensão precisa encostar nos dias abertos da própria escolha).
 - **Preço fora de período:** mínimo 3 dias. O teto de 5 dias vale para feriados sem período cadastrado.
 - **Abuso:** no máximo 2 reservas `aguardando_sinal` por WhatsApp, limite simples de requisições por IP, tamanho máximo de campos, cadastro público do Supabase Auth **desligado**, e RLS do painel por usuário específico do dono.
 - **Texto e formulário:** o select "Formato de Locação" sai; o campo de público fica; FAQ e textos de "fim de semana fechado" são atualizados.
