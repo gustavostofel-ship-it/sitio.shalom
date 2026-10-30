@@ -28,3 +28,11 @@ html {
 html, body {
   touch-action: pan-x pan-y;
 }
+
+/* Campos com 16px em qualquer aparelho de toque (celular, celular deitado e iPad).
+   Abaixo de 16px o Safari dá zoom ao tocar no campo; as classes sm:text-sm voltavam a 14px a partir de 640px. */
+@media (pointer: coarse) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
