@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Menu, X, PhoneCall } from 'lucide-react';
 import { SITE_INFO } from '@/lib/site-data';
+import { Logo } from '@/components/Logo';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -43,31 +44,7 @@ export function Header() {
             href="#"
             className="flex items-center gap-2.5 text-slate-900 group whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1B4332] rounded-md"
           >
-            <div
-              className={`w-9 h-9 rounded-lg flex items-center justify-center font-serif text-lg font-bold transition-colors ${
-                isScrolled
-                  ? 'bg-[#1B4332] text-amber-100 shadow-xs'
-                  : 'bg-[#1B4332] text-amber-100 shadow-sm'
-              }`}
-            >
-              S
-            </div>
-            <div className="flex flex-col">
-              <span
-                className={`text-lg font-serif font-bold tracking-tight transition-colors ${
-                  isScrolled ? 'text-[#1B4332]' : 'text-white drop-shadow-xs'
-                }`}
-              >
-                Sítio Shalom Xerém
-              </span>
-              <span
-                className={`text-[10px] tracking-widest uppercase font-semibold transition-colors ${
-                  isScrolled ? 'text-stone-500' : 'text-emerald-100/90'
-                }`}
-              >
-                Retiros & Eventos
-              </span>
-            </div>
+            <Logo sobreEscuro={!isScrolled} />
           </a>
 
           {/* Zone 2: Navigation Links */}

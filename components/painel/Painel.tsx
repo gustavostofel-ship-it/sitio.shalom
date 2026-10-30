@@ -7,6 +7,7 @@ import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
+import { Simbolo } from '@/components/Logo';
 import { CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
@@ -21,7 +22,7 @@ const NAV = [
 
 const Marca = ({ claro = false }: { claro?: boolean }) => (
   <div className="flex items-center gap-3">
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#1B4332] font-serif text-lg font-bold text-amber-100 ring-1 ring-amber-200/25">S</span>
+    <Simbolo sobreEscuro={!claro} className="h-11 w-11" />
     <div className="leading-tight">
       <p className={`font-serif text-[17px] ${claro ? 'text-[#14301F]' : 'text-[#F3EFE6]'}`}>Sítio Shalom</p>
       <p className={`text-xs ${claro ? 'text-stone-600' : 'text-[#9DB8A5]'}`}>Painel do administrador</p>

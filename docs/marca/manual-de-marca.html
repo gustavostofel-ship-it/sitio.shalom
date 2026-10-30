@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de Marca | Sítio Shalom Xerém</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#1B4332; --verde-noite:#0F291E; --verde-fundo:#091811; --verde-claro:#E3EFE1;
+  --ambar:#D97706; --ambar-escuro:#B45309;
+  --creme:#FAF8F5; --areia:#E5E0D8; --pedra:#57534E; --tinta:#1C1917;
+  --serif:'Playfair Display',Georgia,serif; --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:var(--sans);background:var(--creme);color:var(--tinta);line-height:1.65;font-size:16px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--serif);color:var(--verde);line-height:1.15;font-weight:700}
+h2{font-size:clamp(28px,4vw,40px);margin-bottom:12px}
+h3{font-size:22px;margin:32px 0 10px}
+p{max-width:68ch;color:var(--pedra)}
+p+p{margin-top:12px}
+section{padding:72px 0;border-top:1px solid var(--areia)}
+.capa{background:linear-gradient(180deg,var(--verde-fundo),var(--verde-noite) 60%,#122F22);color:#fff;padding:96px 0 88px;border:0}
+.capa h1{color:#fff;font-size:clamp(38px,7vw,68px);margin:28px 0 14px}
+.capa p{color:#d6d3cd;font-size:18px}
+.capa small{display:block;margin-top:36px;color:#a8a29e;font-size:13px}
+.num{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ambar-escuro);margin-bottom:8px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.caixa{border:1px solid var(--areia);border-radius:12px;background:#fff;padding:24px}
+.caixa h4{font-size:15px;color:var(--tinta);margin-bottom:4px}
+.caixa p{font-size:14px}
+.palco{display:flex;align-items:center;justify-content:center;border-radius:12px;min-height:200px;padding:28px;border:1px solid var(--areia)}
+.p-creme{background:var(--creme)}.p-branco{background:#fff}.p-verde{background:var(--verde);border-color:var(--verde)}.p-noite{background:var(--verde-fundo);border-color:var(--verde-fundo)}
+.legenda{font-size:13px;color:var(--pedra);margin-top:8px}
+/* logo */
+.logo{display:flex;align-items:center;gap:14px}
+.logo svg{width:64px;height:64px;flex:none}
+.logo .nome{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;color:var(--verde);letter-spacing:-.01em}
+.logo .sub{display:block;font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--pedra);margin-top:8px}
+.logo.claro .nome{color:#fff}.logo.claro .sub{color:#d6d3cd}
+.logo.vertical{flex-direction:column;text-align:center;gap:12px}
+.logo.vertical svg{width:84px;height:84px}
+.logo.pequeno svg{width:36px;height:36px}.logo.pequeno .nome{font-size:20px}.logo.pequeno .sub{font-size:8px;margin-top:4px}
+/* protecao */
+.protecao{position:relative;padding:36px;border:1.5px dashed var(--ambar);display:inline-block}
+.protecao::before{content:'x';position:absolute;top:8px;left:50%;font:600 13px var(--sans);color:var(--ambar-escuro)}
+.protecao::after{content:'x';position:absolute;left:12px;top:50%;font:600 13px var(--sans);color:var(--ambar-escuro)}
+/* cores */
+.cor{border:1px solid var(--areia);border-radius:12px;overflow:hidden;background:#fff}
+.cor .amostra{height:110px;display:flex;align-items:flex-end;padding:12px;font-weight:600;font-size:14px}
+.cor .dados{padding:14px;font-size:13px;color:var(--pedra);line-height:1.7}
+.cor .dados b{color:var(--tinta);display:block;font-size:15px}
+.cor code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--tinta)}
+.barra{display:flex;height:56px;border-radius:10px;overflow:hidden;border:1px solid var(--areia);margin:16px 0 8px}
+/* tipografia */
+.amostra-tipo{background:#fff;border:1px solid var(--areia);border-radius:12px;padding:28px}
+.escala div{display:flex;align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--areia)}
+.escala div:last-child{border:0}
+.escala small{flex:none;width:130px;font-size:12px;color:var(--pedra)}
+/* erros */
+.erro{position:relative}
+.erro::after{content:'✕';position:absolute;top:8px;right:12px;color:#b91c1c;font-weight:700}
+.certo::after{content:'✓';position:absolute;top:8px;right:12px;color:var(--verde);font-weight:700}
+.erro,.certo{position:relative}
+/* aplicacoes */
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:8px;padding:12px 22px;font:600 16px var(--sans);text-decoration:none;border:0;cursor:default}
+.btn.p{background:var(--ambar);color:#fff}.btn.s{background:var(--verde);color:var(--creme)}.btn.c{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3)}
+ul.lista{padding-left:20px;color:var(--pedra);max-width:68ch}ul.lista li{margin:6px 0}
+.fazer li::marker{color:var(--verde)}.naofazer li::marker{color:#b91c1c}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff;border:1px solid var(--areia)}
+td,th{padding:10px 14px;border-bottom:1px solid var(--areia);text-align:left}th{background:var(--verde-claro);color:var(--verde);font-weight:600}
+footer{padding:40px 0;border-top:1px solid var(--areia);font-size:13px;color:var(--pedra)}
+@media print{section{break-inside:avoid;padding:36px 0}.capa{-webkit-print-color-adjust:exact;print-color-adjust:exact}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="s-cor" viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#1B4332"/><circle cx="32" cy="35" r="9" fill="#D97706"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#FAF8F5"/></symbol>
+  <symbol id="s-claro" viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#FAF8F5"/><circle cx="32" cy="35" r="9" fill="#D97706"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#1B4332"/></symbol>
+  <symbol id="s-mono" viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#1B4332"/><circle cx="32" cy="35" r="9" fill="#FAF8F5"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#FAF8F5"/></symbol>
+</svg>
+
+<header class="capa">
+  <div class="wrap">
+    <div class="logo claro"><svg><use href="#s-claro"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div>
+    <h1>Manual de Marca</h1>
+    <p>Como o Sítio Shalom aparece: logo, cores, tipografia, imagens e jeito de falar. Tudo o que é preciso para manter a marca igual no site, no WhatsApp, nas redes e no material impresso.</p>
+    <small>Versão 1.0 · Outubro de 2026</small>
+  </div>
+</header>
+
+<section><div class="wrap">
+  <div class="num">01</div><h2>Essência da marca</h2>
+  <p>O Sítio Shalom Xerém é um lugar de paz e comunhão para o retiro ou evento da sua igreja. <em>Shalom</em> quer dizer paz, e a marca existe para entregar isso: natureza, estrutura para até 150 pessoas e exclusividade para um grupo por vez.</p>
+  <div class="grid g3" style="margin-top:24px">
+    <div class="caixa"><h4>Propósito</h4><p>Dar às igrejas um lugar tranquilo para se reunir, orar e conviver.</p></div>
+    <div class="caixa"><h4>Público</h4><p>Líderes, pastores e organizadores de retiros, vigílias, congressos e eventos de igrejas.</p></div>
+    <div class="caixa"><h4>Valores</h4><p>Paz, acolhimento, simplicidade, clareza e cuidado com cada grupo.</p></div>
+  </div>
+  <h3>Personalidade</h3>
+  <p>Acolhedora e serena, sem ser solene demais. Confiável e direta ao tratar de datas, valores e regras. A marca fala como um anfitrião que conhece o lugar e quer que o grupo se sinta em casa.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="num">02</div><h2>Logo</h2>
+  <p>O símbolo é um arco, como a porta de uma capela, com o sol nascendo atrás das colinas do sítio. O arco acolhe, o sol é a luz e a esperança, e as colinas lembram a natureza de Xerém. A forma é simples para funcionar bem pequena, como ícone de celular ou foto de perfil.</p>
+
+  <h3>Versão principal</h3>
+  <div class="palco p-creme"><div class="logo"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div>
+  <p class="legenda">Use sobre fundo creme, branco ou claro. É a versão padrão do site.</p>
+
+  <h3>Variações</h3>
+  <div class="grid g2">
+    <div><div class="palco p-verde"><div class="logo claro"><svg><use href="#s-claro"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div><p class="legenda">Sobre verde ou foto escura: símbolo e texto claros.</p></div>
+    <div><div class="palco p-branco"><div class="logo vertical"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div><p class="legenda">Vertical: para cartazes, capas e espaços mais altos que largos.</p></div>
+    <div><div class="palco p-creme" style="gap:36px"><svg width="84" height="84"><use href="#s-cor"/></svg><svg width="40" height="40"><use href="#s-cor"/></svg><svg width="24" height="24"><use href="#s-cor"/></svg></div><p class="legenda">Só o símbolo: foto de perfil, ícone do site (favicon), carimbo e bordados.</p></div>
+    <div><div class="palco p-branco" style="gap:36px"><svg width="84" height="84"><use href="#s-mono"/></svg><svg width="84" height="84" style="background:var(--verde);border-radius:8px;padding:8px"><use href="#s-claro"/></svg></div><p class="legenda">Uma cor só: para impressão em um tom, carimbo, gravação e fax. Verde sobre claro, creme sobre verde.</p></div>
+  </div>
+
+  <h3>Área de proteção</h3>
+  <p>Deixe ao redor do logo um espaço livre igual à altura do sol (x). Nada de texto, borda ou foto invadindo essa área.</p>
+  <div style="margin-top:16px"><div class="protecao"><div class="logo"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div></div>
+
+  <h3>Tamanho mínimo</h3>
+  <div class="grid g2">
+    <div class="caixa"><div class="logo pequeno"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div><p style="margin-top:14px">Logo completo: 120 px de largura na tela ou 30 mm no papel.</p></div>
+    <div class="caixa"><svg width="20" height="20"><use href="#s-cor"/></svg><p style="margin-top:14px">Só o símbolo: 16 px na tela (favicon) ou 8 mm no papel.</p></div>
+  </div>
+
+  <h3>Usos incorretos</h3>
+  <div class="grid g3">
+    <div class="caixa erro"><div class="logo pequeno" style="transform:scaleX(1.35);transform-origin:left;margin:8px 0"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p>Não estique nem achate.</p></div>
+    <div class="caixa erro" style="background:#d4d4d8"><div class="logo pequeno"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p style="color:#27272a">Não use sobre fundo sem contraste ou foto cheia de detalhes.</p></div>
+    <div class="caixa erro"><div class="logo pequeno"><svg viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#7c3aed"/><circle cx="32" cy="35" r="9" fill="#ec4899"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#FAF8F5"/></svg><div><span class="nome" style="color:#7c3aed">Sítio Shalom</span></div></div><p>Não troque as cores.</p></div>
+    <div class="caixa erro"><div class="logo pequeno" style="transform:rotate(-8deg);margin:8px 0"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p>Não gire nem incline.</p></div>
+    <div class="caixa erro"><div class="logo pequeno" style="filter:drop-shadow(3px 4px 3px rgba(0,0,0,.5))"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p>Não aplique sombra, brilho ou contorno.</p></div>
+    <div class="caixa erro"><div class="logo pequeno"><svg><use href="#s-cor"/></svg><div><span class="nome" style="font-family:'Comic Sans MS',cursive">Sítio Shalom</span></div></div><p>Não troque a fonte do nome.</p></div>
+  </div>
+
+  <h3>Arquivos</h3>
+  <p>Na mesma pasta deste manual: <code>simbolo.svg</code> (colorido), <code>simbolo-claro.svg</code> (para fundo escuro) e <code>simbolo-mono.svg</code> (uma cor). Os arquivos são vetoriais, então podem ser ampliados sem perder qualidade. Para o nome em letras, use a fonte Playfair Display Bold, descrita na seção de tipografia.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="num">03</div><h2>Cores</h2>
+  <p>O verde é a cor da marca: floresta, calma e confiança. O âmbar é o sol, usado só para chamar a ação principal. O creme é o papel e dá calor ao fundo, no lugar do branco frio.</p>
+  <div class="barra"><div style="flex:5;background:var(--creme)"></div><div style="flex:3;background:var(--verde)"></div><div style="flex:1.2;background:var(--ambar)"></div><div style="flex:1;background:var(--areia)"></div></div>
+  <p class="legenda">Proporção sugerida: creme 50%, verde 30%, âmbar 10%, neutros 10%.</p>
+
+  <h3>Cores principais</h3>
+  <div class="grid g3">
+    <div class="cor"><div class="amostra" style="background:var(--verde);color:#fff">Verde Shalom</div><div class="dados"><b>Marca, títulos, fundos de destaque</b><code>#1B4332</code><br>RGB 27 · 67 · 50<br>CMYK 60 · 0 · 25 · 74</div></div>
+    <div class="cor"><div class="amostra" style="background:var(--ambar);color:#fff">Âmbar Aurora</div><div class="dados"><b>Botão principal e detalhes</b><code>#D97706</code><br>RGB 217 · 119 · 6<br>CMYK 0 · 45 · 97 · 15</div></div>
+    <div class="cor"><div class="amostra" style="background:var(--creme);color:var(--tinta);border-bottom:1px solid var(--areia)">Creme Papel</div><div class="dados"><b>Fundo das páginas</b><code>#FAF8F5</code><br>RGB 250 · 248 · 245<br>CMYK 0 · 1 · 2 · 2</div></div>
+  </div>
+
+  <h3>Cores de apoio</h3>
+  <div class="grid g3">
+    <div class="cor"><div class="amostra" style="background:var(--verde-fundo);color:#fff">Verde Noite</div><div class="dados"><b>Fundo escuro do topo do site</b><code>#091811</code> → <code>#0F291E</code> → <code>#122F22</code></div></div>
+    <div class="cor"><div class="amostra" style="background:var(--ambar-escuro);color:#fff">Âmbar Escuro</div><div class="dados"><b>Botão ao passar o mouse; texto âmbar sobre claro</b><code>#B45309</code></div></div>
+    <div class="cor"><div class="amostra" style="background:var(--verde-claro);color:var(--verde)">Verde Folha</div><div class="dados"><b>Dias livres, fundos suaves</b><code>#E3EFE1</code></div></div>
+    <div class="cor"><div class="amostra" style="background:var(--areia);color:var(--tinta)">Areia</div><div class="dados"><b>Bordas e divisórias</b><code>#E5E0D8</code></div></div>
+    <div class="cor"><div class="amostra" style="background:var(--pedra);color:#fff">Pedra</div><div class="dados"><b>Texto de apoio</b><code>#57534E</code></div></div>
+    <div class="cor"><div class="amostra" style="background:var(--tinta);color:#fff">Tinta</div><div class="dados"><b>Texto principal</b><code>#1C1917</code></div></div>
+  </div>
+
+  <h3>Contraste e acessibilidade</h3>
+  <table>
+    <tr><th>Combinação</th><th>Contraste aproximado</th><th>Uso</th></tr>
+    <tr><td>Verde Shalom sobre Creme</td><td>10 : 1</td><td>Títulos e texto, em qualquer tamanho</td></tr>
+    <tr><td>Tinta sobre Creme</td><td>16 : 1</td><td>Texto corrido</td></tr>
+    <tr><td>Pedra sobre Creme</td><td>7 : 1</td><td>Texto de apoio. Nunca use cinza mais claro que este</td></tr>
+    <tr><td>Branco sobre Âmbar Aurora</td><td>3,2 : 1</td><td>Só botões com texto em negrito e tamanho 16 px ou mais</td></tr>
+    <tr><td>Branco sobre Âmbar Escuro</td><td>5 : 1</td><td>Texto menor sobre âmbar</td></tr>
+  </table>
+  <p class="legenda" style="margin-top:10px">Valores estimados a partir dos códigos de cor. Confirme com um verificador de contraste antes de aplicar em material novo.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="num">04</div><h2>Tipografia</h2>
+  <p>Duas famílias gratuitas do Google Fonts, as mesmas do site. Uma com serifa para títulos, que traz a sensação de acolhimento e tradição. Outra sem serifa para texto e botões, que garante leitura fácil em celular.</p>
+  <div class="grid g2" style="margin-top:20px">
+    <div class="amostra-tipo"><div style="font:700 72px/1 var(--serif);color:var(--verde)">Aa</div><h4 style="font-family:var(--sans);margin:14px 0 4px">Playfair Display</h4><p style="font-size:14px">Títulos, nome da marca e frases de destaque. Pesos: Médio (500), Negrito (700) e Itálico para citações.</p><p style="font:500 20px var(--serif);color:var(--tinta);margin-top:12px">Paz, comunhão e natureza.</p></div>
+    <div class="amostra-tipo"><div style="font:600 72px/1 var(--sans);color:var(--verde)">Aa</div><h4 style="font-family:var(--sans);margin:14px 0 4px">Plus Jakarta Sans</h4><p style="font-size:14px">Texto corrido, menus, botões, formulários e painel. Pesos: Regular (400), Médio (500), Semibold (600) e Negrito (700).</p><p style="font:500 18px var(--sans);color:var(--tinta);margin-top:12px">Paz, comunhão e natureza.</p></div>
+  </div>
+
+  <h3>Escala de tamanhos</h3>
+  <div class="amostra-tipo escala" style="padding:12px 28px">
+    <div><small>Título principal<br>Playfair 700 · 48 px</small><span style="font:700 48px/1.14 var(--serif);color:var(--verde)">Um lugar de paz</span></div>
+    <div><small>Título de seção<br>Playfair 700 · 36 px</small><span style="font:700 36px/1.15 var(--serif);color:var(--verde)">Datas disponíveis</span></div>
+    <div><small>Subtítulo<br>Playfair 700 · 24 px</small><span style="font:700 24px/1.2 var(--serif);color:var(--verde)">Piscina, campo e quadra</span></div>
+    <div><small>Texto de abertura<br>Jakarta 400 · 18 px</small><span style="font:400 18px/1.65 var(--sans);color:var(--pedra)">Hospedagem em comunhão para até 150 pessoas.</span></div>
+    <div><small>Texto corrido<br>Jakarta 400 · 16 px</small><span style="font:400 16px/1.65 var(--sans);color:var(--pedra)">Auditório de cultos, salão com mesas e cadeiras e estacionamento amplo.</span></div>
+    <div><small>Botão<br>Jakarta 600 · 16 px</small><span style="font:600 16px var(--sans);color:var(--tinta)">Reservar estas datas</span></div>
+    <div><small>Apoio e legenda<br>Jakarta 400 · 14 px</small><span style="font:400 14px var(--sans);color:var(--pedra)">Sinal de 20% garante a data por 24 horas.</span></div>
+  </div>
+
+  <h3>Regras</h3>
+  <ul class="lista fazer">
+    <li>Linhas de texto com no máximo cerca de 70 caracteres.</li>
+    <li>Texto corrido nunca menor que 14 px; campos de formulário sempre com 16 px no celular.</li>
+    <li>Títulos em letras normais, só com a primeira maiúscula. Evite texto todo em caixa alta, exceto o subtítulo pequeno do logo.</li>
+    <li>Sem a fonte? Use Georgia nos títulos e Segoe UI ou Arial no texto.</li>
+  </ul>
+</div></section>
+
+<section><div class="wrap">
+  <div class="num">05</div><h2>Fotos e imagens</h2>
+  <p>As fotos mostram o lugar como ele é. A marca não usa banco de imagens genérico nem fotos com filtro pesado.</p>
+  <div class="grid g2" style="margin-top:20px">
+    <div><h4 style="color:var(--verde);margin-bottom:6px">Fazer</h4><ul class="lista fazer"><li>Fotos reais do sítio: piscina, auditório, salão, dormitórios, campo e área gourmet.</li><li>Luz natural, de dia, com o espaço limpo e arrumado.</li><li>Fotos de grupos reais em momentos de convivência, com autorização.</li><li>Cada foto mostra o que a legenda diz (cozinha com cozinha, área externa com área externa).</li></ul></div>
+    <div><h4 style="color:#b91c1c;margin-bottom:6px">Evitar</h4><ul class="lista naofazer"><li>Fotos repetidas na mesma página.</li><li>Seções sem foto: se não há imagem, a seção não entra.</li><li>Filtros fortes, molduras e textos sobre a imagem.</li><li>Imagens de outros lugares ou de banco de imagens.</li></ul></div>
+  </div>
+  <p style="margin-top:16px">Formato: JPG ou WebP para o site. Fotos do iPhone em HEIC devem ser convertidas antes de enviar.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="num">06</div><h2>Voz e tom</h2>
+  <p>Falamos como um anfitrião: calorosos, claros e respeitosos. Frases curtas, verbos diretos, sem jargão e sem promessa exagerada.</p>
+  <div class="grid g2" style="margin-top:20px">
+    <div class="caixa certo"><h4>Assim</h4><p>“Um lugar de paz e comunhão para o retiro ou evento da sua igreja.”</p><p style="margin-top:8px">“Escolha a data de entrada. Já deixamos 3 dias marcados.”</p><p style="margin-top:8px">“Sinal de 20% garante a data por 24 horas.”</p></div>
+    <div class="caixa erro"><h4>Assim não</h4><p>“O cenário perfeito para o próximo nível espiritual da sua igreja.”</p><p style="margin-top:8px">“Oferta imperdível! Garanta já antes que acabe!”</p><p style="margin-top:8px">“Submeta sua solicitação de agendamento.”</p></div>
+  </div>
+  <h3>Palavras da marca</h3>
+  <ul class="lista"><li>Usamos: retiro, comunhão, paz, igreja, grupo, estadia, datas, sinal, reserva.</li><li>Evitamos: “resort”, “balada”, “festa” e termos que tirem o foco da igreja.</li><li>Botões dizem o que acontece: “Reservar estas datas”, “Falar no WhatsApp”, “Ver datas livres”.</li><li>Nome completo: <b>Sítio Shalom Xerém</b>. Nome curto: <b>Sítio Shalom</b>. Sempre com acento no “í”.</li></ul>
+</div></section>
+
+<section><div class="wrap">
+  <div class="num">07</div><h2>Aplicações</h2>
+  <h3>Botões</h3>
+  <div class="palco p-creme" style="gap:14px;flex-wrap:wrap"><span class="btn p">Agendar visita presencial</span><span class="btn s">Reservar estas datas</span></div>
+  <div class="palco p-noite" style="gap:14px;flex-wrap:wrap;margin-top:12px"><span class="btn p">Ver datas livres</span><span class="btn c">Explorar a estrutura</span></div>
+  <p class="legenda">Âmbar para a ação principal da tela, uma por tela. Verde para ações secundárias. Cantos arredondados de 8 px. Sem efeito de aumento ao passar o mouse ou tocar.</p>
+
+  <h3>Cartão de comunicado (WhatsApp e redes)</h3>
+  <div class="palco p-verde" style="min-height:260px;flex-direction:column;gap:18px;text-align:center">
+    <svg width="72" height="72"><use href="#s-claro"/></svg>
+    <div style="font:700 30px/1.15 var(--serif);color:#fff;max-width:20ch">Datas abertas para o seu retiro</div>
+    <span style="font:500 15px var(--sans);color:#e7e5e4">3 dias por R$ 7.500 · até 150 pessoas</span>
+    <span class="btn p">Reservar no site</span>
+  </div>
+  <p class="legenda">Fundo verde, símbolo claro, título em Playfair, uma informação de apoio e uma ação.</p>
+
+  <h3>Assinatura de contato</h3>
+  <div class="caixa" style="max-width:420px"><div class="logo pequeno"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div><p style="margin-top:14px">WhatsApp: (use o número oficial do site)<br>Xerém, Duque de Caxias · RJ</p></div>
+
+  <h3>Onde usar o símbolo</h3>
+  <ul class="lista"><li>Favicon do site e ícone ao salvar na tela inicial do celular.</li><li>Foto de perfil do WhatsApp Business e do Instagram.</li><li>Faixas, camisetas e crachás de grupos (versão de uma cor).</li><li>Placa de entrada do sítio.</li></ul>
+</div></section>
+
+<footer><div class="wrap">Manual de Marca · Sítio Shalom Xerém · Versão 1.0. As cores e fontes acima são as mesmas já usadas no site. O símbolo e as regras de uso são propostas desta versão e podem ser refinados com o dono do sítio.</div></footer>
+
+</body>
+</html>

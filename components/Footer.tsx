@@ -3,6 +3,7 @@
 import React from 'react';
 import { Church, MapPin, Phone, Heart, Shield, ArrowUp } from 'lucide-react';
 import { SITE_INFO } from '@/lib/site-data';
+import { Logo } from '@/components/Logo';
 
 export function Footer() {
   const scrollToTop = () => {
@@ -16,19 +17,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-emerald-900/60">
           {/* Col 1: Brand & Ministry Verse (4 cols) */}
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-lg bg-[#D97706] text-white flex items-center justify-center font-serif text-lg font-bold shadow-xs">
-                S
-              </div>
-              <div>
-                <span className="text-xl font-serif font-bold text-white tracking-tight block">
-                  Sítio Shalom Xerém
-                </span>
-                <span className="text-[10px] tracking-widest uppercase font-semibold text-amber-300">
-                  Retiros & Eventos Cristãos
-                </span>
-              </div>
-            </div>
+            <Logo sobreEscuro className="mb-4" />
 
             <p className="text-xs sm:text-sm text-stone-300/90 leading-relaxed mb-6">
               Estrutura exclusiva desenhada para proporcionar paz, comunhão e encontros reais com Deus. Hospedagem para até 150 participantes em ambiente consagrado cercado pela natureza.

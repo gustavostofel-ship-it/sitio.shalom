@@ -45,7 +45,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://f.vimeocdn.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
       </head>
-      <body className="bg-[#FAF8F5] text-[#1F2937] antialiased selection:bg-[#1B4332] selection:text-white" suppressHydrationWarning>
+      <body className="bg-[#FAF8F5] text-[#1C1917] antialiased selection:bg-[#1B4332] selection:text-white" suppressHydrationWarning>
         <SemZoom />
         {children}
       </body>
