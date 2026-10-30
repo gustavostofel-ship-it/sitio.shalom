@@ -44,6 +44,7 @@ create table agenda_reservas (
              check (status in ('aguardando_sinal', 'confirmada', 'cancelada', 'expirada')),
   total      numeric not null,
   sinal      numeric not null,
+  pago       numeric not null default 0 check (pago >= 0), -- quanto já foi recebido
   segura_ate timestamptz,
   nome       text    not null,
   igreja     text,

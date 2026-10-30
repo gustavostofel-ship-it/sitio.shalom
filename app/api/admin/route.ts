@@ -133,8 +133,25 @@ async function statusReserva(p: Pool, b: Corpo) {
     const c = await p.query('select hold_horas from agenda_config where id = 1');
     segura = new Date(Date.now() + c.rows[0].hold_horas * 3600e3);
   }
-  const r = await p.query('update agenda_reservas set status = $1, segura_ate = $2 where id = $3', [b.status, segura, id]);
+  // Confirmar = sinal recebido. Voltar a "aguardando sinal" zera o que foi recebido. Cancelar mantém o registro do valor.
+  const r = await p.query(
+    "update agenda_reservas set status = $1::text, segura_ate = $2, pago = case when $1::text = 'confirmada' then greatest(pago, sinal) when $1::text = 'aguardando_sinal' then 0 else pago end where id = $3",
+    [b.status, segura, id]
+  );
   if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+}
+
+// Registra o total já recebido de uma reserva confirmada (sinal, parte ou tudo).
+async function pagarReserva(p: Pool, b: Corpo) {
+  const id = num(b.id, 1, 1e12);
+  if (id === null) throw invalido('Reserva inválida.');
+  const r = await p.query('select total, status from agenda_reservas where id = $1', [id]);
+  if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  const { total, status } = r.rows[0];
+  if (status !== 'confirmada') throw invalido('Confirme o sinal antes de registrar pagamentos.');
+  const pago = num(b.pago, 0, total);
+  if (pago === null) throw invalido(`O valor recebido precisa ficar entre R$ 0 e o total da reserva (R$ ${total}).`);
+  await p.query('update agenda_reservas set pago = $1 where id = $2', [pago, id]);
 }
 
 async function criarReserva(p: Pool, b: Corpo, hoje: string) {
@@ -144,18 +161,23 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string) {
   if (total === null) throw invalido('Valor total inválido.');
   const status = b.status === 'aguardando_sinal' ? 'aguardando_sinal' : 'confirmada';
   const c = (await p.query('select sinal_pct, hold_horas from agenda_config where id = 1')).rows[0];
+  const sinal = Math.round((total * c.sinal_pct) / 100);
+  // Criada como confirmada: o sinal já foi recebido, a menos que o valor recebido seja informado.
+  const pago = status === 'confirmada' ? (b.pago === undefined || b.pago === '' ? sinal : num(b.pago, 0, total)) : 0;
+  if (pago === null) throw invalido('O valor recebido precisa ficar entre R$ 0 e o total da reserva.');
   await p.query(
-    "insert into agenda_reservas (entrada, saida, total, sinal, status, segura_ate, nome, igreja, whatsapp, origem) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,'manual')",
+    "insert into agenda_reservas (entrada, saida, total, sinal, pago, status, segura_ate, nome, igreja, whatsapp, origem) values ($1,$2,$3,$4,$10,$5,$6,$7,$8,$9,'manual')",
     [
       b.entrada,
       b.saida,
       total,
-      Math.round((total * c.sinal_pct) / 100),
+      sinal,
       status,
       status === 'aguardando_sinal' ? new Date(Date.now() + c.hold_horas * 3600e3) : null,
       str(b.nome, 80) || '—',
       str(b.igreja, 80) || 'Reserva manual',
       str(b.whatsapp, 20) || '—',
+      pago,
     ]
   );
 }
@@ -213,6 +235,9 @@ export async function POST(req: Request) {
         return ok(await sugerir(p, b, hoje));
       case 'reserva.status':
         await statusReserva(p, b);
+        return ok();
+      case 'reserva.pago':
+        await pagarReserva(p, b);
         return ok();
       case 'reserva.criar':
         await criarReserva(p, b, hoje);

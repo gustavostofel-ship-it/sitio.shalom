@@ -30,19 +30,19 @@ export function Admins({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
       <Secao titulo="Quem tem acesso" texto="Cada pessoa entra com o próprio e-mail e senha.">
-        <ul className="divide-y divide-[#EEE9DF]">
+        <ul className="divide-y divide-[#D9D2C3]">
           {dados.admins.map((a) => (
             <li key={a.email} className="py-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1B4332] text-sm font-semibold text-amber-100">{iniciais(a.email)}</span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-[#1F2937]">
-                    <span className="break-all">{a.email}</span>
+                    <span className="break-words">{a.email}</span>
                     {a.email === dados.eu && <span className="ml-2 whitespace-nowrap rounded-full bg-[#DDEBDD] px-2 py-0.5 text-xs font-medium text-[#1B4332]">você</span>}
                   </p>
-                  <p className="text-sm text-stone-500">Desde {new Date(a.criado_em).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-sm text-stone-600">Desde {new Date(a.criado_em).toLocaleDateString('pt-BR')}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex w-full gap-2 pl-[52px] sm:w-auto sm:pl-0">
                   <button onClick={() => { setTrocando(trocando === a.email ? null : a.email); setNova(''); }} className={botao}>Trocar senha</button>
                   {a.email !== dados.eu && dados.admins.length > 1 && (
                     <button onClick={() => confirm(`Remover o acesso de ${a.email}?`) && chamar('admin.remover', { email: a.email })} className={botaoPerigo}>Remover</button>

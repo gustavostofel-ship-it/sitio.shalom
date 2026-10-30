@@ -196,7 +196,7 @@ export function BookingSection() {
                         value={formData.leaderName}
                         onChange={(e) => setFormData({ ...formData, leaderName: e.target.value })}
                         placeholder="Ex: Pr. Carlos / Líder Ana"
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-sm"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm"
                       />
                     </div>
 
@@ -210,7 +210,7 @@ export function BookingSection() {
                         value={formData.churchName}
                         onChange={(e) => setFormData({ ...formData, churchName: e.target.value })}
                         placeholder="Ex: Igreja Batista Renovada"
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-sm"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm"
                       />
                     </div>
                   </div>
@@ -226,7 +226,7 @@ export function BookingSection() {
                         value={formData.whatsapp}
                         onChange={handlePhoneChange}
                         placeholder="(11) 99999-9999"
-                        className={`w-full px-3.5 py-2.5 rounded-lg border text-sm outline-hidden ${
+                        className={`w-full px-3.5 py-2.5 rounded-lg border text-base sm:text-sm outline-hidden ${
                           phoneError ? 'border-red-500 bg-red-50/30' : 'border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]'
                         }`}
                       />
@@ -240,7 +240,7 @@ export function BookingSection() {
                       <select
                         value={formData.rentalFormat}
                         onChange={(e) => setFormData({ ...formData, rentalFormat: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-sm bg-white"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm bg-white"
                       >
                         <option value="Fim de Semana Fechado (Sexta a Domingo)">
                           Fim de Semana Fechado (Sexta a Domingo)
@@ -263,7 +263,7 @@ export function BookingSection() {
                       <select
                         value={formData.attendeesRange}
                         onChange={(e) => setFormData({ ...formData, attendeesRange: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-sm bg-white"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm bg-white"
                       >
                         <option value="Até 50 pessoas">Até 50 pessoas</option>
                         <option value="50 a 100 pessoas">50 a 100 pessoas</option>
@@ -280,7 +280,7 @@ export function BookingSection() {
                         value={formData.targetDate}
                         onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
                         placeholder="Ex: Novembro / Feriado / Data X"
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-sm"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm"
                       />
                     </div>
                   </div>
@@ -294,7 +294,7 @@ export function BookingSection() {
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="Conte um pouco sobre o evento da sua igreja ou preferências de horário para a visita..."
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-sm resize-none"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm resize-none"
                     />
                   </div>
 

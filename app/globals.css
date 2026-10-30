@@ -14,3 +14,12 @@
 .font-sans {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
+
+/* Toque direto: sem zoom por toque duplo e sem atraso nos botões e campos (celular) */
+button, a, input, select, textarea, label, summary, [role='button'], [role='tab'] {
+  touch-action: manipulation;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

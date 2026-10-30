@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
@@ -13,6 +13,9 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-sans',
   display: 'swap',
 });
+
+// Tela do tamanho do aparelho e sem zoom automático ao tocar nos campos (principalmente no Safari do iPhone).
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1 };
 
 export const metadata: Metadata = {
   title: 'Sítio Shalom Xerém | Retiros Espirituais & Eventos Cristãos',

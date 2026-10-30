@@ -142,6 +142,7 @@ export interface Reserva {
   status: StatusReserva;
   total: number;
   sinal: number;
+  pago: number; // quanto já foi recebido
   segura_ate: string | null;
   nome: string;
   igreja: string | null;
@@ -199,4 +200,12 @@ export function sugerirPeriodos(ano: number, cfg: Cfg): Periodo[] {
     p5(`Ano Novo ${ano}/${String(ano + 1).slice(2)}`, ny, domingo < add(ny, 4) ? domingo : add(ny, 4), 10000),
     p5(`Natal ${ano}`, `${ano}-12-24`, `${ano}-12-26`, 0, true),
   ];
+}
+
+// Situação do dinheiro de uma reserva confirmada.
+export type Pagamento = 'pendente' | 'parcial' | 'sinal' | 'quitada';
+export function pagamento(r: Pick<Reserva, 'total' | 'sinal' | 'pago'>): Pagamento {
+  if (r.total > 0 && r.pago >= r.total) return 'quitada';
+  if (r.pago > 0 && r.pago >= r.sinal) return 'sinal';
+  return r.pago > 0 ? 'parcial' : 'pendente';
 }

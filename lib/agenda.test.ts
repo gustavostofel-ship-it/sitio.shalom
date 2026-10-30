@@ -1,7 +1,7 @@
 // Roda com: node --test lib/agenda.test.ts
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cotar, janela, visivel, statusDia, proximas, pascoa, sugerirPeriodos, type AgendaData } from './agenda.ts';
+import { cotar, janela, visivel, statusDia, proximas, pascoa, sugerirPeriodos, pagamento, type AgendaData } from './agenda.ts';
 
 const base = (): AgendaData => ({
   hoje: '2026-10-28',
@@ -80,4 +80,12 @@ test('feriados do ano são calculados pela Páscoa', () => {
   const ny = sugerirPeriodos(2026, x.cfg).find((q) => q.nome.startsWith('Ano Novo'))!;
   assert.deepEqual([ny.entrada, ny.saida], ['2026-12-30', '2027-01-03']);
   assert.equal(sugerirPeriodos(2026, x.cfg).find((q) => q.nome.startsWith('Natal'))!.bloqueado, true);
+});
+test('pagamento: pendente, parcial, sinal e quitada', () => {
+  const r = { total: 7500, sinal: 1500 };
+  assert.equal(pagamento({ ...r, pago: 0 }), 'pendente');
+  assert.equal(pagamento({ ...r, pago: 500 }), 'parcial');
+  assert.equal(pagamento({ ...r, pago: 1500 }), 'sinal');
+  assert.equal(pagamento({ ...r, pago: 4000 }), 'sinal');
+  assert.equal(pagamento({ ...r, pago: 7500 }), 'quitada');
 });

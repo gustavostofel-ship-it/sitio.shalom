@@ -39,7 +39,7 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   return (
     <div className="space-y-6">
       <Secao titulo="Preços e regras" texto="O que o site usa para calcular o valor e a disponibilidade. Ao salvar, o cliente já vê a mudança.">
-        <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4 lg:grid-cols-4">
           {CAMPOS.map(([k, l]) => (
             <label key={k} className={rotulo}>
               {l}
@@ -49,12 +49,12 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
         </div>
         <fieldset className="mt-6">
           <legend className="text-sm font-semibold text-[#14301F]">Dias abertos por padrão</legend>
-          <p className="mb-2 text-sm text-stone-500">Dias da semana que o cliente vê como livres. Você ainda abre ou fecha qualquer dia no calendário.</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="mb-2 text-sm text-stone-600">Dias da semana que o cliente vê como livres. Você ainda abre ou fecha qualquer dia no calendário.</p>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {SEMANA.map((n, i) => {
               const on = cfg.diasPadrao.includes(i);
               return (
-                <label key={n} className={`cursor-pointer select-none rounded-md border px-3.5 py-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#D97706] ${on ? 'border-[#1B4332] bg-[#1B4332] font-medium text-white' : 'border-[#D9D2C5] bg-white text-stone-700 hover:border-[#1B4332]'}`}>
+                <label key={n} className={`cursor-pointer select-none rounded-md border px-2.5 py-2.5 text-sm transition-colors sm:px-3.5 sm:py-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#D97706] ${on ? 'border-[#1B4332] bg-[#1B4332] font-medium text-white' : 'border-[#BDB4A1] bg-white text-stone-700 hover:border-[#1B4332]'}`}>
                   <input type="checkbox" className="sr-only" checked={on} onChange={(e) => setCfg({ ...cfg, diasPadrao: e.target.checked ? [...cfg.diasPadrao, i] : cfg.diasPadrao.filter((x) => x !== i) })} />
                   {n}
                 </label>
@@ -66,7 +66,7 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
       </Secao>
 
       <Secao titulo="Períodos especiais" texto="Feriados e datas com pacote fechado: o cliente leva o período inteiro, pelo preço que você definir. Marque “Bloqueado” para ninguém reservar (como o Natal).">
-        <div className="mb-5 flex flex-wrap items-end gap-3 rounded-lg bg-[#F4F1EA] p-4">
+        <div className="mb-5 flex flex-wrap items-end gap-3 rounded-lg bg-[#ECE7DA] p-4">
           <label className={`${rotulo} w-28`}>
             Ano
             <input type="number" className={`${campo} mt-1`} value={ano} onChange={(e) => setAno(+e.target.value)} />
@@ -74,11 +74,11 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
           <button onClick={() => chamar('sugerir', { ano })} className={botao}>
             <Sparkles className="h-4 w-4" /> Sugerir feriados do ano
           </button>
-          <p className="basis-full text-sm text-stone-500 sm:basis-auto sm:flex-1">Carnaval, Semana Santa e Corpus Christi são calculados pela Páscoa. Confira datas e preços depois.</p>
+          <p className="basis-full text-sm text-stone-600 sm:basis-auto sm:flex-1">Carnaval, Semana Santa e Corpus Christi são calculados pela Páscoa. Confira datas e preços depois.</p>
         </div>
 
-        {pers.length === 0 && <p className="text-sm text-stone-500">Nenhum período cadastrado. Use “Sugerir feriados do ano” ou crie um novo.</p>}
-        <ul className="divide-y divide-[#EEE9DF]">
+        {pers.length === 0 && <p className="text-sm text-stone-600">Nenhum período cadastrado. Use “Sugerir feriados do ano” ou crie um novo.</p>}
+        <ul className="divide-y divide-[#D9D2C3]">
           {pers.map((p, i) => (
             <li key={p.id ?? 'novo' + i} className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_0.8fr] lg:items-end">
               <label className={`${rotulo} sm:col-span-2 lg:col-span-1`}>
