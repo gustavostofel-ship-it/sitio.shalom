@@ -51,20 +51,21 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
       const motivo = dados.dias[d]?.motivo;
       const noSel = !!faixaSel && d >= faixaSel[0] && d <= faixaSel[1];
       const per = periodoDe(d, ag);
+      const hoje = d === dados.hoje;
       const fundo = r
         ? compacto
           ? r.status === 'confirmada'
-            ? 'bg-emerald-600 border-emerald-600 text-white'
-            : 'bg-amber-400 border-amber-400 text-slate-900'
-          : 'bg-white border-stone-200'
+            ? 'bg-[#1B4332] border-[#1B4332] text-[#F3EFE6]'
+            : 'bg-[#E9A43A] border-[#E9A43A] text-[#3B2200]'
+          : 'bg-white border-[#E5E0D8]'
         : st === 'livre'
           ? oculto
-            ? 'bg-emerald-50 border-dashed border-amber-500'
-            : 'bg-emerald-50 border-emerald-300'
+            ? 'bg-[#F4F8F2] border-dashed border-[#D97706]'
+            : 'bg-[#E3EFE1] border-[#B3CDB6] hover:border-[#1B4332]'
           : st === 'passado'
-            ? 'bg-stone-50 border-stone-100 text-stone-300'
-            : 'bg-stone-100 border-stone-200 text-stone-400';
-      const inicio = !!r && (d === r.entrada || i === 1 || (new Date(d + 'T00:00:00Z').getUTCDay() === 0));
+            ? 'bg-[#F6F3EC] border-[#EFEBE3] text-stone-300'
+            : 'bg-[#EFEBE3] border-[#E5E0D8] text-stone-400';
+      const inicio = !!r && (d === r.entrada || i === 1 || new Date(d + 'T00:00:00Z').getUTCDay() === 0);
       cel.push(
         <div
           key={d}
@@ -75,28 +76,32 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
           }}
           onMouseEnter={() => arrasto && setArrasto({ a: arrasto.a, b: d })}
           title={[per?.nome, r?.igreja, motivo, oculto ? 'Aberto, mas oculto para o cliente (menos de 3 dias seguidos)' : ''].filter(Boolean).join(' · ')}
-          className={`relative overflow-hidden rounded-lg border cursor-pointer select-none ${compacto ? 'aspect-square' : 'min-h-[92px]'} ${fundo} ${noSel ? 'outline outline-2 -outline-offset-2 outline-[#1B4332]' : ''}`}
+          className={`relative cursor-pointer select-none overflow-hidden rounded-md border transition-colors ${compacto ? 'aspect-square' : 'min-h-[96px]'} ${fundo} ${noSel ? 'outline outline-2 -outline-offset-2 outline-[#D97706]' : ''}`}
         >
-          <span className={`absolute ${compacto ? 'top-0.5 left-1 text-[11px]' : 'top-1 left-1.5 text-[13px]'}`}>{i}</span>
+          <span
+            className={`absolute flex items-center justify-center font-medium tabular-nums ${compacto ? 'left-0.5 top-0.5 h-4 min-w-4 text-[11px]' : 'left-1.5 top-1.5 h-6 min-w-6 text-[13px]'} ${hoje ? 'rounded-full bg-[#D97706] px-1 text-white' : ''}`}
+          >
+            {i}
+          </span>
           {r && !compacto && (
             <div
-              className={`absolute -left-px -right-px bottom-1.5 h-[22px] px-1.5 text-[11px] leading-[22px] truncate ${r.status === 'confirmada' ? 'bg-emerald-600 text-white' : 'bg-amber-400 text-slate-900'} ${d === r.entrada ? 'ml-1 rounded-l-full' : ''} ${d === r.saida ? 'mr-1 rounded-r-full' : ''}`}
+              className={`absolute -left-px -right-px bottom-2 h-6 truncate px-2 text-[12px] font-medium leading-6 ${r.status === 'confirmada' ? 'bg-[#1B4332] text-[#F3EFE6]' : 'bg-[#E9A43A] text-[#3B2200]'} ${d === r.entrada ? 'ml-1.5 rounded-l-full' : ''} ${d === r.saida ? 'mr-1.5 rounded-r-full' : ''}`}
             >
               {inicio ? r.igreja || r.nome : ''}
             </div>
           )}
-          {!r && !compacto && motivo && st === 'fechado' && <span className="absolute left-1.5 bottom-1 text-[11px] text-stone-500 truncate max-w-full pr-1">🔒 {motivo}</span>}
-          {!r && !compacto && oculto && <span className="absolute left-1.5 bottom-1 text-[11px] text-amber-700">oculto</span>}
-          {per && <span className="absolute bottom-0.5 left-1 right-1 h-0.5 rounded bg-amber-500" />}
+          {!r && !compacto && motivo && st === 'fechado' && <span className="absolute bottom-1.5 left-1.5 right-1 line-clamp-2 text-[11px] leading-tight text-stone-500">{motivo}</span>}
+          {!r && !compacto && oculto && <span className="absolute bottom-1.5 left-1.5 text-[11px] text-[#8A4B04]">Oculto</span>}
+          {per && <span className="absolute bottom-0.5 left-1 right-1 h-0.5 rounded bg-[#D97706]" />}
         </div>
       );
     }
     return (
       <div key={y + '-' + m} className="min-w-0">
-        <div className={`text-center font-bold first-letter:uppercase mb-1.5 ${compacto ? 'text-xs' : 'text-base'}`}>{titulo}</div>
+        {meses.length > 1 && <h3 className="mb-2 text-center font-serif text-sm first-letter:uppercase">{titulo}</h3>}
         <div className="grid grid-cols-7 gap-1">
           {SEMANA.map((x) => (
-            <div key={x} className="text-center text-[11px] text-stone-500">{x}</div>
+            <div key={x} className="pb-1 text-center text-xs font-medium text-stone-500">{x}</div>
           ))}
           {cel}
         </div>
@@ -105,7 +110,7 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
   };
 
   return (
-    <div className={meses.length === 1 ? '' : meses.length === 3 ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'grid gap-4 grid-cols-2 lg:grid-cols-4'}>
+    <div className={meses.length === 1 ? '' : meses.length === 3 ? 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3' : 'grid grid-cols-2 gap-5 lg:grid-cols-4'}>
       {meses.map(mes)}
     </div>
   );

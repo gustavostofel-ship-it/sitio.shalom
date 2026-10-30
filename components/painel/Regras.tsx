@@ -1,20 +1,21 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Plus, Sparkles } from 'lucide-react';
 import { br, type AdminData } from '@/lib/agenda';
 import type { Chamar } from './tipos';
+import { Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
 
 const CAMPOS: [keyof Omit<AdminData['cfg'], 'diasPadrao'>, string][] = [
   ['base', 'Preço base (R$)'],
   ['minDias', 'Dias do pacote base'],
   ['extra', 'Dia extra (R$)'],
-  ['sinalPct', 'Sinal (%)'],
+  ['sinalPct', 'Sinal para reservar (%)'],
   ['holdHoras', 'Segurar a data (horas)'],
   ['capacidade', 'Capacidade (pessoas)'],
   ['maxDias', 'Máximo de dias pelo site'],
 ];
 const SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const campo = 'w-full rounded-lg border border-stone-300 px-3 py-2 text-sm';
 
 interface Linha {
   id?: number;
@@ -32,71 +33,89 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   useEffect(() => setCfg({ ...dados.cfg }), [dados.cfg]);
   useEffect(() => setPers(dados.periodos.map((p) => ({ ...p, preco: String(p.preco) }))), [dados.periodos]);
 
-  const salvarCfg = () => chamar('cfg', { ...cfg });
   const edita = (i: number, k: keyof Linha, v: string | boolean) => setPers((l) => l.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
   const novo = () => setPers((l) => [...l, { nome: 'Novo período', entrada: dados.hoje, saida: dados.hoje, preco: '0', bloqueado: false }]);
-  const card = 'bg-white rounded-2xl border border-stone-200 p-4';
 
   return (
-    <div className="grid lg:grid-cols-2 gap-4">
-      <div className={card}>
-        <h3 className="font-bold">Preços e regras</h3>
-        <p className="text-xs text-stone-500 mb-3">Tudo que o site usa para calcular. Salvou, o cliente já vê.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="space-y-6">
+      <Secao titulo="Preços e regras" texto="O que o site usa para calcular o valor e a disponibilidade. Ao salvar, o cliente já vê a mudança.">
+        <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
           {CAMPOS.map(([k, l]) => (
-            <label key={k} className="text-xs text-stone-500">
+            <label key={k} className={rotulo}>
               {l}
-              <input type="number" min={0} className={campo} value={cfg[k]} onChange={(e) => setCfg({ ...cfg, [k]: e.target.value === '' ? 0 : +e.target.value })} />
+              <input type="number" min={0} className={`${campo} mt-1`} value={cfg[k]} onChange={(e) => setCfg({ ...cfg, [k]: e.target.value === '' ? 0 : +e.target.value })} />
             </label>
           ))}
         </div>
-        <h4 className="font-bold mt-5 text-sm">Dias abertos por padrão</h4>
-        <p className="text-xs text-stone-500 mb-2">Dias da semana que o cliente vê como livres. Você ainda abre ou fecha qualquer dia no calendário.</p>
-        <div className="flex flex-wrap gap-2">
-          {SEMANA.map((n, i) => (
-            <label key={n} className="flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-1.5 text-sm cursor-pointer">
-              <input type="checkbox" checked={cfg.diasPadrao.includes(i)} onChange={(e) => setCfg({ ...cfg, diasPadrao: e.target.checked ? [...cfg.diasPadrao, i] : cfg.diasPadrao.filter((x) => x !== i) })} />
-              {n}
-            </label>
-          ))}
-        </div>
-        <button onClick={salvarCfg} className="mt-4 rounded-xl bg-[#1B4332] text-white px-5 py-2.5 font-bold">Salvar preços e regras</button>
-      </div>
+        <fieldset className="mt-6">
+          <legend className="text-sm font-semibold text-[#14301F]">Dias abertos por padrão</legend>
+          <p className="mb-2 text-sm text-stone-500">Dias da semana que o cliente vê como livres. Você ainda abre ou fecha qualquer dia no calendário.</p>
+          <div className="flex flex-wrap gap-2">
+            {SEMANA.map((n, i) => {
+              const on = cfg.diasPadrao.includes(i);
+              return (
+                <label key={n} className={`cursor-pointer select-none rounded-md border px-3.5 py-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[#D97706] ${on ? 'border-[#1B4332] bg-[#1B4332] font-medium text-white' : 'border-[#D9D2C5] bg-white text-stone-700 hover:border-[#1B4332]'}`}>
+                  <input type="checkbox" className="sr-only" checked={on} onChange={(e) => setCfg({ ...cfg, diasPadrao: e.target.checked ? [...cfg.diasPadrao, i] : cfg.diasPadrao.filter((x) => x !== i) })} />
+                  {n}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+        <button onClick={() => chamar('cfg', { ...cfg })} className={`${botaoPri} mt-6`}>Salvar preços e regras</button>
+      </Secao>
 
-      <div className={card}>
-        <h3 className="font-bold">Períodos especiais</h3>
-        <p className="text-xs text-stone-500 mb-3">Você define nome, datas e preço. O cliente leva o período inteiro. “Bloqueado” = ninguém reserva (ex.: Natal).</p>
-        <div className="flex flex-wrap items-end gap-2 mb-3">
-          <label className="text-xs text-stone-500 w-24">Ano<input type="number" className={campo} value={ano} onChange={(e) => setAno(+e.target.value)} /></label>
-          <button onClick={() => chamar('sugerir', { ano })} className="rounded-lg border border-stone-300 px-3 py-2 text-sm">✨ Sugerir feriados do ano</button>
+      <Secao titulo="Períodos especiais" texto="Feriados e datas com pacote fechado: o cliente leva o período inteiro, pelo preço que você definir. Marque “Bloqueado” para ninguém reservar (como o Natal).">
+        <div className="mb-5 flex flex-wrap items-end gap-3 rounded-lg bg-[#F4F1EA] p-4">
+          <label className={`${rotulo} w-28`}>
+            Ano
+            <input type="number" className={`${campo} mt-1`} value={ano} onChange={(e) => setAno(+e.target.value)} />
+          </label>
+          <button onClick={() => chamar('sugerir', { ano })} className={botao}>
+            <Sparkles className="h-4 w-4" /> Sugerir feriados do ano
+          </button>
+          <p className="basis-full text-sm text-stone-500 sm:basis-auto sm:flex-1">Carnaval, Semana Santa e Corpus Christi são calculados pela Páscoa. Confira datas e preços depois.</p>
         </div>
-        <p className="text-xs text-stone-500 mb-3">Carnaval, Semana Santa e Corpus Christi são calculados pela Páscoa. Confira datas e preços depois.</p>
-        <div className="space-y-3">
+
+        {pers.length === 0 && <p className="text-sm text-stone-500">Nenhum período cadastrado. Use “Sugerir feriados do ano” ou crie um novo.</p>}
+        <ul className="divide-y divide-[#EEE9DF]">
           {pers.map((p, i) => (
-            <div key={p.id ?? 'novo' + i} className="rounded-xl border border-stone-200 p-3">
-              <input className={campo} value={p.nome} onChange={(e) => edita(i, 'nome', e.target.value)} />
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <label className="text-xs text-stone-500 min-w-0">Entrada<input type="date" className={campo} value={p.entrada} onChange={(e) => edita(i, 'entrada', e.target.value)} /></label>
-                <label className="text-xs text-stone-500 min-w-0">Saída<input type="date" className={campo} value={p.saida} onChange={(e) => edita(i, 'saida', e.target.value)} /></label>
+            <li key={p.id ?? 'novo' + i} className="grid gap-3 py-4 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_0.8fr] lg:items-end">
+              <label className={`${rotulo} sm:col-span-2 lg:col-span-1`}>
+                Nome
+                <input className={`${campo} mt-1`} value={p.nome} onChange={(e) => edita(i, 'nome', e.target.value)} />
+              </label>
+              <label className={rotulo}>
+                Entrada
+                <input type="date" className={`${campo} mt-1`} value={p.entrada} onChange={(e) => edita(i, 'entrada', e.target.value)} />
+              </label>
+              <label className={rotulo}>
+                Saída
+                <input type="date" className={`${campo} mt-1`} value={p.saida} onChange={(e) => edita(i, 'saida', e.target.value)} />
+              </label>
+              <label className={rotulo}>
+                Preço (R$)
+                <input type="number" min={0} step={500} className={`${campo} mt-1`} value={p.preco} onChange={(e) => edita(i, 'preco', e.target.value)} />
+              </label>
+              <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4 lg:justify-end">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-stone-700">
+                  <input type="checkbox" className="h-4 w-4 accent-[#1B4332]" checked={p.bloqueado} onChange={(e) => edita(i, 'bloqueado', e.target.checked)} />
+                  Bloqueado
+                </label>
+                <button onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className={botaoPri}>Salvar</button>
+                {p.id ? (
+                  <button onClick={() => confirm(`Remover “${p.nome}” (${br(p.entrada)} a ${br(p.saida)})?`) && chamar('periodo.remover', { id: p.id })} className={botaoPerigo}>Remover</button>
+                ) : (
+                  <button onClick={() => setPers((l) => l.filter((_, j) => j !== i))} className={botao}>Descartar</button>
+                )}
               </div>
-              <div className="flex flex-wrap items-end gap-3 mt-2">
-                <label className="text-xs text-stone-500 w-32">Preço (R$)<input type="number" min={0} step={500} className={campo} value={p.preco} onChange={(e) => edita(i, 'preco', e.target.value)} /></label>
-                <label className="flex items-center gap-1.5 text-sm pb-2"><input type="checkbox" checked={p.bloqueado} onChange={(e) => edita(i, 'bloqueado', e.target.checked)} />Bloqueado</label>
-                <div className="ml-auto flex gap-2 pb-1">
-                  <button onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className="rounded-lg bg-[#1B4332] text-white px-3 py-1.5 text-sm">Salvar</button>
-                  {p.id ? (
-                    <button onClick={() => confirm(`Remover “${p.nome}” (${br(p.entrada)} a ${br(p.saida)})?`) && chamar('periodo.remover', { id: p.id })} className="rounded-lg border border-stone-300 text-red-700 px-3 py-1.5 text-sm">Remover</button>
-                  ) : (
-                    <button onClick={() => setPers((l) => l.filter((_, j) => j !== i))} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">Descartar</button>
-                  )}
-                </div>
-              </div>
-            </div>
+            </li>
           ))}
-          {pers.length === 0 && <p className="text-sm text-stone-500">Nenhum período cadastrado.</p>}
-        </div>
-        <button onClick={novo} className="mt-3 rounded-lg border border-dashed border-emerald-500 text-[#1B4332] px-3 py-2 text-sm font-semibold">+ Novo período</button>
-      </div>
+        </ul>
+        <button onClick={novo} className={`${botao} mt-4`}>
+          <Plus className="h-4 w-4" /> Novo período
+        </button>
+      </Secao>
     </div>
   );
 }
