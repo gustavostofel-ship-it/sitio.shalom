@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { SemZoom } from '@/components/SemZoom';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -15,7 +16,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 // Tela do tamanho do aparelho e sem zoom automático ao tocar nos campos (principalmente no Safari do iPhone).
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1 };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false };
 
 export const metadata: Metadata = {
   title: 'Sítio Shalom Xerém | Retiros Espirituais & Eventos Cristãos',
@@ -45,6 +46,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
       </head>
       <body className="bg-[#FAF8F5] text-[#1F2937] antialiased selection:bg-[#1B4332] selection:text-white" suppressHydrationWarning>
+        <SemZoom />
         {children}
       </body>
     </html>
