@@ -80,9 +80,11 @@ footer{padding:40px 0;border-top:1px solid var(--areia);font-size:13px;color:var
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="s-cor" viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#1B4332"/><circle cx="32" cy="35" r="9" fill="#D97706"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#FAF8F5"/></symbol>
-  <symbol id="s-claro" viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#FAF8F5"/><circle cx="32" cy="35" r="9" fill="#D97706"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#1B4332"/></symbol>
-  <symbol id="s-mono" viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#1B4332"/><circle cx="32" cy="35" r="9" fill="#FAF8F5"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#FAF8F5"/></symbol>
+  <defs><clipPath id="arco"><path d="M6 62V30a26 26 0 0 1 52 0V62Z"/></clipPath>
+  <g id="cena"><g clip-path="url(#arco)"><rect width="64" height="64" fill="#1B4332"/><circle cx="41" cy="25" r="7" fill="#D97706"/><path d="M6 47 19 32l9 9 12-12 18 20v13H6Z" fill="#2D6A4F"/><path d="M6 53C18 45 30 51 42 47c8-3 12-1 16 1v14H6Z" fill="#40916C"/><circle cx="17" cy="45" r="4.6" fill="#14301F"/><rect x="16.4" y="47" width="1.3" height="5" fill="#14301F"/><path d="M6 58c14-4 28 2 52-3v7H6Z" fill="#FAF8F5"/></g></g></defs>
+  <symbol id="s-cor" viewBox="0 0 64 64"><use href="#cena"/><path d="M6 62V30a26 26 0 0 1 52 0V62Z" fill="none" stroke="#1B4332" stroke-width="2"/></symbol>
+  <symbol id="s-claro" viewBox="0 0 64 64"><use href="#cena"/><path d="M6 62V30a26 26 0 0 1 52 0V62Z" fill="none" stroke="#FAF8F5" stroke-width="2"/></symbol>
+  <symbol id="s-mono" viewBox="0 0 64 64"><g clip-path="url(#arco)"><rect width="64" height="64" fill="#1B4332"/><circle cx="41" cy="25" r="7" fill="#FAF8F5"/><path d="M6 47 19 32l9 9 12-12 18 20v13H6Z" fill="#FAF8F5"/><path d="M6 53C18 45 30 51 42 47c8-3 12-1 16 1v14H6Z" fill="#1B4332"/><circle cx="17" cy="45" r="4.6" fill="#FAF8F5"/><rect x="16.4" y="47" width="1.3" height="5" fill="#FAF8F5"/><path d="M6 58c14-4 28 2 52-3v7H6Z" fill="#FAF8F5"/></g><path d="M6 62V30a26 26 0 0 1 52 0V62Z" fill="none" stroke="#1B4332" stroke-width="2"/></symbol>
 </svg>
 
 <header class="capa">
@@ -108,7 +110,7 @@ footer{padding:40px 0;border-top:1px solid var(--areia);font-size:13px;color:var
 
 <section><div class="wrap">
   <div class="num">02</div><h2>Logo</h2>
-  <p>O símbolo é um arco, como a porta de uma capela, com o sol nascendo atrás das colinas do sítio. O arco acolhe, o sol é a luz e a esperança, e as colinas lembram a natureza de Xerém. A forma é simples para funcionar bem pequena, como ícone de celular ou foto de perfil.</p>
+  <p>O símbolo é uma janela em arco, como a porta de uma capela, que deixa ver a paisagem do sítio: o sol nascendo atrás da serra, as colinas em tons de verde e uma árvore. O arco acolhe, o sol é a luz e a esperança, e a paisagem lembra a natureza de Xerém. O desenho é feito de formas simples e cores chapadas, por isso funciona de ícone de celular a placa de entrada.</p>
 
   <h3>Versão principal</h3>
   <div class="palco p-creme"><div class="logo"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div>
@@ -119,7 +121,7 @@ footer{padding:40px 0;border-top:1px solid var(--areia);font-size:13px;color:var
     <div><div class="palco p-verde"><div class="logo claro"><svg><use href="#s-claro"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div><p class="legenda">Sobre verde ou foto escura: símbolo e texto claros.</p></div>
     <div><div class="palco p-branco"><div class="logo vertical"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span><span class="sub">Xerém · Retiros &amp; Eventos</span></div></div></div><p class="legenda">Vertical: para cartazes, capas e espaços mais altos que largos.</p></div>
     <div><div class="palco p-creme" style="gap:36px"><svg width="84" height="84"><use href="#s-cor"/></svg><svg width="40" height="40"><use href="#s-cor"/></svg><svg width="24" height="24"><use href="#s-cor"/></svg></div><p class="legenda">Só o símbolo: foto de perfil, ícone do site (favicon), carimbo e bordados.</p></div>
-    <div><div class="palco p-branco" style="gap:36px"><svg width="84" height="84"><use href="#s-mono"/></svg><svg width="84" height="84" style="background:var(--verde);border-radius:8px;padding:8px"><use href="#s-claro"/></svg></div><p class="legenda">Uma cor só: para impressão em um tom, carimbo, gravação e fax. Verde sobre claro, creme sobre verde.</p></div>
+    <div><div class="palco p-branco" style="gap:36px"><svg width="84" height="84"><use href="#s-mono"/></svg><svg width="84" height="84" style="background:var(--verde);border-radius:8px;padding:8px"><use href="#s-claro"/></svg></div><p class="legenda">Uma cor só: para impressão em um tom, carimbo, gravação e fax. Verde e creme, sem outras cores.</p></div>
   </div>
 
   <h3>Área de proteção</h3>
@@ -136,7 +138,7 @@ footer{padding:40px 0;border-top:1px solid var(--areia);font-size:13px;color:var
   <div class="grid g3">
     <div class="caixa erro"><div class="logo pequeno" style="transform:scaleX(1.35);transform-origin:left;margin:8px 0"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p>Não estique nem achate.</p></div>
     <div class="caixa erro" style="background:#d4d4d8"><div class="logo pequeno"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p style="color:#27272a">Não use sobre fundo sem contraste ou foto cheia de detalhes.</p></div>
-    <div class="caixa erro"><div class="logo pequeno"><svg viewBox="0 0 64 64"><path d="M8 60V30a24 24 0 0 1 48 0V60Z" fill="#7c3aed"/><circle cx="32" cy="35" r="9" fill="#ec4899"/><path d="M8 60V50C17 43 25 46 32 49C40 45 48 43 56 49V60Z" fill="#FAF8F5"/></svg><div><span class="nome" style="color:#7c3aed">Sítio Shalom</span></div></div><p>Não troque as cores.</p></div>
+    <div class="caixa erro"><div class="logo pequeno"><svg style="filter:hue-rotate(200deg) saturate(1.8)"><use href="#s-cor"/></svg><div><span class="nome" style="color:#7c3aed">Sítio Shalom</span></div></div><p>Não troque as cores.</p></div>
     <div class="caixa erro"><div class="logo pequeno" style="transform:rotate(-8deg);margin:8px 0"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p>Não gire nem incline.</p></div>
     <div class="caixa erro"><div class="logo pequeno" style="filter:drop-shadow(3px 4px 3px rgba(0,0,0,.5))"><svg><use href="#s-cor"/></svg><div><span class="nome">Sítio Shalom</span></div></div><p>Não aplique sombra, brilho ou contorno.</p></div>
     <div class="caixa erro"><div class="logo pequeno"><svg><use href="#s-cor"/></svg><div><span class="nome" style="font-family:'Comic Sans MS',cursive">Sítio Shalom</span></div></div><p>Não troque a fonte do nome.</p></div>
@@ -164,6 +166,8 @@ footer{padding:40px 0;border-top:1px solid var(--areia);font-size:13px;color:var
     <div class="cor"><div class="amostra" style="background:var(--verde-fundo);color:#fff">Verde Noite</div><div class="dados"><b>Fundo escuro do topo do site</b><code>#091811</code> → <code>#0F291E</code> → <code>#122F22</code></div></div>
     <div class="cor"><div class="amostra" style="background:var(--ambar-escuro);color:#fff">Âmbar Escuro</div><div class="dados"><b>Botão ao passar o mouse; texto âmbar sobre claro</b><code>#B45309</code></div></div>
     <div class="cor"><div class="amostra" style="background:var(--verde-claro);color:var(--verde)">Verde Folha</div><div class="dados"><b>Dias livres, fundos suaves</b><code>#E3EFE1</code></div></div>
+    <div class="cor"><div class="amostra" style="background:#2D6A4F;color:#fff">Verde Serra</div><div class="dados"><b>Montanhas do símbolo e ilustrações</b><code>#2D6A4F</code></div></div>
+    <div class="cor"><div class="amostra" style="background:#40916C;color:#fff">Verde Colina</div><div class="dados"><b>Colinas do símbolo e ilustrações</b><code>#40916C</code></div></div>
     <div class="cor"><div class="amostra" style="background:var(--areia);color:var(--tinta)">Areia</div><div class="dados"><b>Bordas e divisórias</b><code>#E5E0D8</code></div></div>
     <div class="cor"><div class="amostra" style="background:var(--pedra);color:#fff">Pedra</div><div class="dados"><b>Texto de apoio</b><code>#57534E</code></div></div>
     <div class="cor"><div class="amostra" style="background:var(--tinta);color:#fff">Tinta</div><div class="dados"><b>Texto principal</b><code>#1C1917</code></div></div>
