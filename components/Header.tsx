@@ -91,7 +91,7 @@ export function Header() {
           <div className="hidden sm:flex items-center gap-3 shrink-0">
             <a
               href="#agendar"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-white bg-[#D97706] hover:bg-[#B45309] shadow-sm hover:shadow-md transition-all active:scale-[0.98] whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#D97706]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-white bg-[#D97706] hover:bg-[#B45309] shadow-sm hover:shadow-md transition-all whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#D97706]"
             >
               <Calendar className="w-4 h-4" />
               <span>Agendar Visita Técnica</span>

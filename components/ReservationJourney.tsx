@@ -88,7 +88,7 @@ export function ReservationJourney() {
 
                   {/* Icon & Title */}
                   <div className="flex items-center gap-3.5 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-300 flex items-center justify-center shrink-0 transition-transform">
                       <Icon className="w-6 h-6" />
                     </div>
                     <h3 className="text-xl font-serif font-bold text-white leading-tight">
@@ -139,7 +139,7 @@ export function ReservationJourney() {
           </div>
           <a
             href="#agendar"
-            className="px-6 py-3.5 rounded-lg text-sm font-bold text-stone-900 bg-white hover:bg-stone-100 transition-all shadow-md active:scale-95 whitespace-nowrap shrink-0"
+            className="px-6 py-3.5 rounded-lg text-sm font-bold text-stone-900 bg-white hover:bg-stone-100 transition-all shadow-md whitespace-nowrap shrink-0"
           >
             Consultar Disponibilidade de Data
           </a>

@@ -102,7 +102,7 @@ export function MinistryLogistics() {
                       src={pillar.image}
                       alt={pillar.title}
                       fill
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover object-center transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden" />
                     

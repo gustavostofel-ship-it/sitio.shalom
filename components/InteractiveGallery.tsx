@@ -78,7 +78,7 @@ export function InteractiveGallery() {
                     src={item.image}
                     alt={item.title}
                     fill
-                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    className="object-cover object-center transition-transform duration-500"
                   />
                   {/* Scrim Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />

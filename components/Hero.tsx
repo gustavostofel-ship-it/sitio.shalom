@@ -58,7 +58,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <a
                 href="#agendar"
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-base font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98] whitespace-nowrap focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
+                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-base font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 <Calendar className="w-5 h-5 text-amber-100" />
                 <span>Agendar Visita Presencial</span>

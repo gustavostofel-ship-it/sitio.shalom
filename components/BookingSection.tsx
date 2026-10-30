@@ -300,7 +300,7 @@ export function BookingSection() {
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-base font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-md transition-all active:scale-[0.98] mt-2 cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-base font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-md transition-all mt-2 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>Enviar no WhatsApp & Consultar Data</span>

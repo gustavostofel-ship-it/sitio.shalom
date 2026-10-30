@@ -95,7 +95,7 @@ export function Testimonials() {
           </p>
           <a
             href="#agendar"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg transition-all active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg transition-all"
           >
             <Calendar className="w-4 h-4" />
             <span>Agendar Visita com a Comissão</span>
