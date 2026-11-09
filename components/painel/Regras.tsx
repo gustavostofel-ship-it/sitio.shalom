@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Sparkles } from 'lucide-react';
 import { br, type AdminData } from '@/lib/agenda';
 import type { Chamar } from './tipos';
-import { Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
+import { BotaoConfirma, Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
 
 const CAMPOS: [keyof Omit<AdminData['cfg'], 'diasPadrao'>, string][] = [
   ['base', 'Preço base (R$)'],
@@ -104,7 +104,7 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
                 </label>
                 <button onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className={botaoPri}>Salvar</button>
                 {p.id ? (
-                  <button onClick={() => confirm(`Remover “${p.nome}” (${br(p.entrada)} a ${br(p.saida)})?`) && chamar('periodo.remover', { id: p.id })} className={botaoPerigo}>Remover</button>
+                  <BotaoConfirma compacto className={botaoPerigo} rotulo="Remover" pergunta={`Remover “${p.nome}” (${br(p.entrada)} a ${br(p.saida)})?`} confirmaRotulo="Sim, remover" onConfirma={() => chamar('periodo.remover', { id: p.id })} />
                 ) : (
                   <button onClick={() => setPers((l) => l.filter((_, j) => j !== i))} className={botao}>Descartar</button>
                 )}

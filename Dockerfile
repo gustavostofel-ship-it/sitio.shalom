@@ -15,6 +15,8 @@ WORKDIR /app
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
+# Imagens da marca (logo, brasão): o Next não as inclui sozinho na imagem enxuta
+COPY --from=build /app/public ./public
 # O Next guarda aqui as fotos já otimizadas; o usuário "node" precisa poder gravar
 RUN mkdir -p .next/cache && chown -R node:node .next/cache
 # Script que cria o administrador (usa o mesmo código de senha do site)
