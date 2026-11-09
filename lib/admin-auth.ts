@@ -28,6 +28,14 @@ export async function exigirAdmin(req: Request) {
   return { pool, email };
 }
 
+// Criar o PRIMEIRO administrador pela tela só é permitido no próprio computador (localhost, sem proxy).
+// No servidor, com banco novo, qualquer visitante poderia criar o acesso antes do dono: lá o primeiro
+// administrador é criado pelo script (scripts/criar-admin.mjs).
+export function setupPermitido(req: Request) {
+  const host = new URL(req.url).hostname;
+  return ['localhost', '127.0.0.1', '[::1]'].includes(host) && !req.headers.get('x-forwarded-for') && !req.headers.get('x-forwarded-host');
+}
+
 export const https = (req: Request) => new URL(req.url).protocol === 'https:' || req.headers.get('x-forwarded-proto') === 'https';
 
 // Grava o login num cookie seguro (HttpOnly) na resposta.

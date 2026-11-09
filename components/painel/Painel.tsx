@@ -1,21 +1,23 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
+import { BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
 import { brl, br, diff, faixa, pagamento, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
+import { ResumoVisitas, Visitas } from './Visitas';
 import { Simbolo } from '@/components/Logo';
 import { BotaoConfirma, CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
-type Aba = 'resumo' | 'cal' | 'rsv' | 'cfg' | 'adm';
+type Aba = 'resumo' | 'cal' | 'rsv' | 'vis' | 'cfg' | 'adm';
 const NAV = [
   { k: 'resumo', rot: 'Resumo', Ic: LayoutGrid },
   { k: 'cal', rot: 'Calendário', Ic: CalendarDays },
   { k: 'rsv', rot: 'Reservas', Ic: BookOpen },
+  { k: 'vis', rot: 'Visitas', Ic: CalendarClock },
   { k: 'cfg', rot: 'Regras e preços', Ic: SlidersHorizontal },
   { k: 'adm', rot: 'Administradores', Ic: Users },
 ] as const;
@@ -292,7 +294,8 @@ export function Painel() {
     }
   }, []);
   useEffect(() => {
-    carregar();
+    const t = setTimeout(carregar, 0); // adia para fora do efeito: evita renderizações em cascata
+    return () => clearTimeout(t);
   }, [carregar]);
 
   const chamar: Chamar = async (acao, corpo = {}) => {
@@ -370,6 +373,7 @@ export function Painel() {
   const rotuloMes = (m: Mes) => new Date(Date.UTC(m.y, m.m, 1)).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
   const dataLonga = new Date(dados.hoje + 'T12:00:00Z').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
   const pendentes = dados.reservas.filter((r) => statusReal(r, dados.agora) === 'aguardando_sinal').length;
+  const visitasPendentes = dados.visitas.filter((v) => v.status === 'pedida').length;
   const titulo = NAV.find((n) => n.k === aba)!.rot;
 
   const lateral = (fecharMenu?: () => void) => {
@@ -396,6 +400,7 @@ export function Painel() {
               <Ic className="h-[18px] w-[18px] shrink-0" />
               <span className="flex-1">{rot}</span>
               {k === 'rsv' && pendentes > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Pedidos aguardando sinal">{pendentes}</span>}
+              {k === 'vis' && visitasPendentes > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Visitas aguardando confirmação">{visitasPendentes}</span>}
             </button>
           );
         })}
@@ -448,7 +453,13 @@ export function Painel() {
             <p className="pb-1 text-sm text-stone-600 first-letter:uppercase">{dataLonga}</p>
           </header>
 
-          {aba === 'resumo' && <Resumo dados={dados} abrir={abrirReserva} confirmar={confirmar} irParaDatas={irParaDatas} irParaCalendario={() => setAba('cal')} />}
+          {aba === 'resumo' && (
+            <>
+              <Resumo dados={dados} abrir={abrirReserva} confirmar={confirmar} irParaDatas={irParaDatas} irParaCalendario={() => setAba('cal')} />
+              <ResumoVisitas dados={dados} abrir={() => setAba('vis')} />
+            </>
+          )}
+          {aba === 'vis' && <Visitas dados={dados} chamar={chamar} />}
           {aba === 'cal' && (
             <section className="rounded-xl border border-[#D2CAB8] bg-white p-3 shadow-[0_1px_2px_rgba(20,48,31,0.08)] sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">

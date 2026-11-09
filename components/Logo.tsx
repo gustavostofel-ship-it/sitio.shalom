@@ -10,11 +10,12 @@ export function Simbolo({ className = 'w-20' }: { className?: string }) {
 
 export function Logo({ sobreEscuro = false, sub = 'Xerém · Retiros & Eventos', className = '' }: { sobreEscuro?: boolean; sub?: string; className?: string }) {
   return (
-    <span className={`flex items-center gap-3 ${className}`}>
-      <Simbolo className="w-[112px]" />
-      <span className="flex flex-col leading-none">
-        <span className={`font-serif text-xl font-bold tracking-tight ${sobreEscuro ? 'text-white' : 'text-[#1B4332]'}`}>Sítio Shalom</span>
-        <span className={`mt-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${sobreEscuro ? 'text-stone-300' : 'text-stone-600'}`}>{sub}</span>
+    <span className={`flex min-w-0 items-center gap-2.5 sm:gap-3 ${className}`}>
+      {/* Menor no celular: com 112px o botão do menu saía da tela em aparelhos de 375px */}
+      <Simbolo className="w-[56px] min-[360px]:w-[72px] sm:w-[112px]" />
+      <span className="flex min-w-0 flex-col leading-none">
+        <span className={`font-serif text-lg font-bold tracking-tight sm:text-xl ${sobreEscuro ? 'text-white' : 'text-[#1B4332]'}`}>Sítio Shalom</span>
+        <span className={`mt-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] sm:text-[10px] sm:tracking-[0.2em] ${sobreEscuro ? 'text-stone-300' : 'text-stone-600'}`}>{sub}</span>
       </span>
     </span>
   );

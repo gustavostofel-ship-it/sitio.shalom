@@ -7,7 +7,7 @@ export const hojeSP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Americ
 export const SEGURA_SQL = "(status = 'confirmada' or (status = 'aguardando_sinal' and segura_ate > now()))";
 
 // Linha da tabela agenda_config -> Cfg
-export const cfgDeLinha = (c: Record<string, any>): Cfg => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+export const cfgDeLinha = (c: Record<string, any>): Cfg => ({
   base: Number(c.base),
   minDias: c.min_dias,
   extra: Number(c.extra),

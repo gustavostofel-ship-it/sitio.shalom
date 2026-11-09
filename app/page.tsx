@@ -10,6 +10,7 @@ import { InteractiveGallery } from '@/components/InteractiveGallery';
 import { ReservationJourney } from '@/components/ReservationJourney';
 import { Testimonials } from '@/components/Testimonials';
 import { BookingSection } from '@/components/BookingSection';
+import { Localizacao } from '@/components/Localizacao';
 import { FaqSection } from '@/components/FaqSection';
 import { Footer } from '@/components/Footer';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
@@ -38,6 +39,9 @@ export default function Home() {
 
       {/* Pastor & Leader Social Proof / Testimonials */}
       <Testimonials />
+
+      {/* Mapa e como chegar */}
+      <Localizacao />
 
       {/* Conversion Booking & WhatsApp Generator Section */}
       <BookingSection />

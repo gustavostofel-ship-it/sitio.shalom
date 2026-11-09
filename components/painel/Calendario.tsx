@@ -22,7 +22,9 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
   // Arrastar com o mouse seleciona vários dias; um toque seleciona um dia.
   const [arrasto, setArrasto] = useState<{ a: string; b: string } | null>(null);
   const ref = useRef(arrasto);
-  ref.current = arrasto;
+  useEffect(() => {
+    ref.current = arrasto; // o soltar do mouse lê sempre o arrasto mais recente
+  });
   useEffect(() => {
     const solta = () => {
       const x = ref.current;

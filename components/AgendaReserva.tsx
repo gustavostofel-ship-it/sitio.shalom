@@ -12,6 +12,7 @@ interface Sel {
   xa: boolean; // 1 dia extra depois
 }
 const VAZIO: Sel = { a: null, b: null, xb: false, xa: false };
+const agoraMs = () => Date.now(); // medir quanto tempo a pessoa levou para preencher (anti-robô)
 const PUBLICOS = ['Até 50 pessoas', '50 a 100 pessoas', '100 a 150 pessoas'];
 const zap = (texto: string) => `https://wa.me/${SITE_INFO.whatsappNumber}?text=${encodeURIComponent(texto)}`;
 const mascara = (v: string) => {
@@ -28,6 +29,9 @@ export function AgendaReserva() {
   const [form, setForm] = useState({ nome: '', igreja: '', whatsapp: '', publico: PUBLICOS[2] });
   const [enviando, setEnviando] = useState(false);
   const [msgErro, setMsgErro] = useState('');
+  const [aceite, setAceite] = useState(false);
+  const [armadilha, setArmadilha] = useState(''); // campo escondido: gente não vê, robô preenche
+  const [abertoEm] = useState(agoraMs);
   const [feito, setFeito] = useState<{ id: number; total: number; sinal: number; resumo: string } | null>(null);
 
   const carregar = useCallback(async () => {
@@ -43,9 +47,12 @@ export function AgendaReserva() {
     }
   }, []);
   useEffect(() => {
-    carregar();
+    const t = setTimeout(carregar, 0); // adia para fora do efeito: evita renderizações em cascata
     window.addEventListener('focus', carregar);
-    return () => window.removeEventListener('focus', carregar);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('focus', carregar);
+    };
   }, [carregar]);
 
   // Sem dados (banco fora do ar ou ainda não configurado): a página segue normal, só sem o calendário.
@@ -182,7 +189,7 @@ export function AgendaReserva() {
       const r = await fetch('/api/agenda/reservar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entrada: ef.a, saida: ef.b, ...form }),
+        body: JSON.stringify({ entrada: ef.a, saida: ef.b, ...form, aceite, site: armadilha, ms: agoraMs() - abertoEm }),
       });
       const j = await r.json();
       if (!r.ok) {
@@ -318,16 +325,25 @@ export function AgendaReserva() {
                     <div className="mt-4 space-y-3">
                       <input className={campo} placeholder="Nome do líder / pastor" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} autoComplete="name" />
                       <input className={campo} placeholder="Igreja / ministério" value={form.igreja} onChange={(e) => setForm({ ...form, igreja: e.target.value })} />
-                      <input className={campo} placeholder="WhatsApp com DDD" inputMode="tel" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: mascara(e.target.value) })} autoComplete="tel" />
+                      <input className={campo} placeholder="WhatsApp com DDD (celular)" inputMode="tel" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: mascara(e.target.value) })} autoComplete="tel" />
                       <select className={campo} value={form.publico} onChange={(e) => setForm({ ...form, publico: e.target.value })}>
                         {PUBLICOS.map((p) => <option key={p}>{p}</option>)}
                       </select>
+                      {/* Armadilha para robôs: fora da tela e fora do teclado. Quem preenche é descartado. */}
+                      <input type="text" name="site" tabIndex={-1} autoComplete="off" aria-hidden="true" value={armadilha} onChange={(e) => setArmadilha(e.target.value)} className="absolute -left-[9999px] h-0 w-0 opacity-0" />
+                      <label className="flex items-start gap-2.5 text-xs text-slate-700 leading-relaxed cursor-pointer">
+                        <input type="checkbox" checked={aceite} onChange={(e) => setAceite(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#1B4332]" />
+                        <span>
+                          Li e aceito a <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline text-[#1B4332] font-semibold">Política de Privacidade</a> e os{' '}
+                          <a href="/termos" target="_blank" rel="noopener noreferrer" className="underline text-[#1B4332] font-semibold">Termos de reserva</a>, e concordo em receber contato por WhatsApp sobre este pedido.
+                        </span>
+                      </label>
                     </div>
                     {msgErro && <p className="mt-3 text-sm text-red-700">{msgErro}</p>}
                     <button
                       type="button"
                       onClick={reservar}
-                      disabled={enviando || form.nome.trim().length < 2 || form.whatsapp.replace(/\D/g, '').length < 10}
+                      disabled={enviando || !aceite || form.nome.trim().length < 2 || form.whatsapp.replace(/\D/g, '').length < 11}
                       className="mt-4 w-full rounded-xl bg-amber-600 py-3 font-bold text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {enviando ? 'Enviando…' : 'Reservar esta data'}

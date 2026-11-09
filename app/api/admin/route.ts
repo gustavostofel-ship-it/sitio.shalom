@@ -5,6 +5,8 @@ import { hashSenha } from '@/lib/senha.mjs';
 import { emailValido } from '@/lib/sessao';
 import { SEGURA_SQL, cfgDeLinha, hojeSP } from '@/lib/agenda-server';
 import { sugerirPeriodos, type AdminData } from '@/lib/agenda';
+import { cfgDeLinhaVisita } from '@/lib/visitas-server';
+import { erroDaConfig, horaValida, type StatusVisita } from '@/lib/visitas';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,12 +30,16 @@ function erro(e: unknown) {
 }
 
 async function carregar(p: Pool, eu: string): Promise<AdminData> {
-  const [c, per, d, r, adm] = await Promise.all([
+  const [c, per, d, r, adm, vc, vb, vs] = await Promise.all([
     p.query('select * from agenda_config where id = 1'),
     p.query('select id, nome, entrada, saida, preco, bloqueado from agenda_periodos order by entrada'),
     p.query('select data, aberto, motivo from agenda_dias'),
-    p.query('select * from agenda_reservas order by entrada'),
+    // Dados que não são para o painel (resumo do IP, aceite) ficam de fora
+    p.query('select id, entrada, saida, status, total, sinal, pago, segura_ate, nome, igreja, whatsapp, publico, origem, criada_em from agenda_reservas order by entrada'),
     p.query('select email, criado_em from agenda_admins order by criado_em'),
+    p.query('select * from agenda_visita_config where id = 1'),
+    p.query('select data, motivo from agenda_visita_bloqueios order by data'),
+    p.query('select id, nome, igreja, whatsapp, publico, formato, obs, data, hora, status, origem, nota_interna, criada_em, atualizada_em from agenda_visitas order by data nulls first, hora, id'),
   ]);
   return {
     hoje: hojeSP(),
@@ -43,6 +49,9 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
     dias: Object.fromEntries(d.rows.map((x) => [x.data as string, { aberto: x.aberto as boolean, motivo: x.motivo as string | null }])),
     reservas: r.rows,
     admins: adm.rows,
+    visitas: vs.rows,
+    visitaCfg: cfgDeLinhaVisita(vc.rows[0]),
+    visitaBloqueios: vb.rows,
     eu,
   };
 }
@@ -182,6 +191,100 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string) {
   );
 }
 
+// ---------- Visitas ----------
+const STATUS_VISITA: StatusVisita[] = ['pedida', 'agendada', 'realizada', 'cancelada', 'nao_compareceu'];
+
+// 23505: o banco só deixa uma visita ativa por horário.
+async function comHorario(fn: () => Promise<{ rowCount: number | null }>) {
+  try {
+    const r = await fn();
+    if (!r.rowCount) throw new HttpErro(404, 'Visita não encontrada.');
+  } catch (e) {
+    if ((e as { code?: string }).code === '23505') throw new HttpErro(409, 'Esse horário já tem outra visita.');
+    throw e;
+  }
+}
+const idVisita = (b: Corpo) => {
+  const id = num(b.id, 1, 1e12);
+  if (id === null) throw invalido('Visita inválida.');
+  return id;
+};
+// Dia e hora juntos, ou os dois vazios (a combinar).
+function quando(b: Corpo): [string | null, string | null] {
+  const data = b.data ? String(b.data) : '',
+    hora = b.hora ? String(b.hora) : '';
+  if (!!data !== !!hora) throw invalido('Informe o dia e a hora, ou deixe os dois em branco.');
+  if (data && (!dataOk(data) || !horaValida(hora))) throw invalido('Dia ou hora inválidos.');
+  return [data || null, hora || null];
+}
+
+async function visitaCriar(p: Pool, b: Corpo) {
+  const nome = str(b.nome, 80),
+    whats = String(b.whatsapp ?? '').replace(/\D/g, '').slice(0, 13);
+  if (nome.length < 2) throw invalido('Informe o nome.');
+  if (whats.length < 10) throw invalido('Informe o WhatsApp com DDD.');
+  const [data, hora] = quando(b);
+  await comHorario(() =>
+    p.query("insert into agenda_visitas (nome, igreja, whatsapp, publico, obs, data, hora, status, origem) values ($1,$2,$3,$4,$5,$6,$7,$8,'manual')", [
+      nome,
+      str(b.igreja, 80) || null,
+      whats,
+      str(b.publico, 40) || null,
+      str(b.obs, 500) || null,
+      data,
+      hora,
+      b.status === 'pedida' ? 'pedida' : 'agendada',
+    ])
+  );
+}
+
+async function visitaStatus(p: Pool, b: Corpo) {
+  const id = idVisita(b);
+  if (!STATUS_VISITA.includes(b.status as StatusVisita)) throw invalido('Situação inválida.');
+  await comHorario(() => p.query('update agenda_visitas set status = $1, atualizada_em = now() where id = $2', [b.status, id]));
+}
+
+// Marca ou remarca. Com "confirmar", a visita já fica agendada.
+async function visitaMover(p: Pool, b: Corpo) {
+  const id = idVisita(b);
+  const [data, hora] = quando(b);
+  await comHorario(() =>
+    p.query("update agenda_visitas set data = $1, hora = $2, status = case when $3::boolean then 'agendada' else status end, atualizada_em = now() where id = $4", [data, hora, b.confirmar === true, id])
+  );
+}
+
+async function visitaNota(p: Pool, b: Corpo) {
+  await comHorario(() => p.query('update agenda_visitas set nota_interna = $1, atualizada_em = now() where id = $2', [str(b.nota, 1000) || null, idVisita(b)]));
+}
+
+async function visitaConfig(p: Pool, b: Corpo) {
+  const c = {
+    diasSemana: Array.isArray(b.diasSemana) ? [...new Set(b.diasSemana as number[])].sort() : undefined,
+    horaIni: String(b.horaIni ?? ''),
+    horaFim: String(b.horaFim ?? ''),
+    duracaoMin: Number(b.duracaoMin),
+    antecedenciaH: Number(b.antecedenciaH),
+    horizonteDias: Number(b.horizonteDias),
+  };
+  const erro = erroDaConfig(c);
+  if (erro) throw invalido(erro);
+  await p.query('update agenda_visita_config set dias_semana = $1, hora_ini = $2, hora_fim = $3, duracao_min = $4, antecedencia_h = $5, horizonte_dias = $6 where id = 1', [
+    c.diasSemana,
+    c.horaIni,
+    c.horaFim,
+    c.duracaoMin,
+    c.antecedenciaH,
+    c.horizonteDias,
+  ]);
+}
+
+// Fecha ou reabre um dia para visitas (ex.: feriado, evento no sítio).
+async function visitaBloqueio(p: Pool, b: Corpo) {
+  if (!dataOk(b.data)) throw invalido('Dia inválido.');
+  if (b.remover === true) await p.query('delete from agenda_visita_bloqueios where data = $1', [b.data]);
+  else await p.query('insert into agenda_visita_bloqueios (data, motivo) values ($1, $2) on conflict (data) do update set motivo = excluded.motivo', [b.data, str(b.motivo, 80) || null]);
+}
+
 // ---------- Administradores ----------
 const emailDe = (v: unknown) => String(v ?? '').trim().toLowerCase().slice(0, 120);
 function senhaDe(v: unknown) {
@@ -241,6 +344,24 @@ export async function POST(req: Request) {
         return ok();
       case 'reserva.criar':
         await criarReserva(p, b, hoje);
+        return ok();
+      case 'visita.criar':
+        await visitaCriar(p, b);
+        return ok();
+      case 'visita.status':
+        await visitaStatus(p, b);
+        return ok();
+      case 'visita.mover':
+        await visitaMover(p, b);
+        return ok();
+      case 'visita.nota':
+        await visitaNota(p, b);
+        return ok();
+      case 'visita.config':
+        await visitaConfig(p, b);
+        return ok();
+      case 'visita.bloqueio':
+        await visitaBloqueio(p, b);
         return ok();
       case 'admin.criar':
         await criarAdmin(p, b);

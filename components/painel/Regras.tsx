@@ -28,10 +28,19 @@ interface Linha {
 
 export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) {
   const [cfg, setCfg] = useState(() => ({ ...dados.cfg }));
-  const [pers, setPers] = useState<Linha[]>([]);
+  const [pers, setPers] = useState<Linha[]>(() => dados.periodos.map((p) => ({ ...p, preco: String(p.preco) })));
   const [ano, setAno] = useState(+dados.hoje.slice(0, 4));
-  useEffect(() => setCfg({ ...dados.cfg }), [dados.cfg]);
-  useEffect(() => setPers(dados.periodos.map((p) => ({ ...p, preco: String(p.preco) }))), [dados.periodos]);
+  // Quando o servidor manda dados novos (depois de salvar), os campos voltam a refletir o que está salvo.
+  const [cfgOrigem, setCfgOrigem] = useState(dados.cfg);
+  const [persOrigem, setPersOrigem] = useState(dados.periodos);
+  if (cfgOrigem !== dados.cfg) {
+    setCfgOrigem(dados.cfg);
+    setCfg({ ...dados.cfg });
+  }
+  if (persOrigem !== dados.periodos) {
+    setPersOrigem(dados.periodos);
+    setPers(dados.periodos.map((p) => ({ ...p, preco: String(p.preco) })));
+  }
 
   const edita = (i: number, k: keyof Linha, v: string | boolean) => setPers((l) => l.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
   const novo = () => setPers((l) => [...l, { nome: 'Novo período', entrada: dados.hoje, saida: dados.hoje, preco: '0', bloqueado: false }]);

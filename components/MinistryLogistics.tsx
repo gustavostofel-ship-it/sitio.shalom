@@ -3,7 +3,7 @@
 import React from 'react';
 import { Church, Bed, Flame, UtensilsCrossed, CheckCircle2, Sparkles, Shield } from 'lucide-react';
 import { SafeImage } from './SafeImage';
-import { SUPABASE_IMAGES } from '@/lib/site-data';
+import { FOTOS } from '@/lib/site-data';
 
 export function MinistryLogistics() {
   const pillars = [
@@ -11,7 +11,7 @@ export function MinistryLogistics() {
       id: 'auditorio',
       title: 'Auditório de Cultos & Ministração',
       icon: Church,
-      image: SUPABASE_IMAGES.auditorio,
+      image: FOTOS.auditorio,
       tag: 'Espaço Consagrado',
       headline: 'Ambiente dedicado para cultos, vigílias e louvores da igreja',
       description:
@@ -28,7 +28,7 @@ export function MinistryLogistics() {
       id: 'salao',
       title: 'Área Gourmet e Salão',
       icon: UtensilsCrossed,
-      image: SUPABASE_IMAGES.salao,
+      image: FOTOS.salao,
       tag: 'Comunhão & Refeições',
       headline: 'Área gourmet com churrasqueira, salão com mesas e cozinha para a igreja usar',
       description:
@@ -46,7 +46,7 @@ export function MinistryLogistics() {
       id: 'lazer',
       title: 'Área de Lazer',
       icon: Flame,
-      image: SUPABASE_IMAGES.piscina,
+      image: FOTOS.piscina,
       tag: 'Recreação Saudável',
       headline: 'Lazer e integração para jovens, famílias e crianças',
       description:

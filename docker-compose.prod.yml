@@ -1,0 +1,41 @@
+# Sítio Shalom no servidor (VPS com Easypanel): site + banco.
+# Diferente do docker-compose.yml do computador:
+#   - o site NÃO abre porta para a internet; quem recebe o público é o proxy do Easypanel (com HTTPS);
+#   - SITE_URL e PROXY_HOPS são obrigatórios.
+# Nunca use "docker compose down -v": o -v apaga o banco.
+name: sitioshalom
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shalom
+      POSTGRES_USER: shalom
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    volumes:
+      - dados:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shalom -d shalom"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://shalom:${POSTGRES_PASSWORD}@db:5432/shalom
+      SESSION_SECRET: ${SESSION_SECRET:?Defina SESSION_SECRET}
+      SITE_URL: ${SITE_URL:?Defina SITE_URL, ex.: https://seudominio.com.br}
+      PROXY_HOPS: ${PROXY_HOPS:-1}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    expose:
+      - "3000"
+
+volumes:
+  dados:

@@ -57,6 +57,11 @@ export function Footer() {
                 </a>
               </li>
               <li>
+                <a href="#localizacao" className="hover:text-amber-300 transition-colors">
+                  Como chegar
+                </a>
+              </li>
+              <li>
                 <a href="#faq" className="hover:text-amber-300 transition-colors">
                   Perguntas Frequentes
                 </a>
@@ -109,7 +114,9 @@ export function Footer() {
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <p>© {new Date().getFullYear()} Sítio Shalom Xerém — Todos os direitos reservados.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <a href="/privacidade" className="hover:text-amber-300 transition-colors">Política de Privacidade</a>
+            <a href="/termos" className="hover:text-amber-300 transition-colors">Termos de reserva</a>
             <span>Uso Exclusivo para Retiros Cristãos</span>
             <button
               onClick={scrollToTop}

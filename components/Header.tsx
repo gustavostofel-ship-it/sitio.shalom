@@ -26,6 +26,7 @@ export function Header() {
     { label: 'O Espaço', href: '#espaco' },
     { label: 'Lazer', href: '#lazer' },
     { label: 'Galeria', href: '#galeria' },
+    { label: 'Como chegar', href: '#localizacao' },
     { label: 'Dúvidas', href: '#faq' },
   ];
 
@@ -38,7 +39,7 @@ export function Header() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-8">
+        <div className="flex items-center justify-between gap-4 xl:gap-8">
           {/* Zone 1: Brand Wordmark (Single element) */}
           <a
             href="#"
@@ -48,7 +49,7 @@ export function Header() {
           </a>
 
           {/* Zone 2: Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-7 text-sm font-medium">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -71,7 +72,9 @@ export function Header() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-white bg-[#D97706] hover:bg-[#B45309] shadow-sm hover:shadow-md transition-all whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#D97706]"
             >
               <Calendar className="w-4 h-4" />
-              <span>Agendar Visita Técnica</span>
+              <span>
+                Agendar Visita<span className="hidden xl:inline"> Técnica</span>
+              </span>
             </a>
           </div>
 

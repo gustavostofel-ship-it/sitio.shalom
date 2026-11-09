@@ -14,6 +14,18 @@ export interface FaqItem {
   answer: string;
 }
 
+// Dados da empresa para as páginas de Privacidade e Termos. Preencha quando tiver: se ficarem vazios, não aparecem.
+export const EMPRESA = { razaoSocial: '', cnpj: '' };
+
+// Regras de devolução do sinal depois dos 7 dias de arrependimento (que são por lei e valem sempre).
+// Enquanto estiver vazio, os Termos dizem que valem as condições combinadas por escrito antes do pagamento.
+// Exemplo de preenchimento: { quando: 'Mais de 60 dias antes da entrada', devolucao: '80% do sinal' }
+export const POLITICA_CANCELAMENTO: { quando: string; devolucao: string }[] = [];
+
+// Versão do texto da Política de Privacidade e dos Termos. Muda quando os textos mudam;
+// cada pedido guarda a versão que o cliente aceitou.
+export const TERMOS_VERSAO = '2026-11-09';
+
 export const SITE_INFO = {
   name: 'Sítio Shalom Xerém',
   tagline: 'Retiros & Eventos Cristãos',
@@ -24,15 +36,23 @@ export const SITE_INFO = {
   rentalModel: 'Valor fechado por fim de semana (dias específicos sob negociação)',
 };
 
-export const SUPABASE_IMAGES = {
-  auditorio: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/auditorio-para-cultos.png',
-  salao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/area-gurmet.png',
-  banheiros: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/banheiros.png',
-  campo: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/campo.png',
-  piscina: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/piscina.png',
-  areaGourmet2: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/area-gurmet-2.png',
-  salaReuniao: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/sala%20de%20reuniao.png',
-  salaJogos: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/sala-de-jogos.png',
+// Fotos do sítio: ficam dentro do próprio site (public/fotos), otimizadas em WebP de 1600 px.
+export const FOTOS = {
+  auditorio: '/fotos/auditorio.webp',
+  salao: '/fotos/salao.webp',
+  banheiros: '/fotos/banheiros.webp',
+  campo: '/fotos/campo.webp',
+  piscina: '/fotos/piscina.webp',
+  areaGourmet2: '/fotos/area-gourmet-2.webp',
+  salaReuniao: '/fotos/sala-reuniao.webp',
+  salaJogos: '/fotos/sala-jogos.webp',
+};
+
+// Endereço e mapa. As coordenadas ficam em branco de propósito: o mapa usa o endereço.
+export const LOCAL = {
+  endereco: 'Estrada São Lourenço, 3897, Xerém, Duque de Caxias, RJ',
+  cidade: 'Duque de Caxias',
+  estado: 'RJ',
 };
 
 export const GALLERY_ITEMS: GalleryItem[] = [
@@ -41,7 +61,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Auditório de Cultos, Vigílias & Ministrações',
     category: 'culto',
     categoryLabel: 'Auditório de Cultos',
-    image: SUPABASE_IMAGES.auditorio,
+    image: FOTOS.auditorio,
     description: 'Espaço dedicado e preparado para cultos, louvores, reuniões e vigílias da igreja.',
     featured: true,
   },
@@ -50,7 +70,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Área Gourmet com Churrasqueira',
     category: 'refeitorio',
     categoryLabel: 'Salão & Refeitório',
-    image: SUPABASE_IMAGES.salao,
+    image: FOTOS.salao,
     description: 'Área externa coberta com churrasqueira, pia e freezer para a igreja preparar as próprias refeições. O sítio também tem salão com mesas e cadeiras e cozinha.',
     featured: true,
   },
@@ -59,7 +79,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Piscina Panorâmica & Área de Lazer',
     category: 'lazer',
     categoryLabel: 'Piscina e Esporte',
-    image: SUPABASE_IMAGES.piscina,
+    image: FOTOS.piscina,
     description: 'Piscina para momentos de lazer saudável e recreação da congregação.',
     featured: true,
   },
@@ -68,7 +88,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Campo de Futebol Gramado',
     category: 'lazer',
     categoryLabel: 'Piscina e Esporte',
-    image: SUPABASE_IMAGES.campo,
+    image: FOTOS.campo,
     description: 'Campo gramado para partidas de futebol, esportes e gincanas da juventude e irmãos.',
     featured: true,
   },
@@ -77,7 +97,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Banheiros',
     category: 'dormitorios',
     categoryLabel: 'Acomodações',
-    image: SUPABASE_IMAGES.banheiros,
+    image: FOTOS.banheiros,
     description: 'Mais de 4 banheiros espalhados pelo sítio, além dos que ficam nos dormitórios.',
     featured: false,
   },
@@ -86,7 +106,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Área Gourmet — Outro Ângulo',
     category: 'refeitorio',
     categoryLabel: 'Salão & Refeitório',
-    image: SUPABASE_IMAGES.areaGourmet2,
+    image: FOTOS.areaGourmet2,
     description: 'Mais uma vista da área gourmet, onde a igreja prepara e serve as próprias refeições.',
     featured: false,
   },
@@ -95,7 +115,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Sala de Reuniões',
     category: 'culto',
     categoryLabel: 'Auditório de Cultos',
-    image: SUPABASE_IMAGES.salaReuniao,
+    image: FOTOS.salaReuniao,
     description: 'Ambiente reservado para reuniões de liderança, estudos e encontros menores.',
     featured: false,
   },
@@ -104,7 +124,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     title: 'Sala de Jogos',
     category: 'lazer',
     categoryLabel: 'Piscina e Esporte',
-    image: SUPABASE_IMAGES.salaJogos,
+    image: FOTOS.salaJogos,
     description: 'Sala de jogos para momentos de descontração e confraternização da congregação.',
     featured: false,
   },

@@ -1,5 +1,6 @@
 // Regras de datas e preço do agendamento. Sem dependências: roda no navegador e no servidor.
 // Datas são sempre strings "AAAA-MM-DD".
+import type { Visita, VisitaCfg } from './visitas';
 
 export interface Cfg {
   base: number; // preço do pacote base
@@ -162,6 +163,9 @@ export interface AdminData {
   dias: Record<string, { aberto: boolean; motivo: string | null }>;
   reservas: Reserva[];
   admins: { email: string; criado_em: string }[];
+  visitas: Visita[];
+  visitaCfg: VisitaCfg;
+  visitaBloqueios: { data: string; motivo: string | null }[];
   eu: string; // e-mail de quem está logado
 }
 
