@@ -72,8 +72,8 @@ export default function Privacidade() {
             <b>WhatsApp (Meta):</b> quando você conversa conosco pelo aplicativo, valem os termos e a política de privacidade dele.
           </li>
           <li>
-            <b>Vimeo e Google Maps:</b> o vídeo da página inicial e o mapa da seção &ldquo;Como chegar&rdquo; são carregados desses serviços, que podem registrar o seu acesso
-            conforme as próprias políticas.
+            <b>Supabase e Google Maps:</b> o vídeo da página inicial (guardado no Supabase) e o mapa da seção &ldquo;Como chegar&rdquo; (Google) são carregados desses
+            serviços, que podem registrar o seu acesso conforme as próprias políticas.
           </li>
           <li>Servidor e banco de dados em que o site funciona, que guardam as informações com acesso restrito.</li>
         </ul>

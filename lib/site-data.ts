@@ -48,6 +48,13 @@ export const FOTOS = {
   salaJogos: '/fotos/sala-jogos.webp',
 };
 
+// Vídeo da página inicial (horizontal, 16:9), hospedado no Supabase Storage.
+// Para trocar o vídeo, suba o novo arquivo no Supabase e mude só o endereço abaixo.
+export const VIDEO_HOME = {
+  url: 'https://eocpwpvxcxtnjcydloeu.supabase.co/storage/v1/object/public/sitio%20shalom/video%20shalom.mp4',
+  origem: 'https://eocpwpvxcxtnjcydloeu.supabase.co',
+};
+
 // Endereço e mapa. As coordenadas ficam em branco de propósito: o mapa usa o endereço.
 export const LOCAL = {
   endereco: 'Estrada São Lourenço, 3897, Xerém, Duque de Caxias, RJ',

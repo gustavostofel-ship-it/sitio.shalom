@@ -2,18 +2,20 @@ import type { NextConfig } from 'next';
 
 const producao = process.env.NODE_ENV === 'production';
 
-// Política de conteúdo: o site só carrega o que precisa. Vimeo (vídeo da página inicial) e o mapa do
-// Google (seção "Como chegar") são os únicos de fora. 'unsafe-inline' é necessário para os scripts que o
-// próprio Next coloca na página; não há eval nem código de terceiros.
+// Política de conteúdo: o site só carrega o que precisa. O vídeo da página inicial (Supabase Storage) e o
+// mapa do Google (seção "Como chegar") são os únicos de fora. 'unsafe-inline' é necessário para os scripts
+// que o próprio Next coloca na página; não há eval nem código de terceiros.
+// Se mudar o endereço do vídeo (VIDEO_HOME em lib/site-data.ts), mude também o endereço abaixo.
+const SUPABASE = 'https://eocpwpvxcxtnjcydloeu.supabase.co';
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://i.vimeocdn.com https://*.vimeocdn.com",
+  "img-src 'self' data: blob:",
   "font-src 'self' data:",
   "connect-src 'self'",
-  "media-src 'self' https://*.vimeocdn.com",
-  'frame-src https://player.vimeo.com https://www.google.com',
+  `media-src 'self' ${SUPABASE}`,
+  'frame-src https://www.google.com',
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

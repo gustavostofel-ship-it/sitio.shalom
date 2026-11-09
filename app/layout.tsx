@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { SemZoom } from '@/components/SemZoom';
-import { LOCAL, SITE_INFO } from '@/lib/site-data';
+import { LOCAL, SITE_INFO, VIDEO_HOME } from '@/lib/site-data';
 import { siteUrl } from '@/lib/site-url';
 
 const playfair = Playfair_Display({
@@ -64,9 +64,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR" className={`${playfair.variable} ${plusJakarta.variable}`}>
       <head>
-        <link rel="preconnect" href="https://player.vimeo.com" />
-        <link rel="preconnect" href="https://f.vimeocdn.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
+        <link rel="preconnect" href={VIDEO_HOME.origem} />
       </head>
       <body className="bg-[#FAF8F5] text-[#1C1917] antialiased selection:bg-[#1B4332] selection:text-white" suppressHydrationWarning>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(negocio).replace(/</g, '\\u003c') }} />
