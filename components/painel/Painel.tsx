@@ -22,7 +22,7 @@ const NAV = [
 
 const Marca = ({ claro = false }: { claro?: boolean }) => (
   <div className="flex items-center gap-3">
-    <Simbolo sobreEscuro={!claro} className="h-11 w-11" />
+    <Simbolo className="w-[88px]" />
     <div className="leading-tight">
       <p className={`font-serif text-[17px] ${claro ? 'text-[#14301F]' : 'text-[#F3EFE6]'}`}>Sítio Shalom</p>
       <p className={`text-xs ${claro ? 'text-stone-600' : 'text-[#9DB8A5]'}`}>Painel do administrador</p>
