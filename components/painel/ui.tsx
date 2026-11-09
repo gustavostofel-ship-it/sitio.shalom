@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Pagamento } from '@/lib/agenda';
 
 // Peças visuais compartilhadas do painel. Cores do site: Folha #1B4332, Mata #0F291E, Papel #F6F3EC, Âmbar #D97706.
@@ -10,6 +10,65 @@ export const rotulo = 'block text-[13px] font-medium text-stone-700';
 export const botao = `inline-flex items-center justify-center gap-2 rounded-md border border-[#BDB4A1] bg-white px-3.5 py-2.5 text-sm font-medium text-[#1F2937] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
 export const botaoPri = `inline-flex items-center justify-center gap-2 rounded-md bg-[#1B4332] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#14301F] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
 export const botaoPerigo = `inline-flex items-center justify-center gap-2 rounded-md border border-[#BDB4A1] bg-white px-3.5 py-2.5 text-sm font-medium text-[#B42318] transition-colors hover:border-[#B42318] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
+
+// Botão que pede confirmação na própria tela. Não usa confirm() do navegador: ele pode estar bloqueado
+// (celular, navegador embutido, "impedir novos diálogos") e devolve "não" sem mostrar nada, e o botão parece morto.
+export function BotaoConfirma({
+  rotulo,
+  pergunta,
+  confirmaRotulo = 'Sim, confirmar',
+  className,
+  compacto = false,
+  onConfirma,
+}: {
+  rotulo: React.ReactNode;
+  pergunta: string;
+  confirmaRotulo?: string;
+  className: string;
+  compacto?: boolean;
+  onConfirma: () => unknown;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
+  // A pergunta aparece no fim da janela lateral, que pode estar rolada: leva ela para a vista.
+  const aviso = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (aberto) aviso.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [aberto]);
+  if (!aberto)
+    return (
+      <button type="button" className={className} onClick={() => setAberto(true)}>
+        {rotulo}
+      </button>
+    );
+  const confirmar = async () => {
+    setOcupado(true);
+    try {
+      await onConfirma();
+    } finally {
+      setOcupado(false);
+      setAberto(false);
+    }
+  };
+  const sim = `inline-flex items-center justify-center rounded-md bg-[#B42318] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#8F2517] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
+  if (compacto)
+    return (
+      <span ref={aviso} role="alertdialog" aria-label={pergunta} className="inline-flex flex-wrap items-center gap-2">
+        <span className="text-sm text-[#1F2937]">{pergunta}</span>
+        <button type="button" disabled={ocupado} className={sim} onClick={confirmar}>{confirmaRotulo}</button>
+        <button type="button" disabled={ocupado} className={botao} onClick={() => setAberto(false)}>Voltar</button>
+      </span>
+    );
+  return (
+    <div ref={aviso as React.RefObject<HTMLDivElement>} role="alertdialog" aria-label={pergunta} className="rounded-md border border-[#D9847A] bg-[#FDF3F1] p-3">
+      <p className="text-sm text-[#1F2937]">{pergunta}</p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button type="button" disabled={ocupado} className={sim} onClick={confirmar}>{confirmaRotulo}</button>
+        <button type="button" disabled={ocupado} className={botao} onClick={() => setAberto(false)}>Voltar</button>
+      </div>
+    </div>
+  );
+}
 
 const COR: Record<string, string> = {
   aguardando_sinal: 'bg-[#FBEBC8] text-[#6B3A04]',

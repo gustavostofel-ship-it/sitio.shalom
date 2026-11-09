@@ -8,7 +8,7 @@ import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
 import { Simbolo } from '@/components/Logo';
-import { CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
+import { BotaoConfirma, CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
 type Aba = 'resumo' | 'cal' | 'rsv' | 'cfg' | 'adm';
@@ -175,9 +175,11 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
           </a>
         )}
         {(st === 'cancelada' || st === 'expirada') && <button className={botao} onClick={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })}>Reativar, se as datas estiverem livres</button>}
-        {st === 'confirmada' && <button className={botao} onClick={() => confirm('Voltar para aguardando sinal zera o valor já recebido. Continuar?') && chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })}>Voltar para aguardando sinal</button>}
+        {st === 'confirmada' && (
+          <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal zera o valor já recebido. Continuar?" confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
+        )}
         {(st === 'aguardando_sinal' || st === 'confirmada') && (
-          <button className={botaoPerigo} onClick={() => confirm('Cancelar esta reserva e liberar as datas?') && chamar('reserva.status', { id: r.id, status: 'cancelada' }).then(fechar)}>Cancelar reserva e liberar as datas</button>
+          <BotaoConfirma className={botaoPerigo} rotulo="Cancelar reserva e liberar as datas" pergunta="Cancelar esta reserva e liberar as datas para novos pedidos?" confirmaRotulo="Sim, cancelar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'cancelada' }).then(fechar)} />
         )}
       </div>
     </div>

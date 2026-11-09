@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import type { AdminData } from '@/lib/agenda';
 import type { Chamar } from './tipos';
-import { Secao, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
+import { BotaoConfirma, Secao, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 
 export function Admins({ dados, chamar }: { dados: AdminData; chamar: Chamar }) {
   const [email, setEmail] = useState('');
@@ -45,7 +45,7 @@ export function Admins({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
                 <div className="flex w-full gap-2 pl-[52px] sm:w-auto sm:pl-0">
                   <button onClick={() => { setTrocando(trocando === a.email ? null : a.email); setNova(''); }} className={botao}>Trocar senha</button>
                   {a.email !== dados.eu && dados.admins.length > 1 && (
-                    <button onClick={() => confirm(`Remover o acesso de ${a.email}?`) && chamar('admin.remover', { email: a.email })} className={botaoPerigo}>Remover</button>
+                    <BotaoConfirma compacto className={botaoPerigo} rotulo="Remover" pergunta={`Remover o acesso de ${a.email}?`} confirmaRotulo="Sim, remover" onConfirma={() => chamar('admin.remover', { email: a.email })} />
                   )}
                 </div>
               </div>
