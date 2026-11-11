@@ -287,6 +287,13 @@ function GavetaVisita({ v, chamar, fechar }: { v: Visita; chamar: Chamar; fechar
         {ativa && (
           <BotaoConfirma className={botaoPerigo} rotulo="Cancelar visita" pergunta="Cancelar esta visita e liberar o horário?" confirmaRotulo="Sim, cancelar" onConfirma={() => mudar('cancelada').then(fechar)} />
         )}
+        <BotaoConfirma
+          className={botaoPerigo}
+          rotulo="Excluir de vez (não tem volta)"
+          pergunta='Excluir esta visita para sempre? Ela some do sistema e não pode ser desfeita. Para só liberar o horário, use "Cancelar".'
+          confirmaRotulo="Sim, excluir para sempre"
+          onConfirma={() => chamar('visita.excluir', { id: v.id }).then(fechar)}
+        />
       </div>
 
       <div className="mt-6 rounded-lg border border-[#D2CAB8] bg-[#F6F3EC] p-4">

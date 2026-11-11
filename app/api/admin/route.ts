@@ -244,6 +244,15 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string, eu: string) {
   if (d) await notificar(status === 'confirmada' ? avisoReservaConfirmada(d, eu, true) : { ...avisoReservaNova(d), autor: eu });
 }
 
+// Exclusão definitiva (sem volta): apaga a reserva e os avisos ligados a ela. Libera as datas.
+async function excluirReserva(p: Pool, b: Corpo) {
+  const id = num(b.id, 1, 1e12);
+  if (id === null) throw invalido('Reserva inválida.');
+  const r = await p.query('delete from agenda_reservas where id = $1', [id]);
+  if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  await p.query("delete from agenda_notificacoes where ref_tipo = 'reserva' and ref_id = $1", [id]);
+}
+
 // ---------- Visitas ----------
 const STATUS_VISITA: StatusVisita[] = ['pedida', 'agendada', 'realizada', 'cancelada', 'nao_compareceu'];
 
@@ -295,6 +304,13 @@ async function visitaCriar(p: Pool, b: Corpo, eu: string) {
   });
   const d = nova.id ? await visitaPorId(p, nova.id) : null;
   if (d) await notificar(status === 'agendada' ? avisoVisitaConfirmada(d, eu) : { ...avisoVisitaNova(d), autor: eu });
+}
+
+async function visitaExcluir(p: Pool, b: Corpo) {
+  const id = idVisita(b);
+  const r = await p.query('delete from agenda_visitas where id = $1', [id]);
+  if (!r.rowCount) throw new HttpErro(404, 'Visita não encontrada.');
+  await p.query("delete from agenda_notificacoes where ref_tipo = 'visita' and ref_id = $1", [id]);
 }
 
 async function visitaStatus(p: Pool, b: Corpo, eu: string) {
@@ -420,6 +436,12 @@ export async function POST(req: Request) {
         return ok();
       case 'visita.criar':
         await visitaCriar(p, b, eu);
+        return ok();
+      case 'reserva.excluir':
+        await excluirReserva(p, b);
+        return ok();
+      case 'visita.excluir':
+        await visitaExcluir(p, b);
         return ok();
       case 'visita.status':
         await visitaStatus(p, b, eu);

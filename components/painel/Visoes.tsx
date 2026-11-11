@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Globe, PenLine, Search } from 'lucide-react';
+import { Globe, PenLine, Plus, Search } from 'lucide-react';
 import { add, br, brl, diff, dia, dow, pagamento, paraAgenda, segura, statusDia, type AdminData, type Reserva } from '@/lib/agenda';
 import { CURVAS, PilulaReserva, botaoPri, botao, campo } from './ui';
 
@@ -221,7 +221,7 @@ export function Resumo({ dados, abrir, confirmar, irParaDatas, irParaCalendario 
   );
 }
 
-export function ListaReservas({ dados, abrir }: { dados: AdminData; abrir: (id: number) => void }) {
+export function ListaReservas({ dados, abrir, nova }: { dados: AdminData; abrir: (id: number) => void; nova: () => void }) {
   const [filtro, setFiltro] = useState('todas');
   const [busca, setBusca] = useState('');
   const t = busca.toLowerCase();
@@ -242,6 +242,9 @@ export function ListaReservas({ dados, abrir }: { dados: AdminData; abrir: (id: 
             </button>
           ))}
         </div>
+        <button className="inline-flex items-center justify-center gap-2 rounded-md bg-[#1B4332] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#14301F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D97706] sm:py-2" onClick={nova}>
+          <Plus className="h-4 w-4" /> Nova reserva
+        </button>
         <label className="relative w-full sm:w-72">
           <span className="sr-only">Buscar reservas</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
-import { brl, br, diff, faixa, pagamento, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
+import { Bell, BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, Plus, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
+import { add, brl, br, diff, faixa, pagamento, paraAgenda, proximas, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
@@ -184,6 +184,13 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
         {st === 'confirmada' && (
           <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal? O valor já recebido continua registrado." confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
         )}
+        <BotaoConfirma
+          className={botaoPerigo}
+          rotulo="Excluir de vez (não tem volta)"
+          pergunta={`Excluir esta reserva para sempre? Ela some do sistema${r.pago > 0 ? ` e o registro de ${brl(r.pago)} recebidos também` : ''}. Isso não pode ser desfeito. Para só liberar as datas, use "Cancelar".`}
+          confirmaRotulo="Sim, excluir para sempre"
+          onConfirma={() => chamar('reserva.excluir', { id: r.id }).then(fechar)}
+        />
         {(st === 'aguardando_sinal' || st === 'confirmada') && (
           <BotaoConfirma className={botaoPerigo} rotulo="Cancelar reserva e liberar as datas" pergunta="Cancelar esta reserva e liberar as datas para novos pedidos?" confirmaRotulo="Sim, cancelar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'cancelada' }).then(fechar)} />
         )}
@@ -192,7 +199,7 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
   );
 }
 
-function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita }: { ini: { a: string; b: string }; dados: AdminData; ag: AgendaData; chamar: Chamar; fechar: () => void; abrirVisita: (id: number) => void }) {
+function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita, soReserva = false }: { ini: { a: string; b: string }; soReserva?: boolean; dados: AdminData; ag: AgendaData; chamar: Chamar; fechar: () => void; abrirVisita: (id: number) => void }) {
   const [a, setA] = useState(ini.a);
   const [b, setB] = useState(ini.b);
   const [motivo, setMotivo] = useState('');
@@ -220,7 +227,7 @@ function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita }: { ini: { a:
         <label className={rotulo}>Até<input type="date" className={`${campo} mt-1`} value={b} min={a} onChange={(e) => setB(e.target.value)} /></label>
       </div>
 
-      {visitasDoPeriodo.length > 0 && (
+      {!soReserva && visitasDoPeriodo.length > 0 && (
         <div className="mt-6 rounded-lg border border-[#C9D8E6] bg-[#EEF4FA] p-4">
           <h3 className="font-serif text-lg text-[#14301F]">Visitas {a === b ? 'neste dia' : 'neste período'}</h3>
           <ul className="mt-2 divide-y divide-[#C9D8E6]">
@@ -237,19 +244,23 @@ function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita }: { ini: { a:
         </div>
       )}
 
-      <h3 className="mt-8 font-serif text-lg text-[#14301F]">Disponibilidade para o cliente</h3>
-      <label className={`${rotulo} mt-3`}>
-        Motivo (só você vê)
-        <input className={`${campo} mt-1`} value={motivo} maxLength={80} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: manutenção, família, férias" />
-      </label>
-      <div className="mt-3 grid gap-2">
-        <button disabled={!dias.length} className={botaoPerigo} onClick={() => agir('fechar')}><Lock className="h-4 w-4" /> Fechar para o cliente</button>
-        <button disabled={!dias.length} className={botao} onClick={() => agir('abrir')}><LockOpen className="h-4 w-4" /> Abrir para o cliente</button>
-        <button disabled={!dias.length} className={botao} onClick={() => agir('padrao')}><Undo2 className="h-4 w-4" /> Voltar ao padrão</button>
-      </div>
-      <p className="mt-3 text-sm text-stone-600">Dias passados ou com reserva são mantidos. Dias abertos soltos (menos de {dados.cfg.minDias} seguidos) ficam ocultos para o cliente.</p>
+      {!soReserva && (
+        <>
+          <h3 className="mt-8 font-serif text-lg text-[#14301F]">Disponibilidade para o cliente</h3>
+          <label className={`${rotulo} mt-3`}>
+            Motivo (só você vê)
+            <input className={`${campo} mt-1`} value={motivo} maxLength={80} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: manutenção, família, férias" />
+          </label>
+          <div className="mt-3 grid gap-2">
+            <button disabled={!dias.length} className={botaoPerigo} onClick={() => agir('fechar')}><Lock className="h-4 w-4" /> Fechar para o cliente</button>
+            <button disabled={!dias.length} className={botao} onClick={() => agir('abrir')}><LockOpen className="h-4 w-4" /> Abrir para o cliente</button>
+            <button disabled={!dias.length} className={botao} onClick={() => agir('padrao')}><Undo2 className="h-4 w-4" /> Voltar ao padrão</button>
+          </div>
+          <p className="mt-3 text-sm text-stone-600">Dias passados ou com reserva são mantidos. Dias abertos soltos (menos de {dados.cfg.minDias} seguidos) ficam ocultos para o cliente.</p>
+        </>
+      )}
 
-      <h3 className="mt-8 font-serif text-lg text-[#14301F]">Criar reserva manual</h3>
+      <h3 className="mt-8 font-serif text-lg text-[#14301F]">{soReserva ? 'Nova reserva' : 'Criar reserva manual'}</h3>
       <p className="mt-1 text-sm text-stone-600">Para quem fechou por telefone ou WhatsApp.</p>
       {podeReservar ? (
         <div className="mt-3 space-y-3">
@@ -427,6 +438,15 @@ export function Painel() {
     },
     [dados]
   );
+  // Abre o formulário de nova reserva já com o próximo fim de semana livre (dá para trocar as datas).
+  const novaReserva = () => {
+    if (!dados || !ag) return;
+    const p = proximas(ag, 1)[0];
+    const a = p?.a ?? dados.hoje;
+    const b = p?.b ?? add(dados.hoje, dados.cfg.minDias - 1);
+    setSelCal(null);
+    setGaveta({ tipo: 'dias', a, b, soReserva: true });
+  };
   const irParaDatas = (a: string, b: string) => {
     setAba('cal');
     setModo(1);
@@ -573,6 +593,7 @@ export function Painel() {
                   <button className={icone} onClick={() => mover(1)} aria-label="Próximo mês"><ChevronRight className="h-4 w-4" /></button>
                   <p className="ml-2 min-w-[160px] font-serif text-xl text-[#14301F] first-letter:uppercase">{modo === 1 ? rotuloMes(ini) : `${rotuloMes(ini)} a ${rotuloMes(meses[meses.length - 1])}`}</p>
                   <button className={`${botao} ml-1`} onClick={() => setIni(hojeComoMes(dados.hoje))}>Hoje</button>
+                  <button className={botaoPri} onClick={novaReserva}><Plus className="h-4 w-4" /> Nova reserva</button>
                 </div>
                 <div className="inline-flex rounded-lg bg-[#EFEBE3] p-1" role="tablist" aria-label="Quantos meses mostrar">
                   {([1, 3, 12] as const).map((n) => (
@@ -593,7 +614,7 @@ export function Painel() {
               <p className="mt-3 text-sm text-stone-600">Clique num dia ou arraste para selecionar vários. A gaveta mostra a reserva ou deixa você fechar, abrir ou criar uma reserva.</p>
             </section>
           )}
-          {aba === 'rsv' && <ListaReservas dados={dados} abrir={abrirReserva} />}
+          {aba === 'rsv' && <ListaReservas dados={dados} abrir={abrirReserva} nova={novaReserva} />}
           {aba === 'cfg' && <Regras dados={dados} chamar={chamar} />}
           {aba === 'adm' && <Admins dados={dados} chamar={chamar} />}
         </div>
@@ -607,8 +628,9 @@ export function Painel() {
             {gaveta.tipo === 'reserva' && reservaAberta && <GavetaReserva key={`${reservaAberta.id}-${reservaAberta.status}-${reservaAberta.pago}`} r={reservaAberta} dados={dados} chamar={chamar} fechar={fechar} />}
             {gaveta.tipo === 'dias' && (
               <GavetaDias
-                key={gaveta.a + gaveta.b}
+                key={gaveta.a + gaveta.b + (gaveta.soReserva ? 'r' : '')}
                 ini={gaveta}
+                soReserva={gaveta.soReserva}
                 dados={dados}
                 ag={ag}
                 chamar={chamar}
