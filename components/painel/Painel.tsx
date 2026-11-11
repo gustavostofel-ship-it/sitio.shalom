@@ -182,7 +182,7 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
         )}
         {(st === 'cancelada' || st === 'expirada') && <button className={botao} onClick={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })}>Reativar, se as datas estiverem livres</button>}
         {st === 'confirmada' && (
-          <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal zera o valor já recebido. Continuar?" confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
+          <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal? O valor já recebido continua registrado." confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
         )}
         {(st === 'aguardando_sinal' || st === 'confirmada') && (
           <BotaoConfirma className={botaoPerigo} rotulo="Cancelar reserva e liberar as datas" pergunta="Cancelar esta reserva e liberar as datas para novos pedidos?" confirmaRotulo="Sim, cancelar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'cancelada' }).then(fechar)} />

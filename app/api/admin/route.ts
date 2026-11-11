@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { Pool } from 'pg';
-import { exigirAdmin, HttpErro } from '@/lib/admin-auth';
+import { confirmarSenha, exigirAdmin, HttpErro, iniciarSessao } from '@/lib/admin-auth';
 import { hashSenha } from '@/lib/senha.mjs';
+import { lerJson } from '@/lib/corpo';
 import { emailValido } from '@/lib/sessao';
 import { SEGURA_SQL, cfgDeLinha, hojeSP } from '@/lib/agenda-server';
-import { sugerirPeriodos, type AdminData } from '@/lib/agenda';
+import { dataReal, sugerirPeriodos, type AdminData } from '@/lib/agenda';
 import { cfgDeLinhaVisita } from '@/lib/visitas-server';
 import { chavesPush, enviarTeste, notificar } from '@/lib/notificar';
 import {
@@ -27,8 +28,7 @@ export const dynamic = 'force-dynamic';
 
 type Corpo = Record<string, unknown>;
 
-const DATA = /^\d{4}-\d{2}-\d{2}$/;
-const dataOk = (v: unknown): v is string => typeof v === 'string' && DATA.test(v) && !Number.isNaN(Date.parse(v));
+const dataOk = dataReal;
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const num = (v: unknown, min: number, max: number) => {
   const n = Number(v);
@@ -183,12 +183,17 @@ async function statusReserva(p: Pool, b: Corpo, eu: string) {
     const c = await p.query('select hold_horas from agenda_config where id = 1');
     segura = new Date(Date.now() + c.rows[0].hold_horas * 3600e3);
   }
-  // Confirmar = sinal recebido. Voltar a "aguardando sinal" zera o que foi recebido. Cancelar mantém o registro do valor.
+  const antes = await p.query('select status from agenda_reservas where id = $1', [id]);
+  if (!antes.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  const mudou = antes.rows[0].status !== b.status;
+  // Confirmar = sinal recebido. O valor já recebido NUNCA é apagado por troca de status
+  // (reativar uma reserva cancelada não pode fazer o dinheiro recebido sumir do registro).
   const r = await p.query(
-    "update agenda_reservas set status = $1::text, segura_ate = $2, pago = case when $1::text = 'confirmada' then greatest(pago, sinal) when $1::text = 'aguardando_sinal' then 0 else pago end where id = $3",
+    "update agenda_reservas set status = $1::text, segura_ate = $2, pago = case when $1::text = 'confirmada' then greatest(pago, sinal) else pago end where id = $3",
     [b.status, segura, id]
   );
   if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  if (!mudou) return; // mesmo status: não avisa de novo
   const d = await reservaPorId(p, id);
   if (d && b.status === 'confirmada') await notificar(avisoReservaConfirmada(d, eu));
   if (d && b.status === 'cancelada') await notificar(avisoReservaCancelada(d, eu));
@@ -357,19 +362,23 @@ function senhaDe(v: unknown) {
   return s;
 }
 
-async function criarAdmin(p: Pool, b: Corpo) {
+async function criarAdmin(p: Pool, b: Corpo, eu: string) {
+  await confirmarSenha(p, eu, b.senhaAtual);
   const email = emailDe(b.email);
   if (!emailValido(email)) throw invalido('Informe um e-mail válido.');
   const r = await p.query('insert into agenda_admins (email, senha_hash) values ($1, $2) on conflict (email) do nothing', [email, hashSenha(senhaDe(b.senha))]);
   if (!r.rowCount) throw new HttpErro(409, 'Este e-mail já é administrador.');
 }
 
-async function trocarSenha(p: Pool, b: Corpo) {
-  const r = await p.query('update agenda_admins set senha_hash = $1 where email = $2', [hashSenha(senhaDe(b.senha)), emailDe(b.email)]);
+// Trocar a senha encerra as sessões abertas dessa pessoa (quem estiver logado com a senha antiga é desconectado).
+async function trocarSenha(p: Pool, b: Corpo, eu: string) {
+  await confirmarSenha(p, eu, b.senhaAtual);
+  const r = await p.query('update agenda_admins set senha_hash = $1, sessao_versao = sessao_versao + 1 where email = $2', [hashSenha(senhaDe(b.senha)), emailDe(b.email)]);
   if (!r.rowCount) throw new HttpErro(404, 'Administrador não encontrado.');
 }
 
 async function removerAdmin(p: Pool, b: Corpo, eu: string) {
+  await confirmarSenha(p, eu, b.senhaAtual);
   const email = emailDe(b.email);
   if (email === eu) throw invalido('Você não pode remover o seu próprio acesso.');
   const total = (await p.query('select count(*) as n from agenda_admins')).rows[0].n;
@@ -380,7 +389,7 @@ async function removerAdmin(p: Pool, b: Corpo, eu: string) {
 export async function POST(req: Request) {
   try {
     const { pool: p, email: eu } = await exigirAdmin(req);
-    const b = (await req.json().catch(() => null)) as Corpo | null;
+    const b = await lerJson(req, 64 * 1024);
     if (!b || typeof b.acao !== 'string') throw invalido('Pedido inválido.');
     const hoje = hojeSP();
     switch (b.acao) {
@@ -455,11 +464,15 @@ export async function POST(req: Request) {
         await visitaBloqueio(p, b);
         return ok();
       case 'admin.criar':
-        await criarAdmin(p, b);
+        await criarAdmin(p, b, eu);
         return ok();
-      case 'admin.senha':
-        await trocarSenha(p, b);
-        return ok();
+      case 'admin.senha': {
+        await trocarSenha(p, b, eu);
+        const res = ok();
+        // Trocou a PRÓPRIA senha: a sessão atual foi encerrada junto; entra de novo sem pedir login.
+        if (emailDe(b.email) === eu) await iniciarSessao(res, req, eu);
+        return res;
+      }
       case 'admin.remover':
         await removerAdmin(p, b, eu);
         return ok();

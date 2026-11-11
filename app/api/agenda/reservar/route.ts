@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cotar, dia, brl } from '@/lib/agenda';
+import { cotar, dia, brl, dataReal } from '@/lib/agenda';
+import { lerJson } from '@/lib/corpo';
+import { fichaValida } from '@/lib/token-form';
+import { segredo } from '@/lib/admin-auth';
 import { carregarAgenda } from '@/lib/agenda-server';
 import { db } from '@/lib/db';
 import { avisar } from '@/lib/aviso';
@@ -16,22 +19,16 @@ export const dynamic = 'force-dynamic';
 // por origem (IP), por WhatsApp e no total de pedidos do site aguardando sinal.
 const POR_IP = Number(process.env.LIMITE_RESERVAS_IP ?? 3);
 const NO_TOTAL = Number(process.env.LIMITE_RESERVAS_ABERTAS ?? 12);
-const MIN_MS_NO_FORMULARIO = 3000;
 
 const PUBLICOS = ['Até 50 pessoas', '50 a 100 pessoas', '100 a 150 pessoas'];
-const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const txt = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const falha = (erro: string, status: number) => NextResponse.json({ erro }, { status });
 
 export async function POST(req: Request) {
-  let b: Record<string, unknown>;
-  try {
-    b = await req.json();
-  } catch {
-    return falha('Pedido inválido.', 400);
-  }
+  const b = await lerJson(req);
+  if (!b) return falha('Pedido inválido.', 400);
   // Campo escondido que gente de verdade não vê e robô preenche, e tempo mínimo no formulário.
-  if (txt(b.site, 200) || !(Number(b.ms) >= MIN_MS_NO_FORMULARIO)) return falha('Não foi possível enviar. Atualize a página e tente de novo.', 400);
+  if (txt(b.site, 200) || !fichaValida(b.tk, segredo())) return falha('Não foi possível enviar. Atualize a página e tente de novo.', 400);
   const ip = ipDoPedido(req);
   if (!dentroDoLimite('reservar:' + ip, 8, 10 * 60e3)) return falha('Muitas tentativas. Espere alguns minutos ou fale com a gente pelo WhatsApp.', 429);
 
@@ -41,7 +38,7 @@ export async function POST(req: Request) {
     igreja = txt(b.igreja, 80),
     whats = whatsappNormalizado(txt(b.whatsapp, 25)),
     publico = PUBLICOS.includes(String(b.publico)) ? String(b.publico) : null;
-  if (!DATA.test(entrada) || !DATA.test(saida)) return falha('Pedido inválido.', 400);
+  if (!dataReal(entrada) || !dataReal(saida)) return falha('Pedido inválido.', 400);
   if (nome.length < 2) return falha('Informe seu nome.', 422);
   if (!whats) return falha('Informe um WhatsApp de celular válido, com DDD.', 422);
   if (b.aceite !== true) return falha('Para reservar, aceite a Política de Privacidade e os Termos de reserva.', 422);

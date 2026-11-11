@@ -14,7 +14,7 @@ if (!email || !senha || senha.length < 10) {
 const cliente = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await cliente.connect();
 await cliente.query(
-  'insert into agenda_admins (email, senha_hash) values ($1, $2) on conflict (email) do update set senha_hash = excluded.senha_hash',
+  'insert into agenda_admins (email, senha_hash) values ($1, $2) on conflict (email) do update set senha_hash = excluded.senha_hash, sessao_versao = agenda_admins.sessao_versao + 1',
   [email.trim().toLowerCase(), hashSenha(senha)]
 );
 console.log('Administrador pronto:', email.trim().toLowerCase());

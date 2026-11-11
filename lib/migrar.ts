@@ -70,6 +70,8 @@ export async function migrar() {
     // Notificações: histórico de acontecimentos, aparelhos que recebem push e preferências de cada pessoa.
     await db().query(`
       alter table agenda_admins add column if not exists notificacoes_lidas_ate bigint not null default 0;
+      -- "Versão" da sessão: subir o número encerra todas as sessões abertas dessa pessoa (sair, trocar senha).
+      alter table agenda_admins add column if not exists sessao_versao integer not null default 1;
 
       create table if not exists agenda_notificacoes (
         id        bigint generated always as identity primary key,

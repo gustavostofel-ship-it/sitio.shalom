@@ -31,14 +31,18 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   const [pers, setPers] = useState<Linha[]>(() => dados.periodos.map((p) => ({ ...p, preco: String(p.preco) })));
   const [ano, setAno] = useState(+dados.hoje.slice(0, 4));
   // Quando o servidor manda dados novos (depois de salvar), os campos voltam a refletir o que está salvo.
-  const [cfgOrigem, setCfgOrigem] = useState(dados.cfg);
-  const [persOrigem, setPersOrigem] = useState(dados.periodos);
-  if (cfgOrigem !== dados.cfg) {
-    setCfgOrigem(dados.cfg);
+  // Compara pelo CONTEÚDO, não pela referência: o painel recarrega sozinho a cada 45 s e isso
+  // não pode apagar o que a pessoa está digitando.
+  const cfgTxt = JSON.stringify(dados.cfg);
+  const persTxt = JSON.stringify(dados.periodos);
+  const [cfgOrigem, setCfgOrigem] = useState(cfgTxt);
+  const [persOrigem, setPersOrigem] = useState(persTxt);
+  if (cfgOrigem !== cfgTxt) {
+    setCfgOrigem(cfgTxt);
     setCfg({ ...dados.cfg });
   }
-  if (persOrigem !== dados.periodos) {
-    setPersOrigem(dados.periodos);
+  if (persOrigem !== persTxt) {
+    setPersOrigem(persTxt);
     setPers(dados.periodos.map((p) => ({ ...p, preco: String(p.preco) })));
   }
 

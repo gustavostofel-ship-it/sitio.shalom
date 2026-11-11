@@ -20,7 +20,6 @@ const PUBLICOS = ['Até 50 pessoas', '50 a 100 pessoas', '100 a 150 pessoas'];
 const campo =
   'w-full px-3.5 py-2.5 rounded-lg border border-stone-300 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] outline-hidden text-base sm:text-sm';
 const rotulo = 'block text-xs font-semibold text-stone-700 mb-1.5';
-const agoraMs = () => Date.now(); // medir quanto tempo a pessoa levou para preencher (anti-robô)
 
 const mascara = (v: string) => {
   const n = v.replace(/\D/g, '').slice(0, 11);
@@ -41,7 +40,17 @@ export function BookingSection() {
   const [hora, setHora] = useState('');
   const [aceite, setAceite] = useState(false);
   const [armadilha, setArmadilha] = useState(''); // campo escondido: gente não vê, robô preenche
-  const [abertoEm] = useState(agoraMs);
+  const [ficha, setFicha] = useState(''); // ficha assinada pelo servidor (anti-robô)
+  useEffect(() => {
+    let ativo = true;
+    fetch('/api/formulario', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((j) => ativo && setFicha(String(j.ficha ?? '')))
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, []);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
   const [feito, setFeito] = useState<Feito | null>(null);
@@ -82,7 +91,7 @@ export function BookingSection() {
       const r = await fetch('/api/visitas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, data: dia, hora, aceite, site: armadilha, ms: agoraMs() - abertoEm }),
+        body: JSON.stringify({ ...form, data: dia, hora, aceite, site: armadilha, tk: ficha }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) {

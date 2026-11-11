@@ -10,26 +10,33 @@ export function Admins({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   const [senha, setSenha] = useState('');
   const [trocando, setTrocando] = useState<string | null>(null);
   const [nova, setNova] = useState('');
+  const [atual, setAtual] = useState(''); // a SENHA DE QUEM ESTÁ LOGADO, pedida a cada mudança de acesso
 
   const criar = async (e: React.FormEvent) => {
     e.preventDefault();
-    const r = await chamar('admin.criar', { email, senha });
+    const r = await chamar('admin.criar', { email, senha, senhaAtual: atual });
     if (r.ok) {
       setEmail('');
       setSenha('');
+      setAtual('');
     }
   };
   const trocar = async (alvo: string) => {
-    const r = await chamar('admin.senha', { email: alvo, senha: nova });
+    const r = await chamar('admin.senha', { email: alvo, senha: nova, senhaAtual: atual });
     if (r.ok) {
       setTrocando(null);
       setNova('');
+      setAtual('');
     }
   };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
       <Secao titulo="Quem tem acesso" texto="Cada pessoa entra com o próprio e-mail e senha.">
+        <label className={`${rotulo} mb-4 block rounded-lg bg-[#F5F0E3] p-3`}>
+          Sua senha atual (necessária para adicionar, remover ou trocar a senha de alguém)
+          <input type="password" autoComplete="current-password" className={`${campo} mt-1`} value={atual} onChange={(e) => setAtual(e.target.value)} />
+        </label>
         <ul className="divide-y divide-[#D9D2C3]">
           {dados.admins.map((a) => (
             <li key={a.email} className="py-4">
@@ -45,7 +52,7 @@ export function Admins({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
                 <div className="flex w-full gap-2 pl-[52px] sm:w-auto sm:pl-0">
                   <button onClick={() => { setTrocando(trocando === a.email ? null : a.email); setNova(''); }} className={botao}>Trocar senha</button>
                   {a.email !== dados.eu && dados.admins.length > 1 && (
-                    <BotaoConfirma compacto className={botaoPerigo} rotulo="Remover" pergunta={`Remover o acesso de ${a.email}?`} confirmaRotulo="Sim, remover" onConfirma={() => chamar('admin.remover', { email: a.email })} />
+                    <BotaoConfirma compacto className={botaoPerigo} rotulo="Remover" pergunta={`Remover o acesso de ${a.email}?`} confirmaRotulo="Sim, remover" onConfirma={() => chamar('admin.remover', { email: a.email, senhaAtual: atual })} />
                   )}
                 </div>
               </div>

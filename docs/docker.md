@@ -29,15 +29,30 @@ Dois contêineres: **app** (o site, com o calendário e o painel) e **db** (Post
 
 ## Cópia de segurança
 
-```bash
-sh scripts/backup.sh
-```
-
-Gera `backups/shalom-AAAA-MM-DD-HHMM.sql`. Guarde uma cópia **fora deste computador** (nuvem ou pendrive). Para restaurar numa instalação limpa:
+No Windows (PowerShell):
 
 ```bash
-docker compose exec -T db psql -U shalom -d shalom < backups/ARQUIVO.sql
+powershell -File scripts\backup.ps1
 ```
+
+No servidor (Linux), usando o compose de produção:
+
+```bash
+COMPOSE_FILE=docker-compose.prod.yml sh scripts/backup.sh
+```
+
+- Os arquivos ficam em `~/backups-shalom` (no Windows, `%USERPROFILE%\backups-shalom`), **fora da pasta do projeto e do OneDrive**. Os 30 mais recentes são mantidos.
+- O arquivo só recebe o nome final se o backup terminou certo. Se o banco estiver parado, o script avisa o erro e **não deixa arquivo vazio**.
+- O backup contém **dados de clientes e hashes das senhas**: não compartilhe e guarde uma cópia **fora do servidor**, de preferência criptografada.
+- No servidor, agende para rodar todo dia de madrugada (cron: `0 3 * * * cd /caminho/do/projeto && COMPOSE_FILE=docker-compose.prod.yml sh scripts/backup.sh`).
+
+Para restaurar (para tudo se houver qualquer erro, sem deixar o banco pela metade):
+
+```bash
+gzip -dc ~/backups-shalom/ARQUIVO.sql.gz | docker compose exec -T db psql -U shalom -d shalom -v ON_ERROR_STOP=1 --single-transaction
+```
+
+(No Windows o arquivo é `.sql` puro: `Get-Content ARQUIVO.sql -Raw | docker compose exec -T db psql -U shalom -d shalom -v ON_ERROR_STOP=1 --single-transaction`.)
 
 ## Segurança
 

@@ -12,7 +12,6 @@ interface Sel {
   xa: boolean; // 1 dia extra depois
 }
 const VAZIO: Sel = { a: null, b: null, xb: false, xa: false };
-const agoraMs = () => Date.now(); // medir quanto tempo a pessoa levou para preencher (anti-robô)
 const PUBLICOS = ['Até 50 pessoas', '50 a 100 pessoas', '100 a 150 pessoas'];
 const zap = (texto: string) => `https://wa.me/${SITE_INFO.whatsappNumber}?text=${encodeURIComponent(texto)}`;
 const mascara = (v: string) => {
@@ -31,7 +30,17 @@ export function AgendaReserva() {
   const [msgErro, setMsgErro] = useState('');
   const [aceite, setAceite] = useState(false);
   const [armadilha, setArmadilha] = useState(''); // campo escondido: gente não vê, robô preenche
-  const [abertoEm] = useState(agoraMs);
+  const [ficha, setFicha] = useState(''); // ficha assinada pelo servidor (anti-robô)
+  useEffect(() => {
+    let ativo = true;
+    fetch('/api/formulario', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((j) => ativo && setFicha(String(j.ficha ?? '')))
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, []);
   const [feito, setFeito] = useState<{ id: number; total: number; sinal: number; resumo: string } | null>(null);
 
   const carregar = useCallback(async () => {
@@ -189,7 +198,7 @@ export function AgendaReserva() {
       const r = await fetch('/api/agenda/reservar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ entrada: ef.a, saida: ef.b, ...form, aceite, site: armadilha, ms: agoraMs() - abertoEm }),
+        body: JSON.stringify({ entrada: ef.a, saida: ef.b, ...form, aceite, site: armadilha, tk: ficha }),
       });
       const j = await r.json();
       if (!r.ok) {

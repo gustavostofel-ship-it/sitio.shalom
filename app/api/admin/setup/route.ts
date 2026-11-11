@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const r = await db().query('insert into agenda_admins (email, senha_hash) select $1, $2 where not exists (select 1 from agenda_admins)', [email, hashSenha(senha)]);
     if (!r.rowCount) return NextResponse.json({ erro: 'Já existe um administrador. Entre com o seu login.' }, { status: 403 });
     const res = NextResponse.json({ ok: true });
-    iniciarSessao(res, req, email); // já entra logado
+    await iniciarSessao(res, req, email); // já entra logado
     return res;
   } catch (e) {
     console.error('setup:', e);

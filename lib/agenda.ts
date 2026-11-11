@@ -43,6 +43,12 @@ export const add = (s: string, n: number) => {
   return d.toISOString().slice(0, 10);
 };
 export const diff = (a: string, b: string) => Math.round((D(b).getTime() - D(a).getTime()) / 864e5) + 1;
+// Data de verdade no calendário (recusa 2026-02-30 e semelhantes).
+export const dataReal = (s: unknown): s is string => {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + 'T00:00:00Z');
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+};
 export const dow = (s: string) => D(s).getUTCDay();
 export const faixa = (a: string, b: string) => Array.from({ length: Math.max(0, diff(a, b)) }, (_, i) => add(a, i));
 export const br = (s: string) => s.slice(8) + '/' + s.slice(5, 7);
@@ -77,7 +83,10 @@ export function cotar(a: string, b: string, x: AgendaData): Cotacao {
   const { cfg } = x;
   const erro = (e: string): Cotacao => ({ ok: false, erro: e });
   if (!a || !b || b < a) return erro('Escolha a entrada e a saída.');
+  if (!dataReal(a) || !dataReal(b)) return erro('Data inválida.');
   if (a > add(x.hoje, 548)) return erro('Essa data está longe demais. Fale com a gente pelo WhatsApp.');
+  // Antes de montar a lista de dias: uma saída absurda (ano 9999) não pode travar o servidor.
+  if (diff(a, b) > 120) return erro('Período longo demais. Fale com a gente pelo WhatsApp.');
   const dias = faixa(a, b);
   const n = dias.length;
   const st = dias.map((d) => statusDia(d, x));

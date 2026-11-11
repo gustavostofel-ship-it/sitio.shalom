@@ -19,6 +19,13 @@ import { agoraSP } from '@/lib/visitas';
 const COLUNAS_RESERVA = 'id, nome, igreja, whatsapp, entrada, saida, total, sinal, pago, segura_ate';
 const COLUNAS_VISITA = 'id, nome, igreja, whatsapp, data, hora';
 
+export async function vencerVisitas(p: { query: (sql: string, v?: unknown[]) => Promise<unknown> }, hoje: string) {
+  await p.query(
+    "update agenda_visitas set status = 'cancelada' where status = 'pedida' and origem = 'site' and (criada_em < now() - interval '3 days' or data < $1::date)",
+    [hoje]
+  );
+}
+
 async function tarefa(nome: string, fn: () => Promise<void>) {
   try {
     await fn();
@@ -38,6 +45,12 @@ export async function rodar() {
   // Pedidos sem sinal cujo prazo acabou: marca como vencidos (a qualquer hora)
   await tarefa('vencer', async () => {
     await p.query("update agenda_reservas set status = 'expirada' where status = 'aguardando_sinal' and segura_ate is not null and segura_ate < now()");
+  });
+
+  // Pedidos de visita do site que ninguém respondeu em 3 dias (ou cujo dia já passou) saem da fila,
+  // para não travarem o formulário nem os horários.
+  await tarefa('vencer visitas', async () => {
+    await vencerVisitas(p, hoje);
   });
 
   if (naJanela) {

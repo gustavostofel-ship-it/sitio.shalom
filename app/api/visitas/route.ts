@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { lerJson } from '@/lib/corpo';
+import { fichaValida } from '@/lib/token-form';
+import { segredo } from '@/lib/admin-auth';
+import { vencerVisitas } from '@/lib/agendador';
+import { dataReal } from '@/lib/agenda';
+import { hojeSP } from '@/lib/agenda-server';
 import { avisar } from '@/lib/aviso';
 import { notificar } from '@/lib/notificar';
 import { avisoVisitaNova } from '@/lib/notificacoes';
@@ -14,7 +20,6 @@ export const dynamic = 'force-dynamic';
 
 const PUBLICOS = ['Até 50 pessoas', '50 a 100 pessoas', '100 a 150 pessoas'];
 const FORMATOS = ['Fim de Semana Fechado (Sexta a Domingo)', 'Dia Específico / Day Use (A negociar)', 'Feriado Prolongado / Outro período'];
-const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const POR_IP = Number(process.env.LIMITE_VISITAS_IP ?? 3);
 const NO_TOTAL = Number(process.env.LIMITE_VISITAS_ABERTAS ?? 30);
 const txt = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -22,14 +27,10 @@ const falha = (erro: string, status: number) => NextResponse.json({ erro }, { st
 
 // Pedido de visita feito pela página de vendas. Fica "aguardando confirmação" até o sítio confirmar pelo WhatsApp.
 export async function POST(req: Request) {
-  let b: Record<string, unknown>;
-  try {
-    b = await req.json();
-  } catch {
-    return falha('Pedido inválido.', 400);
-  }
+  const b = await lerJson(req);
+  if (!b) return falha('Pedido inválido.', 400);
   // Mesmas proteções do pedido de reserva: campo escondido, tempo mínimo e limite por origem.
-  if (txt(b.site, 200) || !(Number(b.ms) >= 3000)) return falha('Não foi possível enviar. Atualize a página e tente de novo.', 400);
+  if (txt(b.site, 200) || !fichaValida(b.tk, segredo())) return falha('Não foi possível enviar. Atualize a página e tente de novo.', 400);
   const ip = ipDoPedido(req);
   if (!dentroDoLimite('visita:' + ip, 8, 10 * 60e3)) return falha('Muitas tentativas. Espere alguns minutos ou fale com a gente pelo WhatsApp.', 429);
 
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
   if (!whats) return falha('Informe um WhatsApp de celular válido, com DDD.', 422);
   if (b.aceite !== true) return falha('Para enviar, aceite a Política de Privacidade e os Termos.', 422);
   if (!!data !== !!hora) return falha('Escolha o dia e o horário, ou deixe os dois em branco para combinarmos.', 422);
-  if (data && (!DATA.test(data) || !horaValida(hora))) return falha('Horário inválido.', 422);
+  if (data && (!dataReal(data) || !horaValida(hora))) return falha('Horário inválido.', 422);
 
   try {
     const pool = db();
@@ -54,7 +55,8 @@ export async function POST(req: Request) {
       const { cfg, ctx } = await contextoVisitas(pool);
       if (!horarioDisponivel(cfg, ctx, data, hora)) return falha('Esse horário não está mais disponível. Escolha outro.', 409);
     }
-    const abertos = await pool.query("select count(*) as n from agenda_visitas where whatsapp = $1 and status in ('pedida','agendada') and (data is null or data >= current_date)", [whats]);
+    await vencerVisitas(pool, hojeSP()); // pedidos velhos saem da fila antes de contar
+    const abertos = await pool.query("select count(*) as n from agenda_visitas where whatsapp = $1 and status in ('pedida','agendada') and (data is null or data >= $2)", [whats, hojeSP()]);
     if (abertos.rows[0].n >= 2) return falha('Você já tem visitas aguardando. Fale com a gente pelo WhatsApp para mudar ou marcar outra.', 429);
     const deste = await pool.query("select count(*) as n from agenda_visitas where ip_hash = $1 and status = 'pedida' and criada_em > now() - interval '24 hours'", [origem]);
     const total = await pool.query("select count(*) as n from agenda_visitas where origem = 'site' and status = 'pedida'");

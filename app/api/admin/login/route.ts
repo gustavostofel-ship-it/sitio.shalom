@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { lerJson } from '@/lib/corpo';
 import { confereSenha, hashSenha } from '@/lib/senha.mjs';
 import { iniciarSessao } from '@/lib/admin-auth';
 import { ipDoPedido } from '@/lib/ip';
@@ -15,7 +16,7 @@ const JANELA = 15 * 60e3;
 
 export async function POST(req: Request) {
   const ip = ipDoPedido(req);
-  const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const b = (await lerJson(req, 2048)) ?? {};
   const email = String(b.email ?? '').trim().toLowerCase().slice(0, 120);
   const chaveIp = 'login:ip:' + ip;
   const chaveEmail = 'login:email:' + email;
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
     zerar(chaveIp);
     zerar(chaveEmail);
     const res = NextResponse.json({ ok: true });
-    iniciarSessao(res, req, email);
+    await iniciarSessao(res, req, email);
     return res;
   } catch (e) {
     console.error('login:', e);
