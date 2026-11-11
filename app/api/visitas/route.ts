@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { avisar } from '@/lib/aviso';
+import { notificar } from '@/lib/notificar';
+import { avisoVisitaNova } from '@/lib/notificacoes';
 import { ipDoPedido, resumoIp } from '@/lib/ip';
 import { dentroDoLimite } from '@/lib/limite';
 import { whatsappNormalizado } from '@/lib/telefone';
@@ -70,6 +72,7 @@ export async function POST(req: Request) {
       if ((e as { code?: string }).code === '23505') return falha('Esse horário acabou de ser escolhido por outra pessoa. Escolha outro.', 409);
       throw e;
     }
+    await notificar(avisoVisitaNova({ id, nome, igreja: igreja || null, whatsapp: whats, data: data || null, hora: hora || null }));
     await avisar(`📅 Novo pedido de visita (nº ${id})\n${igreja || 'Sem igreja'} · ${nome}\nWhatsApp: ${whats}\n${data ? `${dataBr(data)} às ${hora}` : 'Horário a combinar'}`);
     return NextResponse.json({ id, data: data || null, hora: hora || null });
   } catch (e) {

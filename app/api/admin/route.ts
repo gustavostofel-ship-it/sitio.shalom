@@ -6,6 +6,21 @@ import { emailValido } from '@/lib/sessao';
 import { SEGURA_SQL, cfgDeLinha, hojeSP } from '@/lib/agenda-server';
 import { sugerirPeriodos, type AdminData } from '@/lib/agenda';
 import { cfgDeLinhaVisita } from '@/lib/visitas-server';
+import { chavesPush, enviarTeste, notificar } from '@/lib/notificar';
+import {
+  LISTA_TIPOS,
+  avisoReservaCancelada,
+  avisoReservaConfirmada,
+  avisoReservaNova,
+  avisoReservaPagamento,
+  avisoVisitaCancelada,
+  avisoVisitaConfirmada,
+  avisoVisitaNova,
+  avisoVisitaRealizada,
+  type DadosReserva,
+  type DadosVisita,
+  type TipoNotificacao,
+} from '@/lib/notificacoes';
 import { erroDaConfig, horaValida, type StatusVisita } from '@/lib/visitas';
 
 export const dynamic = 'force-dynamic';
@@ -30,7 +45,7 @@ function erro(e: unknown) {
 }
 
 async function carregar(p: Pool, eu: string): Promise<AdminData> {
-  const [c, per, d, r, adm, vc, vb, vs] = await Promise.all([
+  const [c, per, d, r, adm, vc, vb, vs, nt, ev] = await Promise.all([
     p.query('select * from agenda_config where id = 1'),
     p.query('select id, nome, entrada, saida, preco, bloqueado from agenda_periodos order by entrada'),
     p.query('select data, aberto, motivo from agenda_dias'),
@@ -40,7 +55,17 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
     p.query('select * from agenda_visita_config where id = 1'),
     p.query('select data, motivo from agenda_visita_bloqueios order by data'),
     p.query('select id, nome, igreja, whatsapp, publico, formato, obs, data, hora, status, origem, nota_interna, criada_em, atualizada_em from agenda_visitas order by data nulls first, hora, id'),
+    p.query('select id, tipo, titulo, corpo, ref_tipo, ref_id, dados, autor, criada_em from agenda_notificacoes order by id desc limit 150'),
+    p.query(
+      `select ad.notificacoes_lidas_ate as lidas,
+              (select count(*) from agenda_notificacoes where id > ad.notificacoes_lidas_ate) as nao_lidas,
+              coalesce((select array_agg(tipo) from agenda_push_desligados where email = ad.email), '{}') as desligados,
+              (select count(*) from agenda_push_aparelhos where email = ad.email) as aparelhos
+         from agenda_admins ad where ad.email = $1`,
+      [eu]
+    ),
   ]);
+  const meu = ev.rows[0] ?? { lidas: 0, nao_lidas: 0, desligados: [], aparelhos: 0 };
   return {
     hoje: hojeSP(),
     agora: new Date().toISOString(),
@@ -52,6 +77,12 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
     visitas: vs.rows,
     visitaCfg: cfgDeLinhaVisita(vc.rows[0]),
     visitaBloqueios: vb.rows,
+    notificacoes: nt.rows,
+    notificacoesLidasAte: Number(meu.lidas),
+    naoLidas: Number(meu.nao_lidas),
+    pushDesligados: meu.desligados,
+    pushAparelhos: Number(meu.aparelhos),
+    pushChave: (await chavesPush()).publica,
     eu,
   };
 }
@@ -133,7 +164,17 @@ async function sugerir(p: Pool, b: Corpo, hoje: string) {
   return { criados: novos.length };
 }
 
-async function statusReserva(p: Pool, b: Corpo) {
+// Dados da reserva/visita para montar o texto do aviso depois de uma ação no painel.
+async function reservaPorId(p: Pool, id: number): Promise<DadosReserva | null> {
+  const r = await p.query('select id, nome, igreja, whatsapp, entrada, saida, total, sinal, pago, segura_ate from agenda_reservas where id = $1', [id]);
+  return r.rows[0] ?? null;
+}
+async function visitaPorId(p: Pool, id: number): Promise<DadosVisita | null> {
+  const r = await p.query('select id, nome, igreja, whatsapp, data, hora from agenda_visitas where id = $1', [id]);
+  return r.rows[0] ?? null;
+}
+
+async function statusReserva(p: Pool, b: Corpo, eu: string) {
   const id = num(b.id, 1, 1e12);
   if (id === null) throw invalido('Reserva inválida.');
   if (b.status !== 'confirmada' && b.status !== 'cancelada' && b.status !== 'aguardando_sinal') throw invalido('Status inválido.');
@@ -148,10 +189,13 @@ async function statusReserva(p: Pool, b: Corpo) {
     [b.status, segura, id]
   );
   if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  const d = await reservaPorId(p, id);
+  if (d && b.status === 'confirmada') await notificar(avisoReservaConfirmada(d, eu));
+  if (d && b.status === 'cancelada') await notificar(avisoReservaCancelada(d, eu));
 }
 
 // Registra o total já recebido de uma reserva confirmada (sinal, parte ou tudo).
-async function pagarReserva(p: Pool, b: Corpo) {
+async function pagarReserva(p: Pool, b: Corpo, eu: string) {
   const id = num(b.id, 1, 1e12);
   if (id === null) throw invalido('Reserva inválida.');
   const r = await p.query('select total, status from agenda_reservas where id = $1', [id]);
@@ -161,9 +205,11 @@ async function pagarReserva(p: Pool, b: Corpo) {
   const pago = num(b.pago, 0, total);
   if (pago === null) throw invalido(`O valor recebido precisa ficar entre R$ 0 e o total da reserva (R$ ${total}).`);
   await p.query('update agenda_reservas set pago = $1 where id = $2', [pago, id]);
+  const d = await reservaPorId(p, id);
+  if (d) await notificar(avisoReservaPagamento(d, eu));
 }
 
-async function criarReserva(p: Pool, b: Corpo, hoje: string) {
+async function criarReserva(p: Pool, b: Corpo, hoje: string, eu: string) {
   if (!dataOk(b.entrada) || !dataOk(b.saida) || b.saida < b.entrada) throw invalido('Confira as datas.');
   if (b.entrada < hoje) throw invalido('A entrada não pode ser no passado.');
   const total = num(b.total, 0, 1e7);
@@ -174,8 +220,8 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string) {
   // Criada como confirmada: o sinal já foi recebido, a menos que o valor recebido seja informado.
   const pago = status === 'confirmada' ? (b.pago === undefined || b.pago === '' ? sinal : num(b.pago, 0, total)) : 0;
   if (pago === null) throw invalido('O valor recebido precisa ficar entre R$ 0 e o total da reserva.');
-  await p.query(
-    "insert into agenda_reservas (entrada, saida, total, sinal, pago, status, segura_ate, nome, igreja, whatsapp, origem) values ($1,$2,$3,$4,$10,$5,$6,$7,$8,$9,'manual')",
+  const criada = await p.query(
+    "insert into agenda_reservas (entrada, saida, total, sinal, pago, status, segura_ate, nome, igreja, whatsapp, origem) values ($1,$2,$3,$4,$10,$5,$6,$7,$8,$9,'manual') returning id",
     [
       b.entrada,
       b.saida,
@@ -189,6 +235,8 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string) {
       pago,
     ]
   );
+  const d = await reservaPorId(p, criada.rows[0].id);
+  if (d) await notificar(status === 'confirmada' ? avisoReservaConfirmada(d, eu, true) : { ...avisoReservaNova(d), autor: eu });
 }
 
 // ---------- Visitas ----------
@@ -218,14 +266,16 @@ function quando(b: Corpo): [string | null, string | null] {
   return [data || null, hora || null];
 }
 
-async function visitaCriar(p: Pool, b: Corpo) {
+async function visitaCriar(p: Pool, b: Corpo, eu: string) {
   const nome = str(b.nome, 80),
     whats = String(b.whatsapp ?? '').replace(/\D/g, '').slice(0, 13);
   if (nome.length < 2) throw invalido('Informe o nome.');
   if (whats.length < 10) throw invalido('Informe o WhatsApp com DDD.');
   const [data, hora] = quando(b);
-  await comHorario(() =>
-    p.query("insert into agenda_visitas (nome, igreja, whatsapp, publico, obs, data, hora, status, origem) values ($1,$2,$3,$4,$5,$6,$7,$8,'manual')", [
+  const status = b.status === 'pedida' ? 'pedida' : 'agendada';
+  const nova: { id?: number } = {};
+  await comHorario(async () => {
+    const r = await p.query("insert into agenda_visitas (nome, igreja, whatsapp, publico, obs, data, hora, status, origem) values ($1,$2,$3,$4,$5,$6,$7,$8,'manual') returning id", [
       nome,
       str(b.igreja, 80) || null,
       whats,
@@ -233,24 +283,38 @@ async function visitaCriar(p: Pool, b: Corpo) {
       str(b.obs, 500) || null,
       data,
       hora,
-      b.status === 'pedida' ? 'pedida' : 'agendada',
-    ])
-  );
+      status,
+    ]);
+    nova.id = r.rows[0].id;
+    return r;
+  });
+  const d = nova.id ? await visitaPorId(p, nova.id) : null;
+  if (d) await notificar(status === 'agendada' ? avisoVisitaConfirmada(d, eu) : { ...avisoVisitaNova(d), autor: eu });
 }
 
-async function visitaStatus(p: Pool, b: Corpo) {
+async function visitaStatus(p: Pool, b: Corpo, eu: string) {
   const id = idVisita(b);
   if (!STATUS_VISITA.includes(b.status as StatusVisita)) throw invalido('Situação inválida.');
   await comHorario(() => p.query('update agenda_visitas set status = $1, atualizada_em = now() where id = $2', [b.status, id]));
+  const d = await visitaPorId(p, id);
+  if (!d) return;
+  if (b.status === 'agendada') await notificar(avisoVisitaConfirmada(d, eu));
+  else if (b.status === 'cancelada') await notificar(avisoVisitaCancelada(d, eu));
+  else if (b.status === 'realizada') await notificar(avisoVisitaRealizada(d, eu, false));
+  else if (b.status === 'nao_compareceu') await notificar(avisoVisitaRealizada(d, eu, true));
 }
 
 // Marca ou remarca. Com "confirmar", a visita já fica agendada.
-async function visitaMover(p: Pool, b: Corpo) {
+async function visitaMover(p: Pool, b: Corpo, eu: string) {
   const id = idVisita(b);
   const [data, hora] = quando(b);
   await comHorario(() =>
     p.query("update agenda_visitas set data = $1, hora = $2, status = case when $3::boolean then 'agendada' else status end, atualizada_em = now() where id = $4", [data, hora, b.confirmar === true, id])
   );
+  if (b.confirmar === true) {
+    const d = await visitaPorId(p, id);
+    if (d) await notificar(avisoVisitaConfirmada(d, eu));
+  }
 }
 
 async function visitaNota(p: Pool, b: Corpo) {
@@ -337,23 +401,50 @@ export async function POST(req: Request) {
       case 'sugerir':
         return ok(await sugerir(p, b, hoje));
       case 'reserva.status':
-        await statusReserva(p, b);
+        await statusReserva(p, b, eu);
         return ok();
       case 'reserva.pago':
-        await pagarReserva(p, b);
+        await pagarReserva(p, b, eu);
         return ok();
       case 'reserva.criar':
-        await criarReserva(p, b, hoje);
+        await criarReserva(p, b, hoje, eu);
         return ok();
       case 'visita.criar':
-        await visitaCriar(p, b);
+        await visitaCriar(p, b, eu);
         return ok();
       case 'visita.status':
-        await visitaStatus(p, b);
+        await visitaStatus(p, b, eu);
         return ok();
       case 'visita.mover':
-        await visitaMover(p, b);
+        await visitaMover(p, b, eu);
         return ok();
+      case 'notif.lidas':
+        await p.query('update agenda_admins set notificacoes_lidas_ate = (select coalesce(max(id), 0) from agenda_notificacoes) where email = $1', [eu]);
+        return ok();
+      case 'notif.pref': {
+        const tipo = String(b.tipo) as TipoNotificacao;
+        if (!LISTA_TIPOS.includes(tipo)) throw invalido('Tipo de aviso inválido.');
+        if (b.ativo === false) await p.query('insert into agenda_push_desligados (email, tipo) values ($1, $2) on conflict do nothing', [eu, tipo]);
+        else await p.query('delete from agenda_push_desligados where email = $1 and tipo = $2', [eu, tipo]);
+        return ok();
+      }
+      case 'push.assinar': {
+        const endpoint = str(b.endpoint, 1000),
+          p256dh = str(b.p256dh, 200),
+          auth = str(b.auth, 100);
+        if (!endpoint.startsWith('https://') || !p256dh || !auth) throw invalido('Assinatura de notificação inválida.');
+        await p.query(
+          `insert into agenda_push_aparelhos (email, endpoint, p256dh, auth, agente) values ($1,$2,$3,$4,$5)
+           on conflict (endpoint) do update set email = excluded.email, p256dh = excluded.p256dh, auth = excluded.auth, agente = excluded.agente, falhas = 0`,
+          [eu, endpoint, p256dh, auth, str(b.agente, 200) || null]
+        );
+        return ok();
+      }
+      case 'push.cancelar':
+        await p.query('delete from agenda_push_aparelhos where endpoint = $1 and email = $2', [str(b.endpoint, 1000), eu]);
+        return ok();
+      case 'push.teste':
+        return ok(await enviarTeste(eu));
       case 'visita.nota':
         await visitaNota(p, b);
         return ok();

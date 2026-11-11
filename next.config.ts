@@ -26,8 +26,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // não anuncia qual sistema roda por trás
   output: 'standalone',
+  serverExternalPackages: ['web-push'], // usa recursos do Node que não devem ser empacotados
   async headers() {
     return [
+      // O service worker nunca fica em cache: uma versão nova vale na hora
+      { source: '/sw-painel.js', headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }] },
       {
         source: '/:path*',
         headers: [

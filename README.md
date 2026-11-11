@@ -8,7 +8,7 @@ Feito em Next.js 16 e Postgres 16, rodando em Docker.
 | Endereço | O que é | Quem usa |
 |---|---|---|
 | `/` | Página de vendas: calendário e pedido de reserva, agendamento de visita, galeria, mapa "Como chegar" e dúvidas | Clientes |
-| `/painel` | Painel interno: calendário, reservas, **visitas**, regras e preços, administradores | Quem tem login |
+| `/painel` | Painel interno: **notificações**, calendário, reservas, **visitas**, regras e preços, administradores. Instalável na tela inicial do celular, com notificações push | Quem tem login |
 | `/privacidade` e `/termos` | Política de Privacidade e Termos de reserva | Clientes |
 
 O banco guarda tudo (reservas, visitas, preços, administradores). O site continua no ar mesmo se o banco cair, mandando o cliente para o WhatsApp.
@@ -34,6 +34,10 @@ Com Docker, sem instalar nada: `docker build --target build -t shalom-check .` e
 - **Horários de visita:** no painel, em *Visitas → Horários e dias fechados* (e o código em `lib/visitas.ts`).
 - **Política de cancelamento** (faixas de devolução do sinal) e **dados da empresa** (razão social e CNPJ): `lib/site-data.ts`, em `POLITICA_CANCELAMENTO` e `EMPRESA`. Mostram nos Termos e na Privacidade.
 - **Marca:** `docs/marca` (manual) e `public/brand` (logo).
+
+## Notificações no celular
+
+O painel avisa, por push no iPhone (com o painel instalado na tela inicial), cada pedido de reserva ou de visita, prazo do sinal acabando, saldo a receber e outros avisos (15 tipos ao todo), com histórico detalhado na aba **Notificações**. Precisa do endereço `https://` (servidor com domínio). Passo a passo e lista dos avisos: [docs/notificacoes.md](docs/notificacoes.md).
 
 ## Segurança, em resumo
 

@@ -3,6 +3,8 @@ import { cotar, dia, brl } from '@/lib/agenda';
 import { carregarAgenda } from '@/lib/agenda-server';
 import { db } from '@/lib/db';
 import { avisar } from '@/lib/aviso';
+import { notificar } from '@/lib/notificar';
+import { avisoReservaNova } from '@/lib/notificacoes';
 import { ipDoPedido, resumoIp } from '@/lib/ip';
 import { dentroDoLimite } from '@/lib/limite';
 import { whatsappNormalizado } from '@/lib/telefone';
@@ -87,6 +89,7 @@ export async function POST(req: Request) {
     } finally {
       cli.release();
     }
+    await notificar(avisoReservaNova({ id, nome, igreja: igreja || null, whatsapp: whats, entrada, saida, total: c.total, sinal: c.sinal, pago: 0, segura_ate: seguraAte.toISOString() }));
     await avisar(
       `🔔 Nova reserva aguardando sinal (nº ${id})\n${igreja || 'Sem igreja'} · ${nome}\nWhatsApp: ${whats}\n${dia(entrada)} a ${dia(saida)} · ${brl(c.total)} (sinal ${brl(c.sinal)})`
     );

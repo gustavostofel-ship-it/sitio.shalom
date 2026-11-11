@@ -4,7 +4,7 @@ Lista viva do que ficou combinado e ainda não foi feito. Atualizado em 09/11/20
 
 ## Para fazer mais para a frente (combinado com o dono, não esquecer)
 
-1. **Avisos de novo pedido (reserva e visita).** Hoje ninguém é avisado: só aparece no painel. O Telegram já está pronto no código, mas **não está ligado** (faltam `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` no `.env`). A ideia desejada é mais completa: aviso por **push no celular** dos responsáveis (painel instalado na tela inicial do iPhone), **e-mail** e **WhatsApp** para o dono e para o cliente, com o responsável escolhido no painel. O desenho dessa ideia está em `docs/pagamento-asaas.md`, seção 5.1 (os avisos do cliente C1 a C10 e da equipe R1 a R8).
+1. **Avisos por e-mail e WhatsApp (o push já está pronto).** O **push no iPhone** dos responsáveis foi feito em 11/11/2026 (veja `docs/notificacoes.md`): ele só funciona quando o painel estiver no servidor com `https://`, e **ainda precisa ser testado num iPhone de verdade** depois que o domínio estiver no ar. Falta o que foi combinado para depois: **e-mail** e **WhatsApp** para o dono e para o cliente (avisos do cliente C1 a C10 e da equipe, desenhados em `docs/pagamento-asaas.md`, seção 5.1). O Telegram continua opcional e desligado (faltam `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` no `.env`).
 2. **Backup automático.** Hoje o backup é **manual** (`sh scripts/backup.sh`). Falta uma rotina automática (por exemplo, todo dia de madrugada), com cópia **fora do servidor** (snapshot da VPS e/ou nuvem), e um teste periódico de restauração. Sem isso, se o servidor ou o disco falhar, as reservas se perdem.
 
 ## Antes de colocar no ar

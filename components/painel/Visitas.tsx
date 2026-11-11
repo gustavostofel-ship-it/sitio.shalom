@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CalendarPlus, Lock, LockOpen, MessageCircle, Settings2, X } from 'lucide-react';
 import { segura, type AdminData } from '@/lib/agenda';
 import { SITE_INFO } from '@/lib/site-data';
@@ -52,9 +52,13 @@ function textoZap(v: Visita) {
 type Aba = 'agenda' | 'aguardando' | 'historico';
 type Gaveta = { t: 'visita'; id: number } | { t: 'nova'; data?: string; hora?: string } | { t: 'config' } | null;
 
-export function Visitas({ dados, chamar }: { dados: AdminData; chamar: Chamar }) {
+export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData; chamar: Chamar; abrirId?: number | null; aoAbrir?: () => void }) {
   const [aba, setAba] = useState<Aba>('agenda');
-  const [gaveta, setGaveta] = useState<Gaveta>(null);
+  // Vindo de uma notificação: já abre a visita
+  const [gaveta, setGaveta] = useState<Gaveta>(() => (abrirId ? { t: 'visita', id: abrirId } : null));
+  useEffect(() => {
+    if (abrirId) aoAbrir?.();
+  }, [abrirId, aoAbrir]);
   const hoje = dados.hoje;
   const ativas = dados.visitas.filter((v) => ocupaHorario(v.status));
   const aguardando = ativas.filter((v) => v.status === 'pedida' || !v.data);

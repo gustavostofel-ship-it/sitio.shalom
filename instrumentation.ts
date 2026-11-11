@@ -3,5 +3,8 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs' && process.env.DATABASE_URL) {
     const { migrar } = await import('./lib/migrar');
     await migrar();
+    // Lembretes automáticos (prazo do sinal, visitas, saldo...) e avisos por push
+    const { iniciarAgendador } = await import('./lib/agendador');
+    iniciarAgendador();
   }
 }

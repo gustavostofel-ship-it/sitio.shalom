@@ -1,20 +1,24 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Bell, BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
 import { brl, br, diff, faixa, pagamento, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
 import { ResumoVisitas, Visitas } from './Visitas';
+import { Notificacoes } from './Notificacoes';
+import { marcarIcone } from '@/lib/push-cliente';
 import { Simbolo } from '@/components/Logo';
 import { BotaoConfirma, CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
-type Aba = 'resumo' | 'cal' | 'rsv' | 'vis' | 'cfg' | 'adm';
+type Aba = 'resumo' | 'notif' | 'cal' | 'rsv' | 'vis' | 'cfg' | 'adm';
+const ABAS: Aba[] = ['resumo', 'notif', 'cal', 'rsv', 'vis', 'cfg', 'adm'];
 const NAV = [
   { k: 'resumo', rot: 'Resumo', Ic: LayoutGrid },
+  { k: 'notif', rot: 'Notificações', Ic: Bell },
   { k: 'cal', rot: 'Calendário', Ic: CalendarDays },
   { k: 'rsv', rot: 'Reservas', Ic: BookOpen },
   { k: 'vis', rot: 'Visitas', Ic: CalendarClock },
@@ -261,6 +265,7 @@ export function Painel() {
   const [modo, setModo] = useState<1 | 3 | 12>(1);
   const [selCal, setSelCal] = useState<{ a: string; b: string } | null>(null);
   const [menu, setMenu] = useState(false);
+  const [visitaAbrir, setVisitaAbrir] = useState<number | null>(null);
 
   const avisar = (t: string) => {
     setToast(t);
@@ -298,6 +303,69 @@ export function Painel() {
     return () => clearTimeout(t);
   }, [carregar]);
 
+  // Abre uma reserva, uma visita ou uma aba a partir de um endereço (/painel?abrir=reserva:12), que é o que a notificação carrega.
+  const abrirLink = useCallback((url: string) => {
+    const q = new URL(url, window.location.origin).searchParams;
+    const abrir = q.get('abrir');
+    const abaPedida = q.get('aba');
+    if (abrir) {
+      const [tipo, id] = abrir.split(':');
+      const n = Number(id);
+      if (tipo === 'reserva' && n) {
+        setAba('rsv');
+        setGaveta({ tipo: 'reserva', id: n });
+      } else if (tipo === 'visita' && n) {
+        setAba('vis');
+        setVisitaAbrir(n);
+      }
+    } else if (abaPedida && ABAS.includes(abaPedida as Aba)) setAba(abaPedida as Aba);
+  }, []);
+  const limparVisita = useCallback(() => setVisitaAbrir(null), []);
+
+  // O painel foi aberto tocando numa notificação: abre o que ela mostra, assim que os dados chegam
+  const linkInicial = useRef(true);
+  useEffect(() => {
+    if (!dados || !linkInicial.current) return;
+    linkInicial.current = false;
+    const t = setTimeout(() => {
+      if (window.location.search) {
+        abrirLink(window.location.href);
+        window.history.replaceState(null, '', '/painel');
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [dados, abrirLink]);
+
+  // Toque numa notificação com o painel já aberto (a mensagem vem do service worker)
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    const ouvir = (e: MessageEvent) => {
+      if (e.data?.tipo === 'abrir' && typeof e.data.url === 'string') abrirLink(e.data.url);
+    };
+    navigator.serviceWorker.addEventListener('message', ouvir);
+    return () => navigator.serviceWorker.removeEventListener('message', ouvir);
+  }, [abrirLink]);
+
+  // Mantém o painel atualizado sozinho (a cada 45 s e ao voltar para a tela)
+  useEffect(() => {
+    if (sessao !== 'dentro') return;
+    const atualizar = () => {
+      if (document.visibilityState === 'visible') carregar();
+    };
+    const t = setInterval(atualizar, 45000);
+    document.addEventListener('visibilitychange', atualizar);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', atualizar);
+    };
+  }, [sessao, carregar]);
+
+  // Número de não lidas no ícone do app (iPhone com o painel instalado)
+  const naoLidas = dados?.naoLidas ?? 0;
+  useEffect(() => {
+    marcarIcone(naoLidas);
+  }, [naoLidas]);
+
   const chamar: Chamar = async (acao, corpo = {}) => {
     try {
       const r = await fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ acao, ...corpo }) });
@@ -308,11 +376,12 @@ export function Painel() {
         return { erro: j.erro || 'erro' };
       }
       await carregar();
-      avisar(
+      const msg =
         acao === 'dias' ? `${j.alterados} dia(s) atualizados${j.ignorados ? `, ${j.ignorados} mantidos (reserva ou passado)` : ''}.` :
         acao === 'sugerir' ? (j.criados ? `${j.criados} período(s) sugerido(s). Confira datas e preços.` : 'Esses períodos já existem.') :
-        'Salvo.'
-      );
+        acao.startsWith('push.') || acao.startsWith('notif.') ? '' : // essas ações mostram o resultado na própria tela
+        'Salvo.';
+      if (msg) avisar(msg);
       return j;
     } catch {
       avisar('Sem conexão. Tente de novo.');
@@ -400,6 +469,7 @@ export function Painel() {
               <Ic className="h-[18px] w-[18px] shrink-0" />
               <span className="flex-1">{rot}</span>
               {k === 'rsv' && pendentes > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Pedidos aguardando sinal">{pendentes}</span>}
+              {k === 'notif' && dados.naoLidas > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Notificações não lidas">{dados.naoLidas}</span>}
               {k === 'vis' && visitasPendentes > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Visitas aguardando confirmação">{visitasPendentes}</span>}
             </button>
           );
@@ -459,7 +529,22 @@ export function Painel() {
               <ResumoVisitas dados={dados} abrir={() => setAba('vis')} />
             </>
           )}
-          {aba === 'vis' && <Visitas dados={dados} chamar={chamar} />}
+          {aba === 'vis' && <Visitas dados={dados} chamar={chamar} abrirId={visitaAbrir} aoAbrir={limparVisita} />}
+          {aba === 'notif' && (
+            <Notificacoes
+              dados={dados}
+              chamar={chamar}
+              ir={(tipo, id) => {
+                if (tipo === 'reserva') {
+                  setAba('rsv');
+                  setGaveta({ tipo: 'reserva', id });
+                } else {
+                  setAba('vis');
+                  setVisitaAbrir(id);
+                }
+              }}
+            />
+          )}
           {aba === 'cal' && (
             <section className="rounded-xl border border-[#D2CAB8] bg-white p-3 shadow-[0_1px_2px_rgba(20,48,31,0.08)] sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">

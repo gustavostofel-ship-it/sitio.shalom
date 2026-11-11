@@ -1,6 +1,7 @@
 // Regras de datas e preço do agendamento. Sem dependências: roda no navegador e no servidor.
 // Datas são sempre strings "AAAA-MM-DD".
 import type { Visita, VisitaCfg } from './visitas';
+import type { Notificacao } from './notificacoes';
 
 export interface Cfg {
   base: number; // preço do pacote base
@@ -166,6 +167,12 @@ export interface AdminData {
   visitas: Visita[];
   visitaCfg: VisitaCfg;
   visitaBloqueios: { data: string; motivo: string | null }[];
+  notificacoes: Notificacao[]; // as 150 mais recentes
+  notificacoesLidasAte: number; // id da última notificação que esta pessoa marcou como lida
+  naoLidas: number;
+  pushDesligados: string[]; // tipos de aviso que esta pessoa desligou
+  pushAparelhos: number; // aparelhos desta pessoa que recebem push
+  pushChave: string; // chave pública do site para o serviço de push
   eu: string; // e-mail de quem está logado
 }
 

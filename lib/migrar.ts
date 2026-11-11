@@ -67,6 +67,52 @@ export async function migrar() {
       create index if not exists agenda_visitas_data_idx on agenda_visitas (data, status);
       create index if not exists agenda_visitas_ip_idx on agenda_visitas (ip_hash, criada_em);
     `);
+    // Notificações: histórico de acontecimentos, aparelhos que recebem push e preferências de cada pessoa.
+    await db().query(`
+      alter table agenda_admins add column if not exists notificacoes_lidas_ate bigint not null default 0;
+
+      create table if not exists agenda_notificacoes (
+        id        bigint generated always as identity primary key,
+        tipo      text not null,
+        titulo    text not null,
+        corpo     text not null,
+        ref_tipo  text,                      -- 'reserva' ou 'visita'
+        ref_id    bigint,
+        dados     jsonb not null default '{}',
+        autor     text,                      -- e-mail de quem fez a ação (vazio = aconteceu sozinho)
+        chave     text unique,               -- evita avisar duas vezes a mesma coisa
+        criada_em timestamptz not null default now()
+      );
+      create index if not exists agenda_notificacoes_criada_idx on agenda_notificacoes (criada_em desc);
+
+      -- Chaves que identificam o site perante o serviço de push (geradas sozinhas na primeira vez)
+      create table if not exists agenda_push_chaves (
+        id        int primary key default 1 check (id = 1),
+        publica   text not null,
+        privada   text not null,
+        criada_em timestamptz not null default now()
+      );
+
+      create table if not exists agenda_push_aparelhos (
+        id           bigint generated always as identity primary key,
+        email        text not null references agenda_admins (email) on delete cascade,
+        endpoint     text not null unique,
+        p256dh       text not null,
+        auth         text not null,
+        agente       text,
+        criado_em    timestamptz not null default now(),
+        ultimo_envio timestamptz,
+        falhas       int not null default 0
+      );
+      create index if not exists agenda_push_aparelhos_email_idx on agenda_push_aparelhos (email);
+
+      -- Só guarda o que a pessoa DESLIGOU (sem linha = recebe)
+      create table if not exists agenda_push_desligados (
+        email text not null references agenda_admins (email) on delete cascade,
+        tipo  text not null,
+        primary key (email, tipo)
+      );
+    `);
   } catch (e) {
     console.error('migração do banco:', e);
   }
