@@ -26,6 +26,71 @@ const mascara = (v: string) => {
   return n.length > 6 ? `(${n.slice(0, 2)}) ${n.slice(2, n.length - 4)}-${n.slice(-4)}` : n.length > 2 ? `(${n.slice(0, 2)}) ${n.slice(2)}` : n;
 };
 
+// Calendário dos dias com visita disponível. Fica de fora (cinza) o que não dá para escolher: dias passados,
+// fechados pelo sítio, com o sítio alugado ou sem horário livre. Quem decide os dias é o administrador, no painel.
+function CalendarioVisita({ dias, dia, aoEscolher }: { dias: DiaLivre[]; dia: string; aoEscolher: (d: string) => void }) {
+  const livres = new Set(dias.map((d) => d.data));
+  const t0 = +dias[0].data.slice(0, 4) * 12 + +dias[0].data.slice(5, 7) - 1;
+  const t1 = +dias[dias.length - 1].data.slice(0, 4) * 12 + +dias[dias.length - 1].data.slice(5, 7) - 1;
+  const [t, setT] = useState(t0);
+  const y = Math.floor(t / 12);
+  const m = t % 12;
+  const primeiro = new Date(Date.UTC(y, m, 1));
+  const total = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  const titulo = primeiro.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const celulas: React.ReactNode[] = [];
+  for (let i = 0; i < primeiro.getUTCDay(); i++) celulas.push(<div key={'v' + i} />);
+  for (let i = 1; i <= total; i++) {
+    const d = new Date(Date.UTC(y, m, i)).toISOString().slice(0, 10);
+    const livre = livres.has(d);
+    const escolhido = dia === d;
+    celulas.push(
+      <button
+        key={d}
+        type="button"
+        disabled={!livre}
+        onClick={() => aoEscolher(d)}
+        aria-pressed={escolhido}
+        aria-label={`${DIAS_CURTOS[diaSemanaDe(d)]} ${dataBr(d)} ${livre ? 'disponível' : 'indisponível'}`}
+        className={`aspect-square min-h-10 rounded-lg border text-sm transition-colors flex items-center justify-center ${
+          escolhido
+            ? 'border-[#1B4332] bg-[#1B4332] font-bold text-white'
+            : livre
+              ? 'border-emerald-400 bg-emerald-50 font-bold text-slate-900 hover:bg-emerald-100 cursor-pointer'
+              : 'border-stone-200 bg-stone-100 text-stone-400 cursor-default'
+        }`}
+      >
+        {i}
+      </button>
+    );
+  }
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <button type="button" onClick={() => setT(t - 1)} disabled={t <= t0} aria-label="Mês anterior" className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm disabled:opacity-40">
+          ‹
+        </button>
+        <span className="text-sm font-bold text-stone-800 first-letter:uppercase">{titulo}</span>
+        <button type="button" onClick={() => setT(t + 1)} disabled={t >= t1} aria-label="Próximo mês" className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm disabled:opacity-40">
+          ›
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((x) => (
+          <div key={x} className="pb-1 text-center text-xs font-semibold text-stone-600">
+            {x}
+          </div>
+        ))}
+        {celulas}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-600">
+        <span><i className="mr-1 inline-block h-3 w-3 rounded-sm border border-emerald-400 bg-emerald-50 align-[-2px]" />Disponível</span>
+        <span><i className="mr-1 inline-block h-3 w-3 rounded-sm border border-stone-200 bg-stone-100 align-[-2px]" />Indisponível</span>
+      </div>
+    </div>
+  );
+}
+
 export function BookingSection() {
   const [form, setForm] = useState({
     nome: '',
@@ -265,26 +330,14 @@ export function BookingSection() {
                       </p>
                     ) : (
                       <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3">
-                        <div className="flex gap-2 overflow-x-auto pb-1" role="listbox" aria-label="Dias disponíveis para visita">
-                          {dias.map((d) => (
-                            <button
-                              key={d.data}
-                              type="button"
-                              role="option"
-                              aria-selected={dia === d.data}
-                              onClick={() => {
-                                setDia(dia === d.data ? '' : d.data);
-                                setHora('');
-                              }}
-                              className={`shrink-0 rounded-lg border px-3 py-2 text-center text-sm font-semibold transition-colors ${
-                                dia === d.data ? 'border-[#1B4332] bg-[#1B4332] text-white' : 'border-stone-300 bg-white text-stone-800 hover:border-[#1B4332]'
-                              }`}
-                            >
-                              <span className="block uppercase tracking-wide opacity-80">{DIAS_CURTOS[diaSemanaDe(d.data)]}</span>
-                              <span className="block text-sm">{dataBr(d.data)}</span>
-                            </button>
-                          ))}
-                        </div>
+                        <CalendarioVisita
+                          dias={dias}
+                          dia={dia}
+                          aoEscolher={(d) => {
+                            setDia(dia === d ? '' : d);
+                            setHora('');
+                          }}
+                        />
                         {dia && (
                           <div className="mt-3 flex flex-wrap gap-2" role="listbox" aria-label="Horários disponíveis">
                             {horasDoDia.map((h) => (

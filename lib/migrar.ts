@@ -45,7 +45,7 @@ async function migrarUmaVez() {
     await db().query(`
       create table if not exists agenda_visita_config (
         id               int primary key default 1 check (id = 1),
-        dias_semana      int[] not null default '{6}',        -- dias da semana com visita (0 = domingo)
+        dias_semana      int[] not null default '{0,1,2,3,4,5,6}', -- dias da semana com visita (0 = domingo); o administrador muda no painel
         hora_ini         text  not null default '09:00',
         hora_fim         text  not null default '16:00',
         duracao_min      int   not null default 60,
