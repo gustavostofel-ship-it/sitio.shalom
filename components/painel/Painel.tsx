@@ -11,7 +11,7 @@ import { ResumoVisitas, Visitas } from './Visitas';
 import { Notificacoes } from './Notificacoes';
 import { marcarIcone } from '@/lib/push-cliente';
 import { Simbolo } from '@/components/Logo';
-import { BotaoConfirma, CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
+import { BotaoConfirma, CURVAS, CampoReais, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
 type Aba = 'resumo' | 'notif' | 'cal' | 'rsv' | 'vis' | 'cfg' | 'adm';
@@ -126,7 +126,7 @@ function BlocoPagamento({ r, st, chamar }: { r: Reserva; st: string; chamar: Cha
         <div className="mt-4">
           <label className={rotulo}>
             Total já recebido (R$)
-            <input type="number" inputMode="decimal" min={0} max={r.total} step={100} className={`${campo} mt-1`} value={valor} onChange={(e) => setValor(e.target.value)} />
+            <CampoReais className={`${campo} mt-1`} value={valor} onChange={setValor} />
           </label>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button className={botaoPri} onClick={() => salvar(+valor)}>Salvar valor recebido</button>
@@ -192,7 +192,7 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
   );
 }
 
-function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: string }; dados: AdminData; ag: AgendaData; chamar: Chamar; fechar: () => void }) {
+function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita }: { ini: { a: string; b: string }; dados: AdminData; ag: AgendaData; chamar: Chamar; fechar: () => void; abrirVisita: (id: number) => void }) {
   const [a, setA] = useState(ini.a);
   const [b, setB] = useState(ini.b);
   const [motivo, setMotivo] = useState('');
@@ -203,6 +203,9 @@ function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: s
     const s = statusDia(d, ag);
     c[s === 'padrao' ? 'fechado' : s]++;
   });
+  const visitasDoPeriodo = dados.visitas
+    .filter((v) => v.data && v.data >= a && v.data <= b && (v.status === 'pedida' || v.status === 'agendada'))
+    .sort((x, y) => (x.data! + (x.hora ?? '')).localeCompare(y.data! + (y.hora ?? '')));
   const podeReservar = dias.length > 0 && c.reservado === 0 && c.passado === 0;
   const total = m.total === '' ? (dias.length ? sugestao(a, b, ag) : 0) : +m.total;
   const agir = (modo: 'fechar' | 'abrir' | 'padrao') => chamar('dias', { datas: dias, modo, motivo });
@@ -216,6 +219,23 @@ function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: s
         <label className={rotulo}>De<input type="date" className={`${campo} mt-1`} value={a} onChange={(e) => { setA(e.target.value); if (b < e.target.value) setB(e.target.value); }} /></label>
         <label className={rotulo}>Até<input type="date" className={`${campo} mt-1`} value={b} min={a} onChange={(e) => setB(e.target.value)} /></label>
       </div>
+
+      {visitasDoPeriodo.length > 0 && (
+        <div className="mt-6 rounded-lg border border-[#C9D8E6] bg-[#EEF4FA] p-4">
+          <h3 className="font-serif text-lg text-[#14301F]">Visitas {a === b ? 'neste dia' : 'neste período'}</h3>
+          <ul className="mt-2 divide-y divide-[#C9D8E6]">
+            {visitasDoPeriodo.map((v) => (
+              <li key={v.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="min-w-0">
+                  <b className="tabular-nums">{a === b ? '' : br(v.data!) + ' · '}{v.hora ?? 'horário a combinar'}</b> · <span className="break-words">{v.igreja || v.nome}</span>
+                  <span className="block text-xs text-stone-600">{v.status === 'pedida' ? 'Aguardando confirmação' : 'Agendada'}</span>
+                </span>
+                <button className={botao} onClick={() => abrirVisita(v.id)}>Abrir</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <h3 className="mt-8 font-serif text-lg text-[#14301F]">Disponibilidade para o cliente</h3>
       <label className={`${rotulo} mt-3`}>
@@ -236,10 +256,10 @@ function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: s
           <input className={campo} placeholder="Igreja ou ministério" value={m.igreja} onChange={(e) => setM({ ...m, igreja: e.target.value })} />
           <input className={campo} placeholder="Responsável" value={m.nome} onChange={(e) => setM({ ...m, nome: e.target.value })} />
           <input className={campo} placeholder="WhatsApp" value={m.whats} onChange={(e) => setM({ ...m, whats: e.target.value })} />
-          <label className={rotulo}>Total (R$), sugerido pelas regras<input type="number" min={0} step={500} className={`${campo} mt-1`} value={m.total === '' ? total : m.total} onChange={(e) => setM({ ...m, total: e.target.value })} /></label>
+          <label className={rotulo}>Total (R$), sugerido pelas regras<CampoReais className={`${campo} mt-1`} value={String(m.total === '' ? total : m.total)} onChange={(v) => setM({ ...m, total: v })} /></label>
           <label className={rotulo}>
             Já recebido (R$), se criar como confirmada
-            <input type="number" inputMode="decimal" min={0} step={100} className={`${campo} mt-1`} placeholder={`Vazio = sinal (${brl(Math.round((total * dados.cfg.sinalPct) / 100))})`} value={m.recebido} onChange={(e) => setM({ ...m, recebido: e.target.value })} />
+            <CampoReais className={`${campo} mt-1`} placeholder={`Vazio = sinal (${brl(Math.round((total * dados.cfg.sinalPct) / 100))})`} value={m.recebido} onChange={(v) => setM({ ...m, recebido: v })} />
           </label>
           <div className="grid gap-2 pt-1">
             <button className={botaoPri} onClick={() => chamar('reserva.criar', { entrada: a, saida: b, total, nome: m.nome, igreja: m.igreja, whatsapp: m.whats, status: 'confirmada', pago: m.recebido }).then((r) => r.ok && fechar())}>Criar como confirmada</button>
@@ -568,6 +588,7 @@ export function Painel() {
                 <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-sm border border-[#D2CAB8] bg-[#EFEBE3]" />Fechado</span>
                 <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-sm border border-dashed border-[#D97706] bg-[#F1F6F0]" />Aberto, mas oculto do cliente (menos de {dados.cfg.minDias} dias seguidos)</span>
                 <span className="flex items-center gap-2"><i className="h-0.5 w-3 bg-[#D97706]" />Período especial</span>
+                <span className="flex items-center gap-2"><i className="flex h-4 w-4 items-center justify-center rounded-full bg-[#2F5D8A] text-[10px] font-semibold text-white">2</i>Visitas no dia (aguardando ou agendadas)</span>
               </div>
               <p className="mt-3 text-sm text-stone-600">Clique num dia ou arraste para selecionar vários. A gaveta mostra a reserva ou deixa você fechar, abrir ou criar uma reserva.</p>
             </section>
@@ -584,7 +605,21 @@ export function Painel() {
           <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true">
             <button onClick={fechar} aria-label="Fechar" className="absolute right-4 top-4 rounded-md p-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-2 focus-visible:outline-[#D97706]"><X className="h-5 w-5" /></button>
             {gaveta.tipo === 'reserva' && reservaAberta && <GavetaReserva key={`${reservaAberta.id}-${reservaAberta.status}-${reservaAberta.pago}`} r={reservaAberta} dados={dados} chamar={chamar} fechar={fechar} />}
-            {gaveta.tipo === 'dias' && <GavetaDias key={gaveta.a + gaveta.b} ini={gaveta} dados={dados} ag={ag} chamar={chamar} fechar={fechar} />}
+            {gaveta.tipo === 'dias' && (
+              <GavetaDias
+                key={gaveta.a + gaveta.b}
+                ini={gaveta}
+                dados={dados}
+                ag={ag}
+                chamar={chamar}
+                fechar={fechar}
+                abrirVisita={(id) => {
+                  fechar();
+                  setAba('vis');
+                  setVisitaAbrir(id);
+                }}
+              />
+            )}
           </aside>
         </>
       )}

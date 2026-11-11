@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Sparkles } from 'lucide-react';
 import { br, type AdminData } from '@/lib/agenda';
 import type { Chamar } from './tipos';
-import { BotaoConfirma, Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
+import { BotaoConfirma, CampoReais, Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
 
 const CAMPOS: [keyof Omit<AdminData['cfg'], 'diasPadrao'>, string][] = [
   ['base', 'Preço base (R$)'],
@@ -56,7 +56,11 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
           {CAMPOS.map(([k, l]) => (
             <label key={k} className={rotulo}>
               {l}
-              <input type="number" min={0} className={`${campo} mt-1`} value={cfg[k]} onChange={(e) => setCfg({ ...cfg, [k]: e.target.value === '' ? 0 : +e.target.value })} />
+              {k === 'base' || k === 'extra' ? (
+                <CampoReais className={`${campo} mt-1`} value={String(cfg[k])} onChange={(v) => setCfg({ ...cfg, [k]: v === '' ? 0 : +v })} />
+              ) : (
+                <input type="number" min={0} className={`${campo} mt-1`} value={cfg[k]} onChange={(e) => setCfg({ ...cfg, [k]: e.target.value === '' ? 0 : +e.target.value })} />
+              )}
             </label>
           ))}
         </div>
@@ -108,7 +112,7 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
               </label>
               <label className={rotulo}>
                 Preço (R$)
-                <input type="number" min={0} step={500} className={`${campo} mt-1`} value={p.preco} onChange={(e) => edita(i, 'preco', e.target.value)} />
+                <CampoReais className={`${campo} mt-1`} value={p.preco} onChange={(v) => edita(i, 'preco', v)} />
               </label>
               <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4 lg:justify-end">
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-stone-700">

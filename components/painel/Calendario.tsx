@@ -37,6 +37,14 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
   }, [aoSelecionar]);
 
   const ativa = dados.reservas.filter((r) => segura(r, dados.agora));
+  // Visitas que ainda contam (aguardando ou agendadas), por dia.
+  const visitasPorDia = new Map<string, { hora: string | null; nome: string; status: string }[]>();
+  for (const v of dados.visitas) {
+    if (!v.data || (v.status !== 'pedida' && v.status !== 'agendada')) continue;
+    const l = visitasPorDia.get(v.data) ?? [];
+    l.push({ hora: v.hora, nome: v.igreja || v.nome, status: v.status });
+    visitasPorDia.set(v.data, l);
+  }
   const faixaSel = arrasto ? [arrasto.a, arrasto.b].sort() : sel ? [sel.a, sel.b] : null;
 
   const mes = ({ y, m }: Mes) => {
@@ -67,6 +75,8 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
           : st === 'passado'
             ? 'bg-[#F0ECE2] border-[#E1DACB] text-[#7A7468]'
             : 'bg-[#E6E0D2] border-[#D2CAB8] text-[#5F594E]';
+      const vis = visitasPorDia.get(d);
+      const visTexto = vis ? vis.map((v) => `Visita ${v.hora ?? ''} ${v.nome}${v.status === 'pedida' ? ' (aguardando confirmação)' : ''}`.replace('  ', ' ')).join(' · ') : '';
       const inicio = !!r && (d === r.entrada || i === 1 || new Date(d + 'T00:00:00Z').getUTCDay() === 0);
       cel.push(
         <div
@@ -77,7 +87,7 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
             setArrasto({ a: d, b: d });
           }}
           onMouseEnter={() => arrasto && setArrasto({ a: arrasto.a, b: d })}
-          title={[per?.nome, r?.igreja, motivo, oculto ? 'Aberto, mas oculto para o cliente (menos de 3 dias seguidos)' : ''].filter(Boolean).join(' · ')}
+          title={[per?.nome, r?.igreja, motivo, oculto ? 'Aberto, mas oculto para o cliente (menos de 3 dias seguidos)' : '', visTexto].filter(Boolean).join(' · ')}
           className={`relative cursor-pointer select-none overflow-hidden rounded-md border transition-colors ${compacto ? 'aspect-square' : 'min-h-[56px] sm:min-h-[96px]'} ${fundo} ${noSel ? 'outline outline-2 -outline-offset-2 outline-[#D97706]' : ''}`}
         >
           <span
@@ -94,6 +104,14 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
           )}
           {!r && !compacto && motivo && st === 'fechado' && <span className="absolute bottom-1.5 left-1.5 right-1 hidden line-clamp-2 text-[11px] leading-tight text-[#5F594E] sm:block">{motivo}</span>}
           {!r && !compacto && oculto && <span className="absolute bottom-1.5 left-1.5 hidden text-[11px] text-[#8A4B04] sm:block">Oculto</span>}
+          {vis && (
+            <span
+              aria-label={visTexto}
+              className={`absolute flex items-center justify-center rounded-full bg-[#2F5D8A] font-semibold text-white ${compacto ? 'right-0.5 top-0.5 h-3.5 min-w-3.5 px-0.5 text-[9px]' : 'right-1.5 top-1.5 h-5 min-w-5 px-1 text-[11px]'}`}
+            >
+              {vis.length}
+            </span>
+          )}
           {per && <span className="absolute bottom-0.5 left-1 right-1 h-0.5 rounded bg-[#D97706]" />}
         </div>
       );
