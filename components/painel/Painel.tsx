@@ -2,8 +2,9 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, Plus, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
-import { add, brl, br, diff, faixa, pagamento, paraAgenda, proximas, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
+import { brl, br, diff, faixa, pagamento, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
+import { NovaReserva } from './NovaReserva';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
@@ -95,12 +96,6 @@ function Login({ aoEntrar, primeiro }: { aoEntrar: () => void; primeiro: boolean
   );
 }
 
-// Preço sugerido para um intervalo, pelas regras do site (o dono pode mudar o valor).
-function sugestao(a: string, b: string, ag: AgendaData) {
-  const p = ag.periodos.find((x) => x.entrada === a && x.saida === b);
-  if (p) return p.preco;
-  return ag.cfg.base + Math.max(0, diff(a, b) - ag.cfg.minDias) * ag.cfg.extra;
-}
 const linkZap = (tel: string) => {
   const d = tel.replace(/\D/g, '');
   return d.length >= 10 ? `https://wa.me/${d.length > 11 && d.startsWith('55') ? d : '55' + d}` : null;
@@ -199,11 +194,10 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
   );
 }
 
-function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita, soReserva = false }: { ini: { a: string; b: string }; soReserva?: boolean; dados: AdminData; ag: AgendaData; chamar: Chamar; fechar: () => void; abrirVisita: (id: number) => void }) {
+function GavetaDias({ ini, dados, ag, chamar, abrirVisita, onNova }: { ini: { a: string; b: string }; dados: AdminData; ag: AgendaData; chamar: Chamar; abrirVisita: (id: number) => void; onNova: (a: string) => void }) {
   const [a, setA] = useState(ini.a);
   const [b, setB] = useState(ini.b);
   const [motivo, setMotivo] = useState('');
-  const [m, setM] = useState({ igreja: '', nome: '', whats: '', total: '', recebido: '' });
   const dias = a && b && b >= a && diff(a, b) <= 400 ? faixa(a, b) : [];
   const c = { livre: 0, fechado: 0, reservado: 0, passado: 0 };
   dias.forEach((d) => {
@@ -213,8 +207,6 @@ function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita, soReserva = f
   const visitasDoPeriodo = dados.visitas
     .filter((v) => v.data && v.data >= a && v.data <= b && (v.status === 'pedida' || v.status === 'agendada'))
     .sort((x, y) => (x.data! + (x.hora ?? '')).localeCompare(y.data! + (y.hora ?? '')));
-  const podeReservar = dias.length > 0 && c.reservado === 0 && c.passado === 0;
-  const total = m.total === '' ? (dias.length ? sugestao(a, b, ag) : 0) : +m.total;
   const agir = (modo: 'fechar' | 'abrir' | 'padrao') => chamar('dias', { datas: dias, modo, motivo });
   return (
     <div>
@@ -227,7 +219,7 @@ function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita, soReserva = f
         <label className={rotulo}>Até<input type="date" className={`${campo} mt-1`} value={b} min={a} onChange={(e) => setB(e.target.value)} /></label>
       </div>
 
-      {!soReserva && visitasDoPeriodo.length > 0 && (
+      {visitasDoPeriodo.length > 0 && (
         <div className="mt-6 rounded-lg border border-[#C9D8E6] bg-[#EEF4FA] p-4">
           <h3 className="font-serif text-lg text-[#14301F]">Visitas {a === b ? 'neste dia' : 'neste período'}</h3>
           <ul className="mt-2 divide-y divide-[#C9D8E6]">
@@ -244,7 +236,7 @@ function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita, soReserva = f
         </div>
       )}
 
-      {!soReserva && (
+      {(
         <>
           <h3 className="mt-8 font-serif text-lg text-[#14301F]">Disponibilidade para o cliente</h3>
           <label className={`${rotulo} mt-3`}>
@@ -260,26 +252,9 @@ function GavetaDias({ ini, dados, ag, chamar, fechar, abrirVisita, soReserva = f
         </>
       )}
 
-      <h3 className="mt-8 font-serif text-lg text-[#14301F]">{soReserva ? 'Nova reserva' : 'Criar reserva manual'}</h3>
-      <p className="mt-1 text-sm text-stone-600">Para quem fechou por telefone ou WhatsApp.</p>
-      {podeReservar ? (
-        <div className="mt-3 space-y-3">
-          <input className={campo} placeholder="Igreja ou ministério" value={m.igreja} onChange={(e) => setM({ ...m, igreja: e.target.value })} />
-          <input className={campo} placeholder="Responsável" value={m.nome} onChange={(e) => setM({ ...m, nome: e.target.value })} />
-          <input className={campo} placeholder="WhatsApp" value={m.whats} onChange={(e) => setM({ ...m, whats: e.target.value })} />
-          <label className={rotulo}>Total (R$), sugerido pelas regras<CampoReais className={`${campo} mt-1`} value={String(m.total === '' ? total : m.total)} onChange={(v) => setM({ ...m, total: v })} /></label>
-          <label className={rotulo}>
-            Já recebido (R$), se criar como confirmada
-            <CampoReais className={`${campo} mt-1`} placeholder={`Vazio = sinal (${brl(Math.round((total * dados.cfg.sinalPct) / 100))})`} value={m.recebido} onChange={(v) => setM({ ...m, recebido: v })} />
-          </label>
-          <div className="grid gap-2 pt-1">
-            <button className={botaoPri} onClick={() => chamar('reserva.criar', { entrada: a, saida: b, total, nome: m.nome, igreja: m.igreja, whatsapp: m.whats, status: 'confirmada', pago: m.recebido }).then((r) => r.ok && fechar())}>Criar como confirmada</button>
-            <button className={botao} onClick={() => chamar('reserva.criar', { entrada: a, saida: b, total, nome: m.nome, igreja: m.igreja, whatsapp: m.whats, status: 'aguardando_sinal' }).then((r) => r.ok && fechar())}>Criar aguardando sinal</button>
-          </div>
-        </div>
-      ) : (
-        <p className="mt-3 rounded-md bg-[#F6DAD5] p-3 text-sm text-[#8F2517]">Há dias com reserva ou já passados nesta seleção. Escolha só dias livres ou fechados.</p>
-      )}
+      <h3 className="mt-8 font-serif text-lg text-[#14301F]">Criar reserva</h3>
+      <p className="mt-1 text-sm text-stone-600">Para quem fechou por telefone ou WhatsApp. Usa as mesmas regras do site (datas disponíveis e preço).</p>
+      <button className={`${botaoPri} mt-3 w-full`} onClick={() => onNova(a)}>Nova reserva a partir deste dia</button>
     </div>
   );
 }
@@ -440,12 +415,8 @@ export function Painel() {
   );
   // Abre o formulário de nova reserva já com o próximo fim de semana livre (dá para trocar as datas).
   const novaReserva = () => {
-    if (!dados || !ag) return;
-    const p = proximas(ag, 1)[0];
-    const a = p?.a ?? dados.hoje;
-    const b = p?.b ?? add(dados.hoje, dados.cfg.minDias - 1);
     setSelCal(null);
-    setGaveta({ tipo: 'dias', a, b, soReserva: true });
+    setGaveta({ tipo: 'nova' });
   };
   const irParaDatas = (a: string, b: string) => {
     setAba('cal');
@@ -628,13 +599,12 @@ export function Painel() {
             {gaveta.tipo === 'reserva' && reservaAberta && <GavetaReserva key={`${reservaAberta.id}-${reservaAberta.status}-${reservaAberta.pago}`} r={reservaAberta} dados={dados} chamar={chamar} fechar={fechar} />}
             {gaveta.tipo === 'dias' && (
               <GavetaDias
-                key={gaveta.a + gaveta.b + (gaveta.soReserva ? 'r' : '')}
+                key={gaveta.a + gaveta.b}
                 ini={gaveta}
-                soReserva={gaveta.soReserva}
                 dados={dados}
                 ag={ag}
                 chamar={chamar}
-                fechar={fechar}
+                onNova={(a) => setGaveta({ tipo: 'nova', inicio: a })}
                 abrirVisita={(id) => {
                   fechar();
                   setAba('vis');
@@ -642,6 +612,7 @@ export function Painel() {
                 }}
               />
             )}
+            {gaveta.tipo === 'nova' && <NovaReserva key={gaveta.inicio ?? 'nova'} ag={ag} chamar={chamar} fechar={fechar} inicio={gaveta.inicio} />}
           </aside>
         </>
       )}
