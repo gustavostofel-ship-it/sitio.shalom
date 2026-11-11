@@ -30,13 +30,11 @@ Um único aplicativo web que faz duas coisas no mesmo endereço:
 
 Serviços externos (nenhum exige chave): vídeo da home no **Supabase Storage** (link público), mapa do **Google Maps** (iframe), fontes do **Google Fonts** (baixadas **na hora do build**, então o build precisa de internet). Telegram é opcional.
 
-## 3. O que é o banco de dados (em poucas palavras)
+## 3. Banco de dados (estrutura)
 
-O **PostgreSQL** é o programa que guarda os dados do sistema: reservas, visitas, preços, períodos especiais, administradores e notificações. Ele roda num contêiner próprio (`db`) e **só o contêiner do site (`app`) consegue falar com ele**; a porta 5432 não é aberta para fora.
+Postgres 16 num contêiner próprio (`db`), sem porta publicada: só o `app` fala com ele (`DATABASE_URL` interna). Dados no volume Docker `dados` (`/var/lib/postgresql/data`). O `app` só sobe depois do `db` ficar `healthy` (`depends_on` + healthcheck TCP).
 
-Os dados ficam num **volume Docker** chamado `dados` (pasta `/var/lib/postgresql/data` dentro do contêiner). Apagar o volume apaga tudo.
-
-> **Nunca rode `docker compose down -v`.** O `-v` apaga o volume do banco. Para reiniciar, use `docker compose up -d` ou o botão do Easypanel.
+> **Nunca rode `docker compose down -v`** (apaga o volume).
 
 ### Como as tabelas nascem
 
