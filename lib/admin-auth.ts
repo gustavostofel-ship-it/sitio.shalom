@@ -1,6 +1,9 @@
+import type { Pool } from 'pg';
 import { db } from '@/lib/db';
 import type { NextResponse } from 'next/server';
-import { COOKIE, DURACAO, assinar, lerCookie, verificar } from '@/lib/sessao';
+import { COOKIE, DURACAO, assinar, lerCookie, lerSessao } from '@/lib/sessao';
+import { confereSenhaAsync } from '@/lib/senha.mjs';
+import { contar, estourou, zerar } from '@/lib/limite';
 
 export class HttpErro extends Error {
   constructor(
@@ -19,18 +22,39 @@ export function segredo() {
 
 // Só entra no painel quem tem sessão válida (cookie assinado) E continua na tabela agenda_admins.
 export async function exigirAdmin(req: Request) {
-  const email = verificar(lerCookie(req.headers.get('cookie'), COOKIE), segredo());
-  if (!email) throw new HttpErro(401, 'Faça login para continuar.');
+  const s = lerSessao(lerCookie(req.headers.get('cookie'), COOKIE), segredo());
+  if (!s) throw new HttpErro(401, 'Faça login para continuar.');
   const pool = db();
-  const r = await pool.query('select 1 from agenda_admins where email = $1', [email]);
-  // Acesso removido (ou cookie antigo): a sessão deixa de valer e o painel volta para a tela de login.
-  if (!r.rowCount) throw new HttpErro(401, 'Este acesso não vale mais. Entre de novo.');
-  return { pool, email };
+  const r = await pool.query('select sessao_versao from agenda_admins where email = $1', [s.email]);
+  // Acesso removido, senha trocada ou "sair" feito: a sessão antiga deixa de valer.
+  if (!r.rowCount || r.rows[0].sessao_versao !== s.versao) throw new HttpErro(401, 'Este acesso não vale mais. Entre de novo.');
+  return { pool, email: s.email };
+}
+
+// Pede a senha de novo antes de mexer em acessos (criar, trocar senha, remover).
+export async function confirmarSenha(pool: Pool, email: string, senha: unknown) {
+  const chave = 'reauth:' + email;
+  if (estourou(chave, 8)) throw new HttpErro(429, 'Muitas tentativas. Espere alguns minutos.');
+  const r = await pool.query('select senha_hash from agenda_admins where email = $1', [email]);
+  if (!r.rowCount || !(await confereSenhaAsync(String(senha ?? '').slice(0, 200), r.rows[0].senha_hash))) {
+    contar(chave, 15 * 60e3);
+    throw new HttpErro(403, 'Confirme com a SUA senha atual. A senha informada não confere.');
+  }
+  zerar(chave);
+}
+
+// Criar o PRIMEIRO administrador pela tela só é permitido no próprio computador (localhost, sem proxy).
+// No servidor, com banco novo, qualquer visitante poderia criar o acesso antes do dono: lá o primeiro
+// administrador é criado pelo script (scripts/criar-admin.mjs).
+export function setupPermitido(req: Request) {
+  const host = new URL(req.url).hostname;
+  return ['localhost', '127.0.0.1', '[::1]'].includes(host) && !req.headers.get('x-forwarded-for') && !req.headers.get('x-forwarded-host');
 }
 
 export const https = (req: Request) => new URL(req.url).protocol === 'https:' || req.headers.get('x-forwarded-proto') === 'https';
 
 // Grava o login num cookie seguro (HttpOnly) na resposta.
-export function iniciarSessao(res: NextResponse, req: Request, email: string) {
-  res.cookies.set(COOKIE, assinar(email, segredo()), { httpOnly: true, sameSite: 'strict', path: '/', maxAge: DURACAO, secure: https(req) });
+export async function iniciarSessao(res: NextResponse, req: Request, email: string) {
+  const v = await db().query('select sessao_versao from agenda_admins where email = $1', [email]);
+  res.cookies.set(COOKIE, assinar(email, segredo(), v.rows[0]?.sessao_versao ?? 1), { httpOnly: true, sameSite: 'strict', path: '/', maxAge: DURACAO, secure: https(req) });
 }

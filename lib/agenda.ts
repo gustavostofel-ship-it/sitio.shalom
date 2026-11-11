@@ -1,5 +1,7 @@
 // Regras de datas e preço do agendamento. Sem dependências: roda no navegador e no servidor.
 // Datas são sempre strings "AAAA-MM-DD".
+import type { Visita, VisitaCfg } from './visitas';
+import type { Notificacao } from './notificacoes';
 
 export interface Cfg {
   base: number; // preço do pacote base
@@ -41,6 +43,12 @@ export const add = (s: string, n: number) => {
   return d.toISOString().slice(0, 10);
 };
 export const diff = (a: string, b: string) => Math.round((D(b).getTime() - D(a).getTime()) / 864e5) + 1;
+// Data de verdade no calendário (recusa 2026-02-30 e semelhantes).
+export const dataReal = (s: unknown): s is string => {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + 'T00:00:00Z');
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+};
 export const dow = (s: string) => D(s).getUTCDay();
 export const faixa = (a: string, b: string) => Array.from({ length: Math.max(0, diff(a, b)) }, (_, i) => add(a, i));
 export const br = (s: string) => s.slice(8) + '/' + s.slice(5, 7);
@@ -56,7 +64,7 @@ export function statusDia(d: string, x: AgendaData): Status {
   if (d < x.hoje) return 'passado';
   if (d in x.dias) return x.dias[d] ? 'livre' : 'fechado';
   const p = periodoDe(d, x);
-  if (p) return p.bloqueado ? 'fechado' : 'livre';
+  if (p) return p.bloqueado || !(p.preco > 0) ? 'fechado' : 'livre'; // período sem preço nunca é vendido de graça
   return x.cfg.diasPadrao.includes(dow(d)) ? 'livre' : 'padrao';
 }
 
@@ -75,7 +83,10 @@ export function cotar(a: string, b: string, x: AgendaData): Cotacao {
   const { cfg } = x;
   const erro = (e: string): Cotacao => ({ ok: false, erro: e });
   if (!a || !b || b < a) return erro('Escolha a entrada e a saída.');
+  if (!dataReal(a) || !dataReal(b)) return erro('Data inválida.');
   if (a > add(x.hoje, 548)) return erro('Essa data está longe demais. Fale com a gente pelo WhatsApp.');
+  // Antes de montar a lista de dias: uma saída absurda (ano 9999) não pode travar o servidor.
+  if (diff(a, b) > 120) return erro('Período longo demais. Fale com a gente pelo WhatsApp.');
   const dias = faixa(a, b);
   const n = dias.length;
   const st = dias.map((d) => statusDia(d, x));
@@ -85,6 +96,10 @@ export function cotar(a: string, b: string, x: AgendaData): Cotacao {
   if (first < 0) return erro(st.includes('reservado') ? 'Essas datas acabaram de ser reservadas por outra pessoa. Escolha outras.' : 'Inclua pelo menos um dia disponível.');
   const meio = dias.slice(first, last + 1).find((d) => statusDia(d, x) !== 'livre');
   if (meio) return erro('O dia ' + br(meio) + ' está indisponível.');
+  // Dia aberto solto (menos de `minDias` seguidos) não aparece para o cliente: não vale nem pela API,
+  // nem "completado" com 1 dia antes e 1 depois para chegar a um pacote.
+  const oculto = dias.slice(first, last + 1).find((d) => !visivel(d, x));
+  if (oculto) return erro('O dia ' + br(oculto) + ' não está disponível para reserva pelo site.');
   const ext = [...dias.slice(0, first), ...dias.slice(last + 1)];
   if (first > 1 || n - 1 - last > 1) return erro('Você pode estender no máximo 1 dia antes e 1 dia depois dos dias abertos.');
   if (ext.some((d) => statusDia(d, x) !== 'padrao')) return erro('Um dos dias escolhidos não está disponível.');
@@ -162,6 +177,15 @@ export interface AdminData {
   dias: Record<string, { aberto: boolean; motivo: string | null }>;
   reservas: Reserva[];
   admins: { email: string; criado_em: string }[];
+  visitas: Visita[];
+  visitaCfg: VisitaCfg;
+  visitaBloqueios: { data: string; motivo: string | null }[];
+  notificacoes: Notificacao[]; // as 150 mais recentes
+  notificacoesLidasAte: number; // id da última notificação que esta pessoa marcou como lida
+  naoLidas: number;
+  pushDesligados: string[]; // tipos de aviso que esta pessoa desligou
+  pushAparelhos: number; // aparelhos desta pessoa que recebem push
+  pushChave: string; // chave pública do site para o serviço de push
   eu: string; // e-mail de quem está logado
 }
 

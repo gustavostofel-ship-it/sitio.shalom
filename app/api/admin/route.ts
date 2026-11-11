@@ -1,24 +1,48 @@
 import { NextResponse } from 'next/server';
 import type { Pool } from 'pg';
-import { exigirAdmin, HttpErro } from '@/lib/admin-auth';
+import { confirmarSenha, exigirAdmin, HttpErro, iniciarSessao } from '@/lib/admin-auth';
 import { hashSenha } from '@/lib/senha.mjs';
+import { lerJson } from '@/lib/corpo';
+import { limparCache } from '@/lib/cache-curto';
+import { destinoPushPermitido } from '@/lib/push-destino';
 import { emailValido } from '@/lib/sessao';
-import { SEGURA_SQL, cfgDeLinha, hojeSP } from '@/lib/agenda-server';
-import { sugerirPeriodos, type AdminData } from '@/lib/agenda';
+import { SEGURA_SQL, cfgDeLinha, hojeSP, soltarVencidas } from '@/lib/agenda-server';
+import { dataReal, dow, sugerirPeriodos, type AdminData } from '@/lib/agenda';
+import { cfgDeLinhaVisita } from '@/lib/visitas-server';
+import { chavesPush, enviarTeste, notificar } from '@/lib/notificar';
+import {
+  LISTA_TIPOS,
+  avisoReservaCancelada,
+  avisoReservaConfirmada,
+  avisoReservaNova,
+  avisoReservaPagamento,
+  avisoVisitaCancelada,
+  avisoVisitaConfirmada,
+  avisoVisitaNova,
+  avisoVisitaRealizada,
+  type DadosReserva,
+  type DadosVisita,
+  type TipoNotificacao,
+} from '@/lib/notificacoes';
+import { dataBr, erroDaConfig, horaValida, horariosDoDia, type StatusVisita, type VisitaCfg } from '@/lib/visitas';
 
 export const dynamic = 'force-dynamic';
 
 type Corpo = Record<string, unknown>;
 
-const DATA = /^\d{4}-\d{2}-\d{2}$/;
-const dataOk = (v: unknown): v is string => typeof v === 'string' && DATA.test(v) && !Number.isNaN(Date.parse(v));
+const dataOk = dataReal;
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+// Só aceita número de verdade (ou texto que é só um número): " ", [], true e null não valem.
 const num = (v: unknown, min: number, max: number) => {
+  if (typeof v !== 'number' && !(typeof v === 'string' && /^\s*-?\d+(\.\d+)?\s*$/.test(v))) return null;
   const n = Number(v);
-  return v !== '' && v !== null && Number.isFinite(n) && n >= min && n <= max ? n : null;
+  return Number.isFinite(n) && n >= min && n <= max ? n : null;
 };
 const invalido = (m: string) => new HttpErro(400, m);
-const ok = (extra: object = {}) => NextResponse.json({ ok: true, ...extra });
+const ok = (extra: object = {}) => {
+  limparCache(); // qualquer alteração do painel vale na hora para o site público
+  return NextResponse.json({ ok: true, ...extra });
+};
 
 function erro(e: unknown) {
   if (e instanceof HttpErro) return NextResponse.json({ erro: e.message }, { status: e.status });
@@ -28,13 +52,27 @@ function erro(e: unknown) {
 }
 
 async function carregar(p: Pool, eu: string): Promise<AdminData> {
-  const [c, per, d, r, adm] = await Promise.all([
+  const [c, per, d, r, adm, vc, vb, vs, nt, ev] = await Promise.all([
     p.query('select * from agenda_config where id = 1'),
     p.query('select id, nome, entrada, saida, preco, bloqueado from agenda_periodos order by entrada'),
     p.query('select data, aberto, motivo from agenda_dias'),
-    p.query('select * from agenda_reservas order by entrada'),
+    // Dados que não são para o painel (resumo do IP, aceite) ficam de fora
+    p.query('select id, entrada, saida, status, total, sinal, pago, segura_ate, nome, igreja, whatsapp, publico, origem, criada_em from agenda_reservas order by entrada'),
     p.query('select email, criado_em from agenda_admins order by criado_em'),
+    p.query('select * from agenda_visita_config where id = 1'),
+    p.query('select data, motivo from agenda_visita_bloqueios order by data'),
+    p.query('select id, nome, igreja, whatsapp, publico, formato, obs, data, hora, status, origem, nota_interna, criada_em, atualizada_em from agenda_visitas order by data nulls first, hora, id'),
+    p.query('select id, tipo, titulo, corpo, ref_tipo, ref_id, dados, autor, criada_em from agenda_notificacoes order by id desc limit 150'),
+    p.query(
+      `select ad.notificacoes_lidas_ate as lidas,
+              (select count(*) from agenda_notificacoes where id > ad.notificacoes_lidas_ate) as nao_lidas,
+              coalesce((select array_agg(tipo) from agenda_push_desligados where email = ad.email), '{}') as desligados,
+              (select count(*) from agenda_push_aparelhos where email = ad.email) as aparelhos
+         from agenda_admins ad where ad.email = $1`,
+      [eu]
+    ),
   ]);
+  const meu = ev.rows[0] ?? { lidas: 0, nao_lidas: 0, desligados: [], aparelhos: 0 };
   return {
     hoje: hojeSP(),
     agora: new Date().toISOString(),
@@ -43,6 +81,15 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
     dias: Object.fromEntries(d.rows.map((x) => [x.data as string, { aberto: x.aberto as boolean, motivo: x.motivo as string | null }])),
     reservas: r.rows,
     admins: adm.rows,
+    visitas: vs.rows,
+    visitaCfg: cfgDeLinhaVisita(vc.rows[0]),
+    visitaBloqueios: vb.rows,
+    notificacoes: nt.rows,
+    notificacoesLidasAte: Number(meu.lidas),
+    naoLidas: Number(meu.nao_lidas),
+    pushDesligados: meu.desligados,
+    pushAparelhos: Number(meu.aparelhos),
+    pushChave: (await chavesPush()).publica,
     eu,
   };
 }
@@ -98,6 +145,12 @@ async function cfg(p: Pool, b: Corpo) {
   }
   const colunas = Object.keys(u); // só colunas da lista acima, nunca texto do usuário
   if (!colunas.length) throw invalido('Nada para salvar.');
+  // Preço zero e mínimo maior que o máximo travariam ou "dariam de graça" as reservas do site.
+  const atual = (await p.query('select * from agenda_config where id = 1')).rows[0];
+  const fim = { ...atual, ...u } as Record<string, number>;
+  if (!(fim.base > 0)) throw invalido('O preço base precisa ser maior que zero.');
+  if (!(fim.extra > 0)) throw invalido('O valor do dia extra precisa ser maior que zero.');
+  if (fim.min_dias > fim.max_dias) throw invalido(`O máximo de dias (${fim.max_dias}) não pode ser menor que os dias do pacote base (${fim.min_dias}).`);
   await p.query(`update agenda_config set ${colunas.map((c, i) => `${c} = $${i + 1}`).join(', ')} where id = 1`, Object.values(u));
 }
 
@@ -108,6 +161,8 @@ async function periodo(p: Pool, b: Corpo) {
   if (!nome) throw invalido('Dê um nome ao período.');
   if (!dataOk(b.entrada) || !dataOk(b.saida) || b.saida < b.entrada) throw invalido('Confira as datas: a saída não pode ser antes da entrada.');
   if (preco === null) throw invalido('Preço inválido.');
+  // Período à venda precisa ter preço: sem isso o site venderia o pacote de graça. Só período bloqueado pode ficar sem preço.
+  if (b.bloqueado !== true && preco <= 0) throw invalido('Informe o preço do período. Só um período bloqueado pode ficar sem preço.');
   const choque = await p.query('select nome from agenda_periodos where entrada <= $2 and saida >= $1 and ($3::bigint is null or id <> $3) limit 1', [b.entrada, b.saida, id]);
   if (choque.rowCount) throw new HttpErro(409, `Este período se sobrepõe a “${choque.rows[0].nome}”.`);
   const v = [nome, b.entrada, b.saida, preco, b.bloqueado === true];
@@ -119,12 +174,22 @@ async function sugerir(p: Pool, b: Corpo, hoje: string) {
   const ano = num(b.ano, 2025, 2100);
   if (ano === null || !Number.isInteger(ano)) throw invalido('Ano inválido.');
   const [c, ex] = await Promise.all([p.query('select * from agenda_config where id = 1'), p.query('select nome, entrada, saida from agenda_periodos')]);
-  const novos = sugerirPeriodos(ano, cfgDeLinha(c.rows[0])).filter((s) => s.saida >= hoje && !ex.rows.some((e) => e.nome === s.nome || !(s.saida < e.entrada || s.entrada > e.saida)));
+  const novos = sugerirPeriodos(ano, cfgDeLinha(c.rows[0])).filter((s) => (s.bloqueado || s.preco > 0) && s.saida >= hoje && !ex.rows.some((e) => e.nome === s.nome || !(s.saida < e.entrada || s.entrada > e.saida)));
   for (const n of novos) await p.query('insert into agenda_periodos (nome, entrada, saida, preco, bloqueado) values ($1,$2,$3,$4,$5)', [n.nome, n.entrada, n.saida, n.preco, n.bloqueado]);
   return { criados: novos.length };
 }
 
-async function statusReserva(p: Pool, b: Corpo) {
+// Dados da reserva/visita para montar o texto do aviso depois de uma ação no painel.
+async function reservaPorId(p: Pool, id: number): Promise<DadosReserva | null> {
+  const r = await p.query('select id, nome, igreja, whatsapp, entrada, saida, total, sinal, pago, segura_ate from agenda_reservas where id = $1', [id]);
+  return r.rows[0] ?? null;
+}
+async function visitaPorId(p: Pool, id: number): Promise<DadosVisita | null> {
+  const r = await p.query('select id, nome, igreja, whatsapp, data, hora from agenda_visitas where id = $1', [id]);
+  return r.rows[0] ?? null;
+}
+
+async function statusReserva(p: Pool, b: Corpo, eu: string) {
   const id = num(b.id, 1, 1e12);
   if (id === null) throw invalido('Reserva inválida.');
   if (b.status !== 'confirmada' && b.status !== 'cancelada' && b.status !== 'aguardando_sinal') throw invalido('Status inválido.');
@@ -133,16 +198,27 @@ async function statusReserva(p: Pool, b: Corpo) {
     const c = await p.query('select hold_horas from agenda_config where id = 1');
     segura = new Date(Date.now() + c.rows[0].hold_horas * 3600e3);
   }
-  // Confirmar = sinal recebido. Voltar a "aguardando sinal" zera o que foi recebido. Cancelar mantém o registro do valor.
+  await soltarVencidas(p); // prazos vencidos liberam as datas antes de reativar/confirmar outra
+  const antes = await p.query('select status from agenda_reservas where id = $1', [id]);
+  if (!antes.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  const mudou = antes.rows[0].status !== b.status;
+  // Voltando a valer (reativada): os avisos de prazo e de vencimento podem ser enviados de novo.
+  if (mudou && b.status === 'aguardando_sinal') await p.query("delete from agenda_notificacoes where chave like $1 or chave = $2", [`reserva:${id}:vence%`, `reserva:${id}:expirada`]);
+  // Confirmar = sinal recebido. O valor já recebido NUNCA é apagado por troca de status
+  // (reativar uma reserva cancelada não pode fazer o dinheiro recebido sumir do registro).
   const r = await p.query(
-    "update agenda_reservas set status = $1::text, segura_ate = $2, pago = case when $1::text = 'confirmada' then greatest(pago, sinal) when $1::text = 'aguardando_sinal' then 0 else pago end where id = $3",
+    "update agenda_reservas set status = $1::text, segura_ate = $2, pago = case when $1::text = 'confirmada' then greatest(pago, sinal) else pago end where id = $3",
     [b.status, segura, id]
   );
   if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  if (!mudou) return; // mesmo status: não avisa de novo
+  const d = await reservaPorId(p, id);
+  if (d && b.status === 'confirmada') await notificar(avisoReservaConfirmada(d, eu));
+  if (d && b.status === 'cancelada') await notificar(avisoReservaCancelada(d, eu));
 }
 
 // Registra o total já recebido de uma reserva confirmada (sinal, parte ou tudo).
-async function pagarReserva(p: Pool, b: Corpo) {
+async function pagarReserva(p: Pool, b: Corpo, eu: string) {
   const id = num(b.id, 1, 1e12);
   if (id === null) throw invalido('Reserva inválida.');
   const r = await p.query('select total, status from agenda_reservas where id = $1', [id]);
@@ -151,22 +227,28 @@ async function pagarReserva(p: Pool, b: Corpo) {
   if (status !== 'confirmada') throw invalido('Confirme o sinal antes de registrar pagamentos.');
   const pago = num(b.pago, 0, total);
   if (pago === null) throw invalido(`O valor recebido precisa ficar entre R$ 0 e o total da reserva (R$ ${total}).`);
+  const antes = await p.query('select pago from agenda_reservas where id = $1', [id]);
   await p.query('update agenda_reservas set pago = $1 where id = $2', [pago, id]);
+  if (Number(antes.rows[0]?.pago) === pago) return; // mesmo valor: nada mudou, não avisa
+  const d = await reservaPorId(p, id);
+  if (d) await notificar(avisoReservaPagamento(d, eu));
 }
 
-async function criarReserva(p: Pool, b: Corpo, hoje: string) {
+async function criarReserva(p: Pool, b: Corpo, hoje: string, eu: string) {
   if (!dataOk(b.entrada) || !dataOk(b.saida) || b.saida < b.entrada) throw invalido('Confira as datas.');
   if (b.entrada < hoje) throw invalido('A entrada não pode ser no passado.');
-  const total = num(b.total, 0, 1e7);
-  if (total === null) throw invalido('Valor total inválido.');
-  const status = b.status === 'aguardando_sinal' ? 'aguardando_sinal' : 'confirmada';
+  const total = num(b.total, 1, 1e7);
+  if (total === null) throw invalido('Informe o valor total da reserva (maior que zero).');
+  if (b.status !== 'aguardando_sinal' && b.status !== 'confirmada') throw invalido('Situação da reserva inválida.');
+  const status = b.status;
+  await soltarVencidas(p);
   const c = (await p.query('select sinal_pct, hold_horas from agenda_config where id = 1')).rows[0];
   const sinal = Math.round((total * c.sinal_pct) / 100);
   // Criada como confirmada: o sinal já foi recebido, a menos que o valor recebido seja informado.
   const pago = status === 'confirmada' ? (b.pago === undefined || b.pago === '' ? sinal : num(b.pago, 0, total)) : 0;
   if (pago === null) throw invalido('O valor recebido precisa ficar entre R$ 0 e o total da reserva.');
-  await p.query(
-    "insert into agenda_reservas (entrada, saida, total, sinal, pago, status, segura_ate, nome, igreja, whatsapp, origem) values ($1,$2,$3,$4,$10,$5,$6,$7,$8,$9,'manual')",
+  const criada = await p.query(
+    "insert into agenda_reservas (entrada, saida, total, sinal, pago, status, segura_ate, nome, igreja, whatsapp, origem) values ($1,$2,$3,$4,$10,$5,$6,$7,$8,$9,'manual') returning id",
     [
       b.entrada,
       b.saida,
@@ -180,6 +262,143 @@ async function criarReserva(p: Pool, b: Corpo, hoje: string) {
       pago,
     ]
   );
+  const d = await reservaPorId(p, criada.rows[0].id);
+  if (d) await notificar(status === 'confirmada' ? avisoReservaConfirmada(d, eu, true) : { ...avisoReservaNova(d), autor: eu });
+}
+
+// Exclusão definitiva (sem volta): apaga a reserva e os avisos ligados a ela. Libera as datas.
+async function excluirReserva(p: Pool, b: Corpo) {
+  const id = num(b.id, 1, 1e12);
+  if (id === null) throw invalido('Reserva inválida.');
+  const r = await p.query('delete from agenda_reservas where id = $1', [id]);
+  if (!r.rowCount) throw new HttpErro(404, 'Reserva não encontrada.');
+  await p.query("delete from agenda_notificacoes where ref_tipo = 'reserva' and ref_id = $1", [id]);
+}
+
+// ---------- Visitas ----------
+const STATUS_VISITA: StatusVisita[] = ['pedida', 'agendada', 'realizada', 'cancelada', 'nao_compareceu'];
+
+// 23505: o banco só deixa uma visita ativa por horário.
+async function comHorario(fn: () => Promise<{ rowCount: number | null }>) {
+  try {
+    const r = await fn();
+    if (!r.rowCount) throw new HttpErro(404, 'Visita não encontrada.');
+  } catch (e) {
+    if ((e as { code?: string }).code === '23505') throw new HttpErro(409, 'Esse horário já tem outra visita.');
+    throw e;
+  }
+}
+const idVisita = (b: Corpo) => {
+  const id = num(b.id, 1, 1e12);
+  if (id === null) throw invalido('Visita inválida.');
+  return id;
+};
+// Dia e hora juntos, ou os dois vazios (a combinar).
+function quando(b: Corpo): [string | null, string | null] {
+  const data = b.data ? String(b.data) : '',
+    hora = b.hora ? String(b.hora) : '';
+  if (!!data !== !!hora) throw invalido('Informe o dia e a hora, ou deixe os dois em branco.');
+  if (data && (!dataOk(data) || !horaValida(hora))) throw invalido('Dia ou hora inválidos.');
+  return [data || null, hora || null];
+}
+
+async function visitaCriar(p: Pool, b: Corpo, eu: string) {
+  const nome = str(b.nome, 80),
+    whats = String(b.whatsapp ?? '').replace(/\D/g, '').slice(0, 13);
+  if (nome.length < 2) throw invalido('Informe o nome.');
+  if (whats.length < 10) throw invalido('Informe o WhatsApp com DDD.');
+  const [data, hora] = quando(b);
+  const status = b.status === 'pedida' ? 'pedida' : 'agendada';
+  const nova: { id?: number } = {};
+  await comHorario(async () => {
+    const r = await p.query("insert into agenda_visitas (nome, igreja, whatsapp, publico, obs, data, hora, status, origem) values ($1,$2,$3,$4,$5,$6,$7,$8,'manual') returning id", [
+      nome,
+      str(b.igreja, 80) || null,
+      whats,
+      str(b.publico, 40) || null,
+      str(b.obs, 500) || null,
+      data,
+      hora,
+      status,
+    ]);
+    nova.id = r.rows[0].id;
+    return r;
+  });
+  const d = nova.id ? await visitaPorId(p, nova.id) : null;
+  if (d) await notificar(status === 'agendada' ? avisoVisitaConfirmada(d, eu) : { ...avisoVisitaNova(d), autor: eu });
+}
+
+async function visitaExcluir(p: Pool, b: Corpo) {
+  const id = idVisita(b);
+  const r = await p.query('delete from agenda_visitas where id = $1', [id]);
+  if (!r.rowCount) throw new HttpErro(404, 'Visita não encontrada.');
+  await p.query("delete from agenda_notificacoes where ref_tipo = 'visita' and ref_id = $1", [id]);
+}
+
+async function visitaStatus(p: Pool, b: Corpo, eu: string) {
+  const id = idVisita(b);
+  if (!STATUS_VISITA.includes(b.status as StatusVisita)) throw invalido('Situação inválida.');
+  const antes = await p.query('select status from agenda_visitas where id = $1', [id]);
+  await comHorario(() => p.query('update agenda_visitas set status = $1, atualizada_em = now() where id = $2', [b.status, id]));
+  if (antes.rows[0]?.status === b.status) return; // mesmo status (duplo clique, outro administrador): não avisa de novo
+  const d = await visitaPorId(p, id);
+  if (!d) return;
+  if (b.status === 'pedida') await p.query("delete from agenda_notificacoes where chave in ($1, $2)", [`visita:${id}:semresposta`, `visita:${id}:1h`]); // reativada: lembretes voltam
+  if (b.status === 'agendada') await notificar(avisoVisitaConfirmada(d, eu));
+  else if (b.status === 'cancelada') await notificar(avisoVisitaCancelada(d, eu));
+  else if (b.status === 'realizada') await notificar(avisoVisitaRealizada(d, eu, false));
+  else if (b.status === 'nao_compareceu') await notificar(avisoVisitaRealizada(d, eu, true));
+}
+
+// Marca ou remarca. Com "confirmar", a visita já fica agendada.
+async function visitaMover(p: Pool, b: Corpo, eu: string) {
+  const id = idVisita(b);
+  const [data, hora] = quando(b);
+  await comHorario(() =>
+    p.query("update agenda_visitas set data = $1, hora = $2, status = case when $3::boolean then 'agendada' else status end, atualizada_em = now() where id = $4", [data, hora, b.confirmar === true, id])
+  );
+  if (b.confirmar === true) {
+    const d = await visitaPorId(p, id);
+    if (d) await notificar(avisoVisitaConfirmada(d, eu));
+  }
+}
+
+async function visitaNota(p: Pool, b: Corpo) {
+  await comHorario(() => p.query('update agenda_visitas set nota_interna = $1, atualizada_em = now() where id = $2', [str(b.nota, 1000) || null, idVisita(b)]));
+}
+
+async function visitaConfig(p: Pool, b: Corpo) {
+  const c = {
+    diasSemana: Array.isArray(b.diasSemana) ? [...new Set(b.diasSemana as number[])].sort() : undefined,
+    horaIni: String(b.horaIni ?? ''),
+    horaFim: String(b.horaFim ?? ''),
+    duracaoMin: Number(b.duracaoMin),
+    antecedenciaH: Number(b.antecedenciaH),
+    horizonteDias: Number(b.horizonteDias),
+  };
+  const erro = erroDaConfig(c);
+  if (erro) throw invalido(erro);
+  // Visitas já marcadas que deixariam de caber nos novos dias/horários: não deixa mudar às cegas.
+  const novas = horariosDoDia(c as VisitaCfg);
+  const marcadas = await p.query("select data, hora from agenda_visitas where status in ('pedida','agendada') and data >= $1 and hora is not null", [hojeSP()]);
+  const foraDoNovo = marcadas.rows.filter((v: { data: string; hora: string }) => !c.diasSemana?.includes(dow(v.data)) || !novas.includes(v.hora));
+  if (foraDoNovo.length)
+    throw new HttpErro(409, `Há ${foraDoNovo.length} visita(s) marcada(s) que não caberiam nos novos dias/horários (por exemplo, ${dataBr(foraDoNovo[0].data)} às ${foraDoNovo[0].hora}). Remarque ou cancele essas visitas antes de mudar.`);
+  await p.query('update agenda_visita_config set dias_semana = $1, hora_ini = $2, hora_fim = $3, duracao_min = $4, antecedencia_h = $5, horizonte_dias = $6 where id = 1', [
+    c.diasSemana,
+    c.horaIni,
+    c.horaFim,
+    c.duracaoMin,
+    c.antecedenciaH,
+    c.horizonteDias,
+  ]);
+}
+
+// Fecha ou reabre um dia para visitas (ex.: feriado, evento no sítio).
+async function visitaBloqueio(p: Pool, b: Corpo) {
+  if (!dataOk(b.data)) throw invalido('Dia inválido.');
+  if (b.remover === true) await p.query('delete from agenda_visita_bloqueios where data = $1', [b.data]);
+  else await p.query('insert into agenda_visita_bloqueios (data, motivo) values ($1, $2) on conflict (data) do update set motivo = excluded.motivo', [b.data, str(b.motivo, 80) || null]);
 }
 
 // ---------- Administradores ----------
@@ -190,19 +409,23 @@ function senhaDe(v: unknown) {
   return s;
 }
 
-async function criarAdmin(p: Pool, b: Corpo) {
+async function criarAdmin(p: Pool, b: Corpo, eu: string) {
+  await confirmarSenha(p, eu, b.senhaAtual);
   const email = emailDe(b.email);
   if (!emailValido(email)) throw invalido('Informe um e-mail válido.');
   const r = await p.query('insert into agenda_admins (email, senha_hash) values ($1, $2) on conflict (email) do nothing', [email, hashSenha(senhaDe(b.senha))]);
   if (!r.rowCount) throw new HttpErro(409, 'Este e-mail já é administrador.');
 }
 
-async function trocarSenha(p: Pool, b: Corpo) {
-  const r = await p.query('update agenda_admins set senha_hash = $1 where email = $2', [hashSenha(senhaDe(b.senha)), emailDe(b.email)]);
+// Trocar a senha encerra as sessões abertas dessa pessoa (quem estiver logado com a senha antiga é desconectado).
+async function trocarSenha(p: Pool, b: Corpo, eu: string) {
+  await confirmarSenha(p, eu, b.senhaAtual);
+  const r = await p.query('update agenda_admins set senha_hash = $1, sessao_versao = sessao_versao + 1 where email = $2', [hashSenha(senhaDe(b.senha)), emailDe(b.email)]);
   if (!r.rowCount) throw new HttpErro(404, 'Administrador não encontrado.');
 }
 
 async function removerAdmin(p: Pool, b: Corpo, eu: string) {
+  await confirmarSenha(p, eu, b.senhaAtual);
   const email = emailDe(b.email);
   if (email === eu) throw invalido('Você não pode remover o seu próprio acesso.');
   const total = (await p.query('select count(*) as n from agenda_admins')).rows[0].n;
@@ -213,7 +436,7 @@ async function removerAdmin(p: Pool, b: Corpo, eu: string) {
 export async function POST(req: Request) {
   try {
     const { pool: p, email: eu } = await exigirAdmin(req);
-    const b = (await req.json().catch(() => null)) as Corpo | null;
+    const b = await lerJson(req, 64 * 1024);
     if (!b || typeof b.acao !== 'string') throw invalido('Pedido inválido.');
     const hoje = hojeSP();
     switch (b.acao) {
@@ -234,20 +457,77 @@ export async function POST(req: Request) {
       case 'sugerir':
         return ok(await sugerir(p, b, hoje));
       case 'reserva.status':
-        await statusReserva(p, b);
+        await statusReserva(p, b, eu);
         return ok();
       case 'reserva.pago':
-        await pagarReserva(p, b);
+        await pagarReserva(p, b, eu);
         return ok();
       case 'reserva.criar':
-        await criarReserva(p, b, hoje);
+        await criarReserva(p, b, hoje, eu);
+        return ok();
+      case 'visita.criar':
+        await visitaCriar(p, b, eu);
+        return ok();
+      case 'reserva.excluir':
+        await excluirReserva(p, b);
+        return ok();
+      case 'visita.excluir':
+        await visitaExcluir(p, b);
+        return ok();
+      case 'visita.status':
+        await visitaStatus(p, b, eu);
+        return ok();
+      case 'visita.mover':
+        await visitaMover(p, b, eu);
+        return ok();
+      case 'notif.lidas':
+        await p.query('update agenda_admins set notificacoes_lidas_ate = (select coalesce(max(id), 0) from agenda_notificacoes) where email = $1', [eu]);
+        return ok();
+      case 'notif.pref': {
+        const tipo = String(b.tipo) as TipoNotificacao;
+        if (!LISTA_TIPOS.includes(tipo)) throw invalido('Tipo de aviso inválido.');
+        if (b.ativo === false) await p.query('insert into agenda_push_desligados (email, tipo) values ($1, $2) on conflict do nothing', [eu, tipo]);
+        else await p.query('delete from agenda_push_desligados where email = $1 and tipo = $2', [eu, tipo]);
+        return ok();
+      }
+      case 'push.assinar': {
+        const endpoint = str(b.endpoint, 1000),
+          p256dh = str(b.p256dh, 200),
+          auth = str(b.auth, 100);
+        if (!destinoPushPermitido(endpoint) || !p256dh || !auth) throw invalido('Assinatura de notificação inválida.');
+        const qtd = await p.query('select count(*) as n from agenda_push_aparelhos where email = $1 and endpoint <> $2', [eu, endpoint]);
+        if (Number(qtd.rows[0].n) >= 10) throw invalido('Limite de 10 aparelhos por pessoa. Remova um aparelho antigo antes de ativar outro.');
+        await p.query(
+          `insert into agenda_push_aparelhos (email, endpoint, p256dh, auth, agente) values ($1,$2,$3,$4,$5)
+           on conflict (endpoint) do update set email = excluded.email, p256dh = excluded.p256dh, auth = excluded.auth, agente = excluded.agente, falhas = 0`,
+          [eu, endpoint, p256dh, auth, str(b.agente, 200) || null]
+        );
+        return ok();
+      }
+      case 'push.cancelar':
+        await p.query('delete from agenda_push_aparelhos where endpoint = $1 and email = $2', [str(b.endpoint, 1000), eu]);
+        return ok();
+      case 'push.teste':
+        return ok(await enviarTeste(eu));
+      case 'visita.nota':
+        await visitaNota(p, b);
+        return ok();
+      case 'visita.config':
+        await visitaConfig(p, b);
+        return ok();
+      case 'visita.bloqueio':
+        await visitaBloqueio(p, b);
         return ok();
       case 'admin.criar':
-        await criarAdmin(p, b);
+        await criarAdmin(p, b, eu);
         return ok();
-      case 'admin.senha':
-        await trocarSenha(p, b);
-        return ok();
+      case 'admin.senha': {
+        await trocarSenha(p, b, eu);
+        const res = ok();
+        // Trocou a PRÓPRIA senha: a sessão atual foi encerrada junto; entra de novo sem pedir login.
+        if (emailDe(b.email) === eu) await iniciarSessao(res, req, eu);
+        return res;
+      }
       case 'admin.remover':
         await removerAdmin(p, b, eu);
         return ok();

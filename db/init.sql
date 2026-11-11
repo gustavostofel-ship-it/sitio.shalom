@@ -13,7 +13,7 @@ create table agenda_config (
   hold_horas  int     not null default 24,       -- quanto tempo a data fica segurada
   capacidade  int     not null default 150,
   max_dias    int     not null default 7,        -- teto de dias pelo site (fora de períodos especiais)
-  dias_padrao int[]   not null default '{0,5,6}' -- dias da semana abertos por padrão (0 = domingo)
+  dias_padrao int[]   not null default '{0,1,2,3,4,5,6}' -- dias da semana abertos por padrão (0 = domingo); decisão do dono: os 7 dias
 );
 insert into agenda_config (id) values (1);
 

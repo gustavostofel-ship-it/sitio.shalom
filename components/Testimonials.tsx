@@ -42,7 +42,7 @@ export function Testimonials() {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
+          <span className="text-sm font-semibold uppercase tracking-wider text-[#B45309] mb-2 block">
             Garantias e Transparência
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
@@ -66,13 +66,13 @@ export function Testimonials() {
                   <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#1B4332] border border-emerald-100 flex items-center justify-center mb-5">
                     <Icon className="w-6 h-6" />
                   </div>
-                  <span className="text-xs text-[#D97706] font-semibold uppercase tracking-wider block mb-1">
+                  <span className="text-sm text-[#B45309] font-semibold uppercase tracking-wider block mb-1">
                     {item.subtitle}
                   </span>
                   <h3 className="text-lg font-serif font-bold text-stone-900 leading-snug mb-3">
                     {item.title}
                   </h3>
-                  <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">
+                  <p className="text-stone-600 text-sm sm:text-sm leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -83,7 +83,7 @@ export function Testimonials() {
 
         {/* Invitation Banner */}
         <div className="rounded-2xl bg-gradient-to-r from-[#1B4332] to-[#0F291E] text-white p-8 sm:p-10 text-center max-w-4xl mx-auto shadow-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-semibold mb-4 backdrop-blur-xs">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-sm font-semibold mb-4 backdrop-blur-xs">
             <HeartHandshake className="w-4 h-4" />
             <span>Visita Presencial sem Compromisso</span>
           </div>
@@ -95,7 +95,7 @@ export function Testimonials() {
           </p>
           <a
             href="#agendar"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg transition-all"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#B45309] hover:bg-[#92400E] shadow-lg transition-all"
           >
             <Calendar className="w-4 h-4" />
             <span>Agendar Visita com a Comissão</span>

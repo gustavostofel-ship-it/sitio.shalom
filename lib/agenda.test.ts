@@ -1,7 +1,7 @@
 // Roda com: node --test lib/agenda.test.ts
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cotar, janela, visivel, statusDia, proximas, pascoa, sugerirPeriodos, pagamento, type AgendaData } from './agenda.ts';
+import { cotar, janela, visivel, statusDia, proximas, pascoa, sugerirPeriodos, pagamento, dataReal, type AgendaData } from './agenda.ts';
 
 const base = (): AgendaData => ({
   hoje: '2026-10-28',
@@ -17,6 +17,36 @@ const total = (a: string, b: string, x = base()) => {
   const c = cotar(a, b, x);
   return c.ok ? c.total : c.erro;
 };
+
+test('saída absurda ou data que não existe é recusada sem travar', () => {
+  const t0 = Date.now();
+  for (const s of ['9999-12-31', '2026-11-30', '2030-01-01']) assert.equal(cotar('2026-11-06', s, base()).ok, false);
+  assert.equal(cotar('2026-02-30', '2026-03-02', base()).ok, false);
+  assert.equal(cotar('2026-11-06', '2026-13-01', base()).ok, false);
+  assert.ok(Date.now() - t0 < 200);
+});
+
+test('dia aberto solto não vira pacote com 1 dia antes e 1 depois (pela API)', () => {
+  const x = base();
+  x.dias['2026-11-10'] = true; // terça aberta sozinha (segunda e quarta seguem fechadas)
+  assert.equal(cotar('2026-11-09', '2026-11-11', x).ok, false);
+  assert.equal(cotar('2026-11-10', '2026-11-12', x).ok, false);
+  assert.equal(cotar('2026-11-06', '2026-11-08', x).ok, true); // sexta a domingo continua valendo
+});
+
+test('período sem preço nunca é vendido de graça', () => {
+  const x = base();
+  x.periodos.push({ nome: 'Teste grátis', entrada: '2026-12-11', saida: '2026-12-13', preco: 0, bloqueado: false });
+  assert.equal(statusDia('2026-12-12', x), 'fechado');
+  assert.equal(cotar('2026-12-11', '2026-12-13', x).ok, false);
+});
+
+test('dataReal só aceita dias do calendário', () => {
+  assert.equal(dataReal('2026-02-28'), true);
+  assert.equal(dataReal('2026-02-30'), false);
+  assert.equal(dataReal('2026-2-3'), false);
+  assert.equal(dataReal(20260101), false);
+});
 
 test('sexta a domingo = R$ 7.500, sinal de 20%', () => {
   const c = cotar('2026-11-06', '2026-11-08', base());

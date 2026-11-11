@@ -1,21 +1,28 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Bell, BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, LayoutGrid, Lock, LockOpen, LogOut, Menu, MessageCircle, Plus, SlidersHorizontal, Undo2, Users, X } from 'lucide-react';
 import { brl, br, diff, faixa, pagamento, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
+import { NovaReserva } from './NovaReserva';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
+import { ResumoVisitas, Visitas } from './Visitas';
+import { Notificacoes } from './Notificacoes';
+import { marcarIcone } from '@/lib/push-cliente';
 import { Simbolo } from '@/components/Logo';
-import { BotaoConfirma, CURVAS, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
+import { BotaoConfirma, CURVAS, CampoReais, PilulaReserva, botao, botaoPerigo, botaoPri, campo, iniciais, rotulo } from './ui';
 import type { Chamar, Gaveta, Resposta } from './tipos';
 
-type Aba = 'resumo' | 'cal' | 'rsv' | 'cfg' | 'adm';
+type Aba = 'resumo' | 'notif' | 'cal' | 'rsv' | 'vis' | 'cfg' | 'adm';
+const ABAS: Aba[] = ['resumo', 'notif', 'cal', 'rsv', 'vis', 'cfg', 'adm'];
 const NAV = [
   { k: 'resumo', rot: 'Resumo', Ic: LayoutGrid },
+  { k: 'notif', rot: 'Notificações', Ic: Bell },
   { k: 'cal', rot: 'Calendário', Ic: CalendarDays },
   { k: 'rsv', rot: 'Reservas', Ic: BookOpen },
+  { k: 'vis', rot: 'Visitas', Ic: CalendarClock },
   { k: 'cfg', rot: 'Regras e preços', Ic: SlidersHorizontal },
   { k: 'adm', rot: 'Administradores', Ic: Users },
 ] as const;
@@ -89,12 +96,6 @@ function Login({ aoEntrar, primeiro }: { aoEntrar: () => void; primeiro: boolean
   );
 }
 
-// Preço sugerido para um intervalo, pelas regras do site (o dono pode mudar o valor).
-function sugestao(a: string, b: string, ag: AgendaData) {
-  const p = ag.periodos.find((x) => x.entrada === a && x.saida === b);
-  if (p) return p.preco;
-  return ag.cfg.base + Math.max(0, diff(a, b) - ag.cfg.minDias) * ag.cfg.extra;
-}
 const linkZap = (tel: string) => {
   const d = tel.replace(/\D/g, '');
   return d.length >= 10 ? `https://wa.me/${d.length > 11 && d.startsWith('55') ? d : '55' + d}` : null;
@@ -120,7 +121,7 @@ function BlocoPagamento({ r, st, chamar }: { r: Reserva; st: string; chamar: Cha
         <div className="mt-4">
           <label className={rotulo}>
             Total já recebido (R$)
-            <input type="number" inputMode="decimal" min={0} max={r.total} step={100} className={`${campo} mt-1`} value={valor} onChange={(e) => setValor(e.target.value)} />
+            <CampoReais className={`${campo} mt-1`} value={valor} onChange={setValor} />
           </label>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button className={botaoPri} onClick={() => salvar(+valor)}>Salvar valor recebido</button>
@@ -176,8 +177,15 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
         )}
         {(st === 'cancelada' || st === 'expirada') && <button className={botao} onClick={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })}>Reativar, se as datas estiverem livres</button>}
         {st === 'confirmada' && (
-          <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal zera o valor já recebido. Continuar?" confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
+          <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal? O valor já recebido continua registrado." confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
         )}
+        <BotaoConfirma
+          className={botaoPerigo}
+          rotulo="Excluir de vez (não tem volta)"
+          pergunta={`Excluir esta reserva para sempre? Ela some do sistema${r.pago > 0 ? ` e o registro de ${brl(r.pago)} recebidos também` : ''}. Isso não pode ser desfeito. Para só liberar as datas, use "Cancelar".`}
+          confirmaRotulo="Sim, excluir para sempre"
+          onConfirma={() => chamar('reserva.excluir', { id: r.id }).then(fechar)}
+        />
         {(st === 'aguardando_sinal' || st === 'confirmada') && (
           <BotaoConfirma className={botaoPerigo} rotulo="Cancelar reserva e liberar as datas" pergunta="Cancelar esta reserva e liberar as datas para novos pedidos?" confirmaRotulo="Sim, cancelar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'cancelada' }).then(fechar)} />
         )}
@@ -186,19 +194,19 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
   );
 }
 
-function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: string }; dados: AdminData; ag: AgendaData; chamar: Chamar; fechar: () => void }) {
+function GavetaDias({ ini, dados, ag, chamar, abrirVisita, onNova }: { ini: { a: string; b: string }; dados: AdminData; ag: AgendaData; chamar: Chamar; abrirVisita: (id: number) => void; onNova: (a: string) => void }) {
   const [a, setA] = useState(ini.a);
   const [b, setB] = useState(ini.b);
   const [motivo, setMotivo] = useState('');
-  const [m, setM] = useState({ igreja: '', nome: '', whats: '', total: '', recebido: '' });
   const dias = a && b && b >= a && diff(a, b) <= 400 ? faixa(a, b) : [];
   const c = { livre: 0, fechado: 0, reservado: 0, passado: 0 };
   dias.forEach((d) => {
     const s = statusDia(d, ag);
     c[s === 'padrao' ? 'fechado' : s]++;
   });
-  const podeReservar = dias.length > 0 && c.reservado === 0 && c.passado === 0;
-  const total = m.total === '' ? (dias.length ? sugestao(a, b, ag) : 0) : +m.total;
+  const visitasDoPeriodo = dados.visitas
+    .filter((v) => v.data && v.data >= a && v.data <= b && (v.status === 'pedida' || v.status === 'agendada'))
+    .sort((x, y) => (x.data! + (x.hora ?? '')).localeCompare(y.data! + (y.hora ?? '')));
   const agir = (modo: 'fechar' | 'abrir' | 'padrao') => chamar('dias', { datas: dias, modo, motivo });
   return (
     <div>
@@ -211,38 +219,42 @@ function GavetaDias({ ini, dados, ag, chamar, fechar }: { ini: { a: string; b: s
         <label className={rotulo}>Até<input type="date" className={`${campo} mt-1`} value={b} min={a} onChange={(e) => setB(e.target.value)} /></label>
       </div>
 
-      <h3 className="mt-8 font-serif text-lg text-[#14301F]">Disponibilidade para o cliente</h3>
-      <label className={`${rotulo} mt-3`}>
-        Motivo (só você vê)
-        <input className={`${campo} mt-1`} value={motivo} maxLength={80} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: manutenção, família, férias" />
-      </label>
-      <div className="mt-3 grid gap-2">
-        <button disabled={!dias.length} className={botaoPerigo} onClick={() => agir('fechar')}><Lock className="h-4 w-4" /> Fechar para o cliente</button>
-        <button disabled={!dias.length} className={botao} onClick={() => agir('abrir')}><LockOpen className="h-4 w-4" /> Abrir para o cliente</button>
-        <button disabled={!dias.length} className={botao} onClick={() => agir('padrao')}><Undo2 className="h-4 w-4" /> Voltar ao padrão</button>
-      </div>
-      <p className="mt-3 text-sm text-stone-600">Dias passados ou com reserva são mantidos. Dias abertos soltos (menos de {dados.cfg.minDias} seguidos) ficam ocultos para o cliente.</p>
-
-      <h3 className="mt-8 font-serif text-lg text-[#14301F]">Criar reserva manual</h3>
-      <p className="mt-1 text-sm text-stone-600">Para quem fechou por telefone ou WhatsApp.</p>
-      {podeReservar ? (
-        <div className="mt-3 space-y-3">
-          <input className={campo} placeholder="Igreja ou ministério" value={m.igreja} onChange={(e) => setM({ ...m, igreja: e.target.value })} />
-          <input className={campo} placeholder="Responsável" value={m.nome} onChange={(e) => setM({ ...m, nome: e.target.value })} />
-          <input className={campo} placeholder="WhatsApp" value={m.whats} onChange={(e) => setM({ ...m, whats: e.target.value })} />
-          <label className={rotulo}>Total (R$), sugerido pelas regras<input type="number" min={0} step={500} className={`${campo} mt-1`} value={m.total === '' ? total : m.total} onChange={(e) => setM({ ...m, total: e.target.value })} /></label>
-          <label className={rotulo}>
-            Já recebido (R$), se criar como confirmada
-            <input type="number" inputMode="decimal" min={0} step={100} className={`${campo} mt-1`} placeholder={`Vazio = sinal (${brl(Math.round((total * dados.cfg.sinalPct) / 100))})`} value={m.recebido} onChange={(e) => setM({ ...m, recebido: e.target.value })} />
-          </label>
-          <div className="grid gap-2 pt-1">
-            <button className={botaoPri} onClick={() => chamar('reserva.criar', { entrada: a, saida: b, total, nome: m.nome, igreja: m.igreja, whatsapp: m.whats, status: 'confirmada', pago: m.recebido }).then((r) => r.ok && fechar())}>Criar como confirmada</button>
-            <button className={botao} onClick={() => chamar('reserva.criar', { entrada: a, saida: b, total, nome: m.nome, igreja: m.igreja, whatsapp: m.whats, status: 'aguardando_sinal' }).then((r) => r.ok && fechar())}>Criar aguardando sinal</button>
-          </div>
+      {visitasDoPeriodo.length > 0 && (
+        <div className="mt-6 rounded-lg border border-[#C9D8E6] bg-[#EEF4FA] p-4">
+          <h3 className="font-serif text-lg text-[#14301F]">Visitas {a === b ? 'neste dia' : 'neste período'}</h3>
+          <ul className="mt-2 divide-y divide-[#C9D8E6]">
+            {visitasDoPeriodo.map((v) => (
+              <li key={v.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="min-w-0">
+                  <b className="tabular-nums">{a === b ? '' : br(v.data!) + ' · '}{v.hora ?? 'horário a combinar'}</b> · <span className="break-words">{v.igreja || v.nome}</span>
+                  <span className="block text-xs text-stone-600">{v.status === 'pedida' ? 'Aguardando confirmação' : 'Agendada'}</span>
+                </span>
+                <button className={botao} onClick={() => abrirVisita(v.id)}>Abrir</button>
+              </li>
+            ))}
+          </ul>
         </div>
-      ) : (
-        <p className="mt-3 rounded-md bg-[#F6DAD5] p-3 text-sm text-[#8F2517]">Há dias com reserva ou já passados nesta seleção. Escolha só dias livres ou fechados.</p>
       )}
+
+      {(
+        <>
+          <h3 className="mt-8 font-serif text-lg text-[#14301F]">Disponibilidade para o cliente</h3>
+          <label className={`${rotulo} mt-3`}>
+            Motivo (só você vê)
+            <input className={`${campo} mt-1`} value={motivo} maxLength={80} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: manutenção, família, férias" />
+          </label>
+          <div className="mt-3 grid gap-2">
+            <button disabled={!dias.length} className={botaoPerigo} onClick={() => agir('fechar')}><Lock className="h-4 w-4" /> Fechar para o cliente</button>
+            <button disabled={!dias.length} className={botao} onClick={() => agir('abrir')}><LockOpen className="h-4 w-4" /> Abrir para o cliente</button>
+            <button disabled={!dias.length} className={botao} onClick={() => agir('padrao')}><Undo2 className="h-4 w-4" /> Voltar ao padrão</button>
+          </div>
+          <p className="mt-3 text-sm text-stone-600">Dias passados ou com reserva são mantidos. Dias abertos soltos (menos de {dados.cfg.minDias} seguidos) ficam ocultos para o cliente.</p>
+        </>
+      )}
+
+      <h3 className="mt-8 font-serif text-lg text-[#14301F]">Criar reserva</h3>
+      <p className="mt-1 text-sm text-stone-600">Para quem fechou por telefone ou WhatsApp. Usa as mesmas regras do site (datas disponíveis e preço).</p>
+      <button className={`${botaoPri} mt-3 w-full`} onClick={() => onNova(a)}>Nova reserva a partir deste dia</button>
     </div>
   );
 }
@@ -259,6 +271,7 @@ export function Painel() {
   const [modo, setModo] = useState<1 | 3 | 12>(1);
   const [selCal, setSelCal] = useState<{ a: string; b: string } | null>(null);
   const [menu, setMenu] = useState(false);
+  const [visitaAbrir, setVisitaAbrir] = useState<number | null>(null);
 
   const avisar = (t: string) => {
     setToast(t);
@@ -283,7 +296,7 @@ export function Painel() {
         setAviso('');
         setIni((m) => m ?? hojeComoMes(j.hoje));
       } else {
-        setDados(null);
+        // Falha passageira do servidor: mantém o que já está na tela (gavetas abertas, números) em vez de derrubar o painel.
         setAviso(j.erro || 'Não foi possível carregar o painel.');
       }
     } catch {
@@ -292,8 +305,72 @@ export function Painel() {
     }
   }, []);
   useEffect(() => {
-    carregar();
+    const t = setTimeout(carregar, 0); // adia para fora do efeito: evita renderizações em cascata
+    return () => clearTimeout(t);
   }, [carregar]);
+
+  // Abre uma reserva, uma visita ou uma aba a partir de um endereço (/painel?abrir=reserva:12), que é o que a notificação carrega.
+  const abrirLink = useCallback((url: string) => {
+    const q = new URL(url, window.location.origin).searchParams;
+    const abrir = q.get('abrir');
+    const abaPedida = q.get('aba');
+    if (abrir) {
+      const [tipo, id] = abrir.split(':');
+      const n = Number(id);
+      if (tipo === 'reserva' && n) {
+        setAba('rsv');
+        setGaveta({ tipo: 'reserva', id: n });
+      } else if (tipo === 'visita' && n) {
+        setAba('vis');
+        setVisitaAbrir(n);
+      }
+    } else if (abaPedida && ABAS.includes(abaPedida as Aba)) setAba(abaPedida as Aba);
+  }, []);
+  const limparVisita = useCallback(() => setVisitaAbrir(null), []);
+
+  // O painel foi aberto tocando numa notificação: abre o que ela mostra, assim que os dados chegam
+  const linkInicial = useRef(true);
+  useEffect(() => {
+    if (!dados || !linkInicial.current) return;
+    linkInicial.current = false;
+    const t = setTimeout(() => {
+      if (window.location.search) {
+        abrirLink(window.location.href);
+        window.history.replaceState(null, '', '/painel');
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [dados, abrirLink]);
+
+  // Toque numa notificação com o painel já aberto (a mensagem vem do service worker)
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    const ouvir = (e: MessageEvent) => {
+      if (e.data?.tipo === 'abrir' && typeof e.data.url === 'string') abrirLink(e.data.url);
+    };
+    navigator.serviceWorker.addEventListener('message', ouvir);
+    return () => navigator.serviceWorker.removeEventListener('message', ouvir);
+  }, [abrirLink]);
+
+  // Mantém o painel atualizado sozinho (a cada 45 s e ao voltar para a tela)
+  useEffect(() => {
+    if (sessao !== 'dentro') return;
+    const atualizar = () => {
+      if (document.visibilityState === 'visible') carregar();
+    };
+    const t = setInterval(atualizar, 45000);
+    document.addEventListener('visibilitychange', atualizar);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', atualizar);
+    };
+  }, [sessao, carregar]);
+
+  // Número de não lidas no ícone do app (iPhone com o painel instalado)
+  const naoLidas = dados?.naoLidas ?? 0;
+  useEffect(() => {
+    marcarIcone(naoLidas);
+  }, [naoLidas]);
 
   const chamar: Chamar = async (acao, corpo = {}) => {
     try {
@@ -305,11 +382,12 @@ export function Painel() {
         return { erro: j.erro || 'erro' };
       }
       await carregar();
-      avisar(
+      const msg =
         acao === 'dias' ? `${j.alterados} dia(s) atualizados${j.ignorados ? `, ${j.ignorados} mantidos (reserva ou passado)` : ''}.` :
         acao === 'sugerir' ? (j.criados ? `${j.criados} período(s) sugerido(s). Confira datas e preços.` : 'Esses períodos já existem.') :
-        'Salvo.'
-      );
+        acao.startsWith('push.') || acao.startsWith('notif.') ? '' : // essas ações mostram o resultado na própria tela
+        'Salvo.';
+      if (msg) avisar(msg);
       return j;
     } catch {
       avisar('Sem conexão. Tente de novo.');
@@ -322,6 +400,14 @@ export function Painel() {
     setGaveta(null);
     setSelCal(null);
   }, []);
+  // Tecla Esc fecha a gaveta aberta
+  const gavetaAberta = !!gaveta;
+  useEffect(() => {
+    if (!gavetaAberta) return;
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && fechar();
+    window.addEventListener('keydown', tecla);
+    return () => window.removeEventListener('keydown', tecla);
+  }, [gavetaAberta, fechar]);
   const abrirReserva = (id: number) => setGaveta({ tipo: 'reserva', id });
   const confirmar = (id: number) => chamar('reserva.status', { id, status: 'confirmada' });
 
@@ -335,6 +421,11 @@ export function Painel() {
     },
     [dados]
   );
+  // Abre o formulário de nova reserva já com o próximo fim de semana livre (dá para trocar as datas).
+  const novaReserva = () => {
+    setSelCal(null);
+    setGaveta({ tipo: 'nova' });
+  };
   const irParaDatas = (a: string, b: string) => {
     setAba('cal');
     setModo(1);
@@ -370,6 +461,7 @@ export function Painel() {
   const rotuloMes = (m: Mes) => new Date(Date.UTC(m.y, m.m, 1)).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
   const dataLonga = new Date(dados.hoje + 'T12:00:00Z').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
   const pendentes = dados.reservas.filter((r) => statusReal(r, dados.agora) === 'aguardando_sinal').length;
+  const visitasPendentes = dados.visitas.filter((v) => v.status === 'pedida').length;
   const titulo = NAV.find((n) => n.k === aba)!.rot;
 
   const lateral = (fecharMenu?: () => void) => {
@@ -396,6 +488,8 @@ export function Painel() {
               <Ic className="h-[18px] w-[18px] shrink-0" />
               <span className="flex-1">{rot}</span>
               {k === 'rsv' && pendentes > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Pedidos aguardando sinal">{pendentes}</span>}
+              {k === 'notif' && dados.naoLidas > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Notificações não lidas">{dados.naoLidas}</span>}
+              {k === 'vis' && visitasPendentes > 0 && <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-xs font-semibold text-white" title="Visitas aguardando confirmação">{visitasPendentes}</span>}
             </button>
           );
         })}
@@ -434,7 +528,8 @@ export function Painel() {
       {menu && (
         <>
           <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMenu(false)} />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[272px] lg:hidden">
+          {/* Abre pelo lado direito, o mesmo lado do botão do menu */}
+          <aside className="fixed inset-y-0 right-0 z-50 w-[272px] lg:hidden">
             <button onClick={() => setMenu(false)} aria-label="Fechar o menu" className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-[#CFE0D2] hover:bg-white/10"><X className="h-5 w-5" /></button>
             {lateral(() => setMenu(false))}
           </aside>
@@ -448,7 +543,28 @@ export function Painel() {
             <p className="pb-1 text-sm text-stone-600 first-letter:uppercase">{dataLonga}</p>
           </header>
 
-          {aba === 'resumo' && <Resumo dados={dados} abrir={abrirReserva} confirmar={confirmar} irParaDatas={irParaDatas} irParaCalendario={() => setAba('cal')} />}
+          {aba === 'resumo' && (
+            <>
+              <Resumo dados={dados} abrir={abrirReserva} confirmar={confirmar} irParaDatas={irParaDatas} irParaCalendario={() => setAba('cal')} />
+              <ResumoVisitas dados={dados} abrir={() => setAba('vis')} />
+            </>
+          )}
+          {aba === 'vis' && <Visitas dados={dados} chamar={chamar} abrirId={visitaAbrir} aoAbrir={limparVisita} />}
+          {aba === 'notif' && (
+            <Notificacoes
+              dados={dados}
+              chamar={chamar}
+              ir={(tipo, id) => {
+                if (tipo === 'reserva') {
+                  setAba('rsv');
+                  setGaveta({ tipo: 'reserva', id });
+                } else {
+                  setAba('vis');
+                  setVisitaAbrir(id);
+                }
+              }}
+            />
+          )}
           {aba === 'cal' && (
             <section className="rounded-xl border border-[#D2CAB8] bg-white p-3 shadow-[0_1px_2px_rgba(20,48,31,0.08)] sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -457,6 +573,7 @@ export function Painel() {
                   <button className={icone} onClick={() => mover(1)} aria-label="Próximo mês"><ChevronRight className="h-4 w-4" /></button>
                   <p className="ml-2 min-w-[160px] font-serif text-xl text-[#14301F] first-letter:uppercase">{modo === 1 ? rotuloMes(ini) : `${rotuloMes(ini)} a ${rotuloMes(meses[meses.length - 1])}`}</p>
                   <button className={`${botao} ml-1`} onClick={() => setIni(hojeComoMes(dados.hoje))}>Hoje</button>
+                  <button className={botaoPri} onClick={novaReserva}><Plus className="h-4 w-4" /> Nova reserva</button>
                 </div>
                 <div className="inline-flex rounded-lg bg-[#EFEBE3] p-1" role="tablist" aria-label="Quantos meses mostrar">
                   {([1, 3, 12] as const).map((n) => (
@@ -472,11 +589,12 @@ export function Painel() {
                 <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-sm border border-[#D2CAB8] bg-[#EFEBE3]" />Fechado</span>
                 <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-sm border border-dashed border-[#D97706] bg-[#F1F6F0]" />Aberto, mas oculto do cliente (menos de {dados.cfg.minDias} dias seguidos)</span>
                 <span className="flex items-center gap-2"><i className="h-0.5 w-3 bg-[#D97706]" />Período especial</span>
+                <span className="flex items-center gap-2"><i className="flex h-4 w-4 items-center justify-center rounded-full bg-[#2F5D8A] text-[10px] font-semibold text-white">2</i>Visitas no dia (aguardando ou agendadas)</span>
               </div>
               <p className="mt-3 text-sm text-stone-600">Clique num dia ou arraste para selecionar vários. A gaveta mostra a reserva ou deixa você fechar, abrir ou criar uma reserva.</p>
             </section>
           )}
-          {aba === 'rsv' && <ListaReservas dados={dados} abrir={abrirReserva} />}
+          {aba === 'rsv' && <ListaReservas dados={dados} abrir={abrirReserva} nova={novaReserva} />}
           {aba === 'cfg' && <Regras dados={dados} chamar={chamar} />}
           {aba === 'adm' && <Admins dados={dados} chamar={chamar} />}
         </div>
@@ -485,10 +603,25 @@ export function Painel() {
       {gaveta && (
         <>
           <div className="fixed inset-0 z-40 bg-[#0F291E]/40" onClick={fechar} />
-          <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true">
+          <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true" aria-label="Detalhes">
             <button onClick={fechar} aria-label="Fechar" className="absolute right-4 top-4 rounded-md p-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-2 focus-visible:outline-[#D97706]"><X className="h-5 w-5" /></button>
             {gaveta.tipo === 'reserva' && reservaAberta && <GavetaReserva key={`${reservaAberta.id}-${reservaAberta.status}-${reservaAberta.pago}`} r={reservaAberta} dados={dados} chamar={chamar} fechar={fechar} />}
-            {gaveta.tipo === 'dias' && <GavetaDias key={gaveta.a + gaveta.b} ini={gaveta} dados={dados} ag={ag} chamar={chamar} fechar={fechar} />}
+            {gaveta.tipo === 'dias' && (
+              <GavetaDias
+                key={gaveta.a + gaveta.b}
+                ini={gaveta}
+                dados={dados}
+                ag={ag}
+                chamar={chamar}
+                onNova={(a) => setGaveta({ tipo: 'nova', inicio: a })}
+                abrirVisita={(id) => {
+                  fechar();
+                  setAba('vis');
+                  setVisitaAbrir(id);
+                }}
+              />
+            )}
+            {gaveta.tipo === 'nova' && <NovaReserva key={gaveta.inicio ?? 'nova'} ag={ag} chamar={chamar} fechar={fechar} inicio={gaveta.inicio} />}
           </aside>
         </>
       )}

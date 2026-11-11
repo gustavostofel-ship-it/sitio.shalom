@@ -12,7 +12,7 @@ services:
       # Cria as tabelas na primeira vez que o banco é iniciado
       - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shalom -d shalom"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U shalom -d shalom"] # por TCP: so responde depois do init.sql terminar
       interval: 5s
       timeout: 3s
       retries: 12
@@ -28,8 +28,21 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:?Defina SESSION_SECRET no arquivo .env}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      LIMITE_RESERVAS_IP: ${LIMITE_RESERVAS_IP:-3}
+      LIMITE_RESERVAS_ABERTAS: ${LIMITE_RESERVAS_ABERTAS:-12}
+      LIMITE_VISITAS_IP: ${LIMITE_VISITAS_IP:-3}
+      LIMITE_VISITAS_ABERTAS: ${LIMITE_VISITAS_ABERTAS:-30}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
+    # Só abre neste computador (127.0.0.1), não para a rede da casa ou do escritório
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+      - "[::1]:${APP_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/saude >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
 
 volumes:
   dados:

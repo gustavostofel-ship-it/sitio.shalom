@@ -16,7 +16,7 @@ export function FaqSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
+          <span className="text-sm font-semibold uppercase tracking-wider text-[#B45309] mb-2 block">
             Tire Suas Dúvidas
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
@@ -56,7 +56,7 @@ export function FaqSection() {
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-stone-600 leading-relaxed border-t border-stone-100 animate-in fade-in duration-150">
+                  <div className="px-5 sm:px-6 pb-5 pt-1 text-sm sm:text-sm text-stone-600 leading-relaxed border-t border-stone-100 animate-in fade-in duration-150">
                     <p>{faq.answer}</p>
                   </div>
                 )}
@@ -71,7 +71,7 @@ export function FaqSection() {
             <h4 className="text-base font-serif font-bold text-stone-900">
               Sua dúvida não está listada acima?
             </h4>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <p className="text-sm text-stone-500 mt-0.5">
               Converse diretamente com nosso coordenador de retiros via WhatsApp.
             </p>
           </div>
@@ -79,7 +79,7 @@ export function FaqSection() {
             href={`https://wa.me/${SITE_INFO.whatsappNumber}?text=Olá,%20tenho%20uma%20dúvida%20específica%20sobre%20a%20locação%20do%20Sítio%20Shalom%20Xerém.`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#1B4332] text-amber-100 hover:bg-[#153427] transition-colors whitespace-nowrap shrink-0 shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold bg-[#1B4332] text-amber-100 hover:bg-[#153427] transition-colors whitespace-nowrap shrink-0 shadow-xs"
           >
             <MessageSquare className="w-4 h-4 text-amber-300" />
             <span>Falar com o Coordenador</span>

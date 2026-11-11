@@ -1,29 +1,34 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck } from 'lucide-react';
-
-const VIDEO_SRC =
-  'https://player.vimeo.com/video/1236343998?background=1&autoplay=1&muted=1&loop=1&playsinline=1&autopause=0&dnt=1';
-const VIDEO_POSTER =
-  'https://i.vimeocdn.com/video/2212820012-9a14f8182decc71ba85355d4265a5e3c019cd5d032f5cc2b39f94fcf3cec2f9c-d_640?region=us';
+import React, { useEffect, useRef, useState } from 'react';
+import { Calendar, Compass, BedDouble, Church, Waves, UtensilsCrossed, ShieldCheck, Play, Volume2, VolumeX } from 'lucide-react';
+import { SafeImage } from './SafeImage';
+import { FOTOS, VIDEO_HOME } from '@/lib/site-data';
 
 export function Hero() {
-  const [loadVideo, setLoadVideo] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [pronto, setPronto] = useState(false); // a página já desenhou: pode montar o vídeo
+  const [automatico, setAutomatico] = useState(true); // false = economia de dados ou pouco movimento: espera o clique
+  const [apareceu, setApareceu] = useState(false); // o primeiro quadro já chegou
+  const [mudo, setMudo] = useState(true);
+  const [erro, setErro] = useState(false);
+  const video = useRef<HTMLVideoElement>(null);
 
-  // Carrega o player só depois que a página já renderizou, para não travar o celular
+  // Monta o vídeo só depois que a página já renderizou, para não travar o celular.
+  // Com "economia de dados" ligada no aparelho, ou "reduzir movimento", ele só toca se a pessoa clicar.
   useEffect(() => {
-    const t = window.setTimeout(() => setLoadVideo(true), 300);
+    const t = window.setTimeout(() => {
+      const conexao = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      const economia = !!conexao?.saveData || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setAutomatico(!economia);
+      setPronto(true);
+    }, 300);
     return () => window.clearTimeout(t);
   }, []);
 
-  // Se o evento load do player demorar, revela o vídeo mesmo assim
-  useEffect(() => {
-    if (!loadVideo) return;
-    const t = window.setTimeout(() => setVideoLoaded(true), 3000);
-    return () => window.clearTimeout(t);
-  }, [loadVideo]);
+  const tocar = () => {
+    setAutomatico(true);
+    video.current?.play().catch(() => setErro(true));
+  };
 
   return (
     <section className="relative min-h-[90vh] flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-gradient-to-b from-[#091811] via-[#0F291E] to-[#122F22]">
@@ -37,9 +42,9 @@ export function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
           {/* Left Column: Heading, Value Proposition & CTAs */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-6 space-y-6">
             {/* Top Trust Label */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/30 text-emerald-200 text-xs sm:text-sm font-medium backdrop-blur-md shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/30 text-emerald-200 text-sm sm:text-sm font-medium backdrop-blur-md shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
               <span>Estrutura Exclusiva para Igrejas e Retiros Cristãos</span>
             </div>
@@ -58,7 +63,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <a
                 href="#agendar"
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-base font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
+                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-base font-semibold text-white bg-[#B45309] hover:bg-[#92400E] shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 <Calendar className="w-5 h-5 text-amber-100" />
                 <span>Agendar Visita Presencial</span>
@@ -74,7 +79,7 @@ export function Hero() {
             </div>
 
             {/* Micro trust indicators */}
-            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-stone-300/80">
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-sm text-stone-300/80">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
                 100% de Exclusividade por Igreja
@@ -93,31 +98,58 @@ export function Hero() {
           </div>
 
           {/* Right Column: Vídeo institucional */}
-          <div className="lg:col-span-5 flex flex-col items-center">
-            <div className="relative w-full max-w-[300px] sm:max-w-[320px] rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60">
-              <div className="relative w-full aspect-[9/16]">
-                {/* Capa instantânea: aparece na hora, enquanto o player do Vimeo carrega */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={VIDEO_POSTER}
-                  alt="Sítio Shalom Xerém"
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
-                  fetchPriority="high"
+          <div className="lg:col-span-6 flex flex-col items-center">
+            <div className="relative w-full rounded-2xl overflow-hidden border border-emerald-500/25 bg-stone-900 shadow-2xl shadow-black/60">
+              <div className="relative w-full aspect-video">
+                {/* Enquanto o vídeo não chega (ou se falhar), aparece uma foto do sítio */}
+                <SafeImage
+                  src={FOTOS.campo}
+                  alt="Vista do Sítio Shalom Xerém"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 560px"
+                  className={`object-cover transition-opacity duration-500 ${apareceu && !erro ? 'opacity-0' : 'opacity-100'}`}
                 />
-                {loadVideo && (
-                  <iframe
-                    src={VIDEO_SRC}
-                    className={`absolute inset-0 w-full h-full transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    frameBorder="0"
-                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    title="Sítio Shalom Xerém"
-                    onLoad={() => setVideoLoaded(true)}
+                {pronto && !erro && (
+                  <video
+                    ref={video}
+                    src={`${VIDEO_HOME.url}#t=0.1`}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${apareceu ? 'opacity-100' : 'opacity-0'}`}
+                    autoPlay={automatico}
+                    muted={mudo}
+                    loop
+                    playsInline
+                    preload={automatico ? 'auto' : 'metadata'}
+                    aria-label="Vídeo institucional do Sítio Shalom Xerém"
+                    onLoadedData={() => setApareceu(true)}
+                    onError={() => setErro(true)}
                   />
+                )}
+                {pronto && !erro && !automatico && (
+                  <button
+                    type="button"
+                    onClick={tocar}
+                    className="absolute inset-0 flex items-center justify-center bg-black/25 hover:bg-black/35 transition-colors focus-visible:outline-2 focus-visible:outline-amber-300"
+                    aria-label="Assistir ao vídeo"
+                  >
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-[#1B4332] shadow-lg">
+                      <Play className="h-7 w-7 translate-x-0.5" />
+                    </span>
+                  </button>
+                )}
+                {pronto && !erro && automatico && apareceu && (
+                  <button
+                    type="button"
+                    onClick={() => setMudo((m) => !m)}
+                    className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-xs hover:bg-black/70 transition-colors focus-visible:outline-2 focus-visible:outline-amber-300"
+                    aria-label={mudo ? 'Ativar o som do vídeo' : 'Desativar o som do vídeo'}
+                  >
+                    {mudo ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                  </button>
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-stone-400 mt-2 text-center">
+            <p className="text-[13px] text-stone-400 mt-2 text-center">
               Conheça o Sítio Shalom Xerém
             </p>
           </div>
@@ -138,7 +170,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Até 150 Pessoas
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Hospedagem em comunhão
                 </p>
               </div>
@@ -153,7 +185,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Auditório de Cultos
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Salão dedicado para vigílias e louvores
                 </p>
               </div>
@@ -168,7 +200,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Piscina, Campo & Quadra
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Lazer completo e integração saudável
                 </p>
               </div>
@@ -183,7 +215,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Salão com Mesas
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Salão aberto com cozinha
                 </p>
               </div>

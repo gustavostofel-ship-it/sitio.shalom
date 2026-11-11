@@ -1,0 +1,3 @@
+# Scripts de shell precisam de fim de linha LF, senao quebram no Linux/servidor.
+*.sh text eol=lf
+*.mjs text eol=lf

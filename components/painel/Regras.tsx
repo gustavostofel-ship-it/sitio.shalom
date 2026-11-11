@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Sparkles } from 'lucide-react';
 import { br, type AdminData } from '@/lib/agenda';
 import type { Chamar } from './tipos';
-import { BotaoConfirma, Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
+import { BotaoConfirma, CampoReais, Secao, botao, botaoPerigo, botaoPri, campo, rotulo } from './ui';
 
 const CAMPOS: [keyof Omit<AdminData['cfg'], 'diasPadrao'>, string][] = [
   ['base', 'Preço base (R$)'],
@@ -28,13 +28,32 @@ interface Linha {
 
 export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) {
   const [cfg, setCfg] = useState(() => ({ ...dados.cfg }));
-  const [pers, setPers] = useState<Linha[]>([]);
+  const [pers, setPers] = useState<Linha[]>(() => dados.periodos.map((p) => ({ ...p, preco: String(p.preco) })));
   const [ano, setAno] = useState(+dados.hoje.slice(0, 4));
-  useEffect(() => setCfg({ ...dados.cfg }), [dados.cfg]);
-  useEffect(() => setPers(dados.periodos.map((p) => ({ ...p, preco: String(p.preco) }))), [dados.periodos]);
+  // Quando o servidor manda dados novos (depois de salvar), os campos voltam a refletir o que está salvo.
+  // Compara pelo CONTEÚDO, não pela referência: o painel recarrega sozinho a cada 45 s e isso
+  // não pode apagar o que a pessoa está digitando.
+  const cfgTxt = JSON.stringify(dados.cfg);
+  const persTxt = JSON.stringify(dados.periodos);
+  const [cfgOrigem, setCfgOrigem] = useState(cfgTxt);
+  const [persOrigem, setPersOrigem] = useState(persTxt);
+  if (cfgOrigem !== cfgTxt) {
+    setCfgOrigem(cfgTxt);
+    setCfg({ ...dados.cfg });
+  }
+  if (persOrigem !== persTxt) {
+    setPersOrigem(persTxt);
+    setPers(dados.periodos.map((p) => ({ ...p, preco: String(p.preco) })));
+  }
 
   const edita = (i: number, k: keyof Linha, v: string | boolean) => setPers((l) => l.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
-  const novo = () => setPers((l) => [...l, { nome: 'Novo período', entrada: dados.hoje, saida: dados.hoje, preco: '0', bloqueado: false }]);
+  const novo = () => setPers((l) => [...l, { nome: 'Novo período', entrada: dados.hoje, saida: dados.hoje, preco: '', bloqueado: false }]);
+  // O site não pode vender de graça nem ficar com regras que se contradizem.
+  const cfgErro =
+    !(cfg.base > 0) ? 'O preço base precisa ser maior que zero.'
+    : !(cfg.extra > 0) ? 'O valor do dia extra precisa ser maior que zero.'
+    : cfg.minDias > cfg.maxDias ? `O máximo de dias (${cfg.maxDias}) não pode ser menor que os dias do pacote base (${cfg.minDias}).`
+    : '';
 
   return (
     <div className="space-y-6">
@@ -43,7 +62,11 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
           {CAMPOS.map(([k, l]) => (
             <label key={k} className={rotulo}>
               {l}
-              <input type="number" min={0} className={`${campo} mt-1`} value={cfg[k]} onChange={(e) => setCfg({ ...cfg, [k]: e.target.value === '' ? 0 : +e.target.value })} />
+              {k === 'base' || k === 'extra' ? (
+                <CampoReais className={`${campo} mt-1`} value={String(cfg[k])} onChange={(v) => setCfg({ ...cfg, [k]: v === '' ? 0 : +v })} />
+              ) : (
+                <input type="number" min={0} className={`${campo} mt-1`} value={cfg[k]} onChange={(e) => setCfg({ ...cfg, [k]: e.target.value === '' ? 0 : +e.target.value })} />
+              )}
             </label>
           ))}
         </div>
@@ -62,7 +85,8 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
             })}
           </div>
         </fieldset>
-        <button onClick={() => chamar('cfg', { ...cfg })} className={`${botaoPri} mt-6`}>Salvar preços e regras</button>
+        {cfgErro && <p className="mt-4 rounded-md bg-[#F6DAD5] p-3 text-sm text-[#8F2517]">{cfgErro}</p>}
+        <button disabled={!!cfgErro} onClick={() => chamar('cfg', { ...cfg })} className={`${botaoPri} mt-6`}>Salvar preços e regras</button>
       </Secao>
 
       <Secao titulo="Períodos especiais" texto="Feriados e datas com pacote fechado: o cliente leva o período inteiro, pelo preço que você definir. Marque “Bloqueado” para ninguém reservar (como o Natal).">
@@ -95,14 +119,15 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
               </label>
               <label className={rotulo}>
                 Preço (R$)
-                <input type="number" min={0} step={500} className={`${campo} mt-1`} value={p.preco} onChange={(e) => edita(i, 'preco', e.target.value)} />
+                <CampoReais className={`${campo} mt-1`} value={p.preco} onChange={(v) => edita(i, 'preco', v)} />
               </label>
               <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4 lg:justify-end">
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-stone-700">
                   <input type="checkbox" className="h-4 w-4 accent-[#1B4332]" checked={p.bloqueado} onChange={(e) => edita(i, 'bloqueado', e.target.checked)} />
                   Bloqueado
                 </label>
-                <button onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className={botaoPri}>Salvar</button>
+                {!p.bloqueado && !(+p.preco > 0) && <span className="basis-full text-sm text-[#8F2517] lg:basis-auto">Informe o preço (um período à venda não pode ser grátis).</span>}
+                <button disabled={!p.bloqueado && !(+p.preco > 0)} onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className={botaoPri}>Salvar</button>
                 {p.id ? (
                   <BotaoConfirma compacto className={botaoPerigo} rotulo="Remover" pergunta={`Remover “${p.nome}” (${br(p.entrada)} a ${br(p.saida)})?`} confirmaRotulo="Sim, remover" onConfirma={() => chamar('periodo.remover', { id: p.id })} />
                 ) : (

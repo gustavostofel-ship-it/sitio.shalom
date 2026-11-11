@@ -1,33 +1,41 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { confereSenha, hashSenha } from '@/lib/senha.mjs';
+import { lerJson } from '@/lib/corpo';
+import { confereSenhaAsync, hashSenha } from '@/lib/senha.mjs';
 import { iniciarSessao } from '@/lib/admin-auth';
+import { ipDoPedido } from '@/lib/ip';
+import { contar, estourou, zerar } from '@/lib/limite';
 
 export const dynamic = 'force-dynamic';
 
 // Hash falso: gasta o mesmo tempo quando o e-mail não existe, para não revelar quem é administrador.
 const FALSO = hashSenha('senha-que-ninguem-usa');
-// Freio contra tentativa de adivinhar a senha: 8 erros por IP a cada 15 minutos.
-const falhas = new Map<string, { n: number; ate: number }>();
+// Freio contra tentativa de adivinhar a senha: 8 erros por origem a cada 15 minutos,
+// e 20 erros por e-mail (para quem muda de IP a cada tentativa).
+const JANELA = 15 * 60e3;
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'local';
-  const agora = Date.now();
-  const f = falhas.get(ip);
-  if (f && f.ate > agora && f.n >= 8) return NextResponse.json({ erro: 'Muitas tentativas. Espere alguns minutos.' }, { status: 429 });
+  const ip = ipDoPedido(req);
+  const b = (await lerJson(req, 2048)) ?? {};
+  const email = String(b.email ?? '').trim().toLowerCase().slice(0, 120);
+  const chaveIp = 'login:ip:' + ip;
+  const chaveEmail = 'login:email:' + email;
+  // Por origem o freio é curto (8). Por e-mail é bem mais largo (40): senão, qualquer pessoa conseguiria
+  // trancar o dono para fora só errando a senha dele de propósito.
+  if (estourou(chaveIp, 8) || estourou(chaveEmail, 40)) return NextResponse.json({ erro: 'Muitas tentativas. Espere alguns minutos.' }, { status: 429 });
   try {
-    const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const email = String(b.email ?? '').trim().toLowerCase().slice(0, 120);
     const senha = String(b.senha ?? '').slice(0, 200);
     const r = await db().query('select senha_hash from agenda_admins where email = $1', [email]);
-    const certa = confereSenha(senha, r.rows[0]?.senha_hash ?? FALSO);
+    const certa = await confereSenhaAsync(senha, r.rows[0]?.senha_hash ?? FALSO);
     if (!r.rowCount || !certa) {
-      falhas.set(ip, { n: f && f.ate > agora ? f.n + 1 : 1, ate: f && f.ate > agora ? f.ate : agora + 15 * 60e3 });
+      contar(chaveIp, JANELA);
+      contar(chaveEmail, JANELA);
       return NextResponse.json({ erro: 'E-mail ou senha incorretos.' }, { status: 401 });
     }
-    falhas.delete(ip);
+    zerar(chaveIp);
+    zerar(chaveEmail);
     const res = NextResponse.json({ ok: true });
-    iniciarSessao(res, req, email);
+    await iniciarSessao(res, req, email);
     return res;
   } catch (e) {
     console.error('login:', e);

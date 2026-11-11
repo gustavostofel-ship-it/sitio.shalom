@@ -6,12 +6,13 @@ export const DURACAO = 7 * 24 * 3600; // segundos
 const hmac = (corpo: string, segredo: string) => createHmac('sha256', segredo).update(corpo).digest();
 
 // Sessão sem estado: o cookie leva o e-mail e a validade, assinados com SESSION_SECRET.
-export function assinar(email: string, segredo: string, agora = Date.now()): string {
-  const corpo = Buffer.from(JSON.stringify({ e: email, x: Math.floor(agora / 1000) + DURACAO })).toString('base64url');
+// `versao` vem do banco (agenda_admins.sessao_versao): se mudar lá, as sessões antigas deixam de valer.
+export function assinar(email: string, segredo: string, versao = 1, agora = Date.now()): string {
+  const corpo = Buffer.from(JSON.stringify({ e: email, v: versao, x: Math.floor(agora / 1000) + DURACAO })).toString('base64url');
   return corpo + '.' + hmac(corpo, segredo).toString('base64url');
 }
 
-export function verificar(token: string | undefined, segredo: string, agora = Date.now()): string | null {
+export function lerSessao(token: string | undefined, segredo: string, agora = Date.now()): { email: string; versao: number } | null {
   const [corpo, assinatura] = (token ?? '').split('.');
   if (!corpo || !assinatura) return null;
   const esperado = hmac(corpo, segredo);
@@ -19,11 +20,13 @@ export function verificar(token: string | undefined, segredo: string, agora = Da
   if (dado.length !== esperado.length || !timingSafeEqual(dado, esperado)) return null;
   try {
     const p = JSON.parse(Buffer.from(corpo, 'base64url').toString());
-    return typeof p.e === 'string' && p.x * 1000 > agora ? p.e : null;
+    return typeof p.e === 'string' && p.x * 1000 > agora ? { email: p.e, versao: Number.isInteger(p.v) ? p.v : 1 } : null;
   } catch {
     return null;
   }
 }
+
+export const verificar = (token: string | undefined, segredo: string, agora = Date.now()): string | null => lerSessao(token, segredo, agora)?.email ?? null;
 
 export const lerCookie = (cabecalho: string | null, nome = COOKIE) =>
   cabecalho

@@ -7,6 +7,22 @@ const foco = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visib
 // Campos com 16px no celular: abaixo disso o Safari do iPhone dá zoom a cada toque no campo.
 export const campo = `w-full rounded-md border border-[#BDB4A1] bg-white px-3 py-2.5 text-base text-[#1F2937] placeholder:text-stone-500 focus:border-[#1B4332] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]/30 sm:py-2 sm:text-sm`;
 export const rotulo = 'block text-[13px] font-medium text-stone-700';
+
+// Campo de valor em reais: a pessoa digita 7000 e vê "R$ 7.000". `value` e `onChange` usam só os dígitos ("7000").
+export function CampoReais({ value, onChange, className, placeholder }: { value: string; onChange: (digitos: string) => void; className?: string; placeholder?: string }) {
+  const mostra = value === '' ? '' : 'R$ ' + Number(value).toLocaleString('pt-BR');
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      autoComplete="off"
+      className={className ?? campo}
+      placeholder={placeholder}
+      value={mostra}
+      onChange={(e) => onChange(e.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 8))}
+    />
+  );
+}
 export const botao = `inline-flex items-center justify-center gap-2 rounded-md border border-[#BDB4A1] bg-white px-3.5 py-2.5 text-sm font-medium text-[#1F2937] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
 export const botaoPri = `inline-flex items-center justify-center gap-2 rounded-md bg-[#1B4332] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#14301F] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
 export const botaoPerigo = `inline-flex items-center justify-center gap-2 rounded-md border border-[#BDB4A1] bg-white px-3.5 py-2.5 text-sm font-medium text-[#B42318] transition-colors hover:border-[#B42318] disabled:cursor-not-allowed disabled:opacity-50 sm:py-2 ${foco}`;
