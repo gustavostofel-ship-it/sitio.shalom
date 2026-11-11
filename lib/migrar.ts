@@ -85,6 +85,17 @@ async function migrarUmaVez() {
       create index if not exists agenda_visitas_data_idx on agenda_visitas (data, status);
       create index if not exists agenda_visitas_ip_idx on agenda_visitas (ip_hash, criada_em);
     `);
+    // Dados que entram nas mensagens de WhatsApp para o cliente (só o painel enxerga; nunca vão para o site público).
+    await db().query(`
+      create table if not exists agenda_mensagens (
+        id          int primary key default 1 check (id = 1),
+        pix_chave   text not null default '',
+        pix_titular text not null default '',
+        saldo_regra text not null default '',
+        extras      text not null default ''
+      );
+      insert into agenda_mensagens (id) values (1) on conflict (id) do nothing;
+    `);
     // Visitas: horário próprio por dia da semana e horários soltos fechados pelo administrador.
     await db().query(`
       alter table agenda_visita_config add column if not exists horarios_por_dia jsonb not null default '{}';
