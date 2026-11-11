@@ -54,7 +54,7 @@ export function Header() {
               <a
                 key={link.href}
                 href={link.href}
-                className={`transition-colors whitespace-nowrap shrink-0 hover:text-[#D97706] ${
+                className={`transition-colors whitespace-nowrap shrink-0 hover:text-[#B45309] ${
                   isScrolled
                     ? 'text-stone-700'
                     : 'text-stone-100 hover:text-amber-300 drop-shadow-xs'
@@ -69,7 +69,7 @@ export function Header() {
           <div className="hidden sm:flex items-center gap-3 shrink-0">
             <a
               href="#agendar"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-white bg-[#D97706] hover:bg-[#B45309] shadow-sm hover:shadow-md transition-all whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#D97706]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-white bg-[#B45309] hover:bg-[#92400E] shadow-sm hover:shadow-md transition-all whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#D97706]"
             >
               <Calendar className="w-4 h-4" />
               <span>
@@ -79,7 +79,7 @@ export function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex sm:hidden items-center">
+          <div className="flex lg:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`p-2 rounded-lg transition-colors ${
@@ -98,7 +98,7 @@ export function Header() {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="sm:hidden bg-[#FAF8F5] border-b border-[#E5E0D8] px-4 pt-4 pb-6 shadow-xl animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden bg-[#FAF8F5] border-b border-[#E5E0D8] px-4 pt-4 pb-6 shadow-xl animate-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <a
@@ -114,7 +114,7 @@ export function Header() {
               <a
                 href="#agendar"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-white bg-[#D97706] hover:bg-[#B45309] transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-white bg-[#B45309] hover:bg-[#92400E] transition-colors"
               >
                 <Calendar className="w-4 h-4" />
                 <span>Agendar Visita Técnica</span>

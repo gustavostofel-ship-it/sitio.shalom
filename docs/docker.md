@@ -68,7 +68,7 @@ Use o `docker-compose.prod.yml` (não o `docker-compose.yml`): ele **não abre p
 1. No Easypanel, crie um serviço **Compose** apontando para o repositório do GitHub, ramo `main`, arquivo `docker-compose.prod.yml`.
 2. Na aba **Ambiente**, preencha (os valores ficam só lá, nunca no GitHub):
    - `POSTGRES_PASSWORD` e `SESSION_SECRET` (gere cada um com o comando do `.env.example`);
-   - `SITE_URL`: o endereço do site, por exemplo `https://seudominio.com.br`;
+   - `SITE_URL`: o endereço do site, por exemplo `https://seudominio.com.br`. Ele entra no site **na hora de montar** (o compose de produção já repassa), para as páginas ficarem em cache e abrirem rápido. **Se mudar o endereço, refaça o "build"/deploy**;
    - `PROXY_HOPS=1`.
 3. Em **Domínios**, aponte o domínio para o serviço `app`, porta `3000`, com HTTPS. O mesmo endereço mostra o site (`/`) e o painel (`/painel`).
 4. Implante. **Antes** de divulgar o endereço, crie o primeiro administrador pelo terminal do serviço `app`:

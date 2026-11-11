@@ -2,7 +2,7 @@ import type { Pool } from 'pg';
 import { db } from '@/lib/db';
 import type { NextResponse } from 'next/server';
 import { COOKIE, DURACAO, assinar, lerCookie, lerSessao } from '@/lib/sessao';
-import { confereSenha } from '@/lib/senha.mjs';
+import { confereSenhaAsync } from '@/lib/senha.mjs';
 import { contar, estourou, zerar } from '@/lib/limite';
 
 export class HttpErro extends Error {
@@ -36,7 +36,7 @@ export async function confirmarSenha(pool: Pool, email: string, senha: unknown) 
   const chave = 'reauth:' + email;
   if (estourou(chave, 8)) throw new HttpErro(429, 'Muitas tentativas. Espere alguns minutos.');
   const r = await pool.query('select senha_hash from agenda_admins where email = $1', [email]);
-  if (!r.rowCount || !confereSenha(String(senha ?? '').slice(0, 200), r.rows[0].senha_hash)) {
+  if (!r.rowCount || !(await confereSenhaAsync(String(senha ?? '').slice(0, 200), r.rows[0].senha_hash))) {
     contar(chave, 15 * 60e3);
     throw new HttpErro(403, 'Confirme com a SUA senha atual. A senha informada não confere.');
   }

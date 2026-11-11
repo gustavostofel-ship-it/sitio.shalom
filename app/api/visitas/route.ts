@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { lerJson } from '@/lib/corpo';
+import { limparCache } from '@/lib/cache-curto';
 import { fichaValida } from '@/lib/token-form';
 import { segredo } from '@/lib/admin-auth';
 import { vencerVisitas } from '@/lib/agendador';
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
     }
     await notificar(avisoVisitaNova({ id, nome, igreja: igreja || null, whatsapp: whats, data: data || null, hora: hora || null }));
     await avisar(`📅 Novo pedido de visita (nº ${id})\n${igreja || 'Sem igreja'} · ${nome}\nWhatsApp: ${whats}\n${data ? `${dataBr(data)} às ${hora}` : 'Horário a combinar'}`);
+    limparCache();
     return NextResponse.json({ id, data: data || null, hora: hora || null });
   } catch (e) {
     console.error('visitas:', e);

@@ -3,8 +3,26 @@ import { db } from '@/lib/db';
 // Atualizações do banco. Rodam sozinhas quando o site liga e só fazem efeito uma vez:
 // tudo aqui é "se não existir" e pode rodar de novo sem problema. Vale para quem já tem o sistema
 // instalado e para instalações novas (o db/init.sql cria só a base; o resto nasce daqui).
+// Na primeira subida o banco pode ainda estar criando as tabelas básicas (db/init.sql): tenta de novo
+// por até ~1 minuto, em vez de desistir na primeira falha e deixar tabelas faltando até reiniciar.
 export async function migrar() {
-  try {
+  for (let tentativa = 1; tentativa <= 20; tentativa++) {
+    try {
+      await migrarUmaVez();
+      return;
+    } catch (e) {
+      if (tentativa === 20) {
+        console.error('migração do banco falhou depois de várias tentativas:', e);
+        return;
+      }
+      console.warn(`migração do banco: tentativa ${tentativa} falhou, tentando de novo em 3 s…`);
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+}
+
+async function migrarUmaVez() {
+  {
     // Pagamento: quanto já foi recebido de cada reserva. Quem já estava confirmada tinha o sinal recebido.
     await db().query(`
       do $$ begin
@@ -115,7 +133,21 @@ export async function migrar() {
         primary key (email, tipo)
       );
     `);
-  } catch (e) {
-    console.error('migração do banco:', e);
+
+    // Travas no próprio banco (valem mesmo se alguém mexer fora do painel). "not valid" = vale para o que
+    // for gravado daqui para frente, sem reclamar de linhas antigas.
+    await db().query(`
+      do $$ begin
+        if not exists (select 1 from pg_constraint where conname = 'agenda_periodos_preco_chk') then
+          alter table agenda_periodos add constraint agenda_periodos_preco_chk check (bloqueado or preco > 0) not valid;
+        end if;
+        if not exists (select 1 from pg_constraint where conname = 'agenda_config_valores_chk') then
+          alter table agenda_config add constraint agenda_config_valores_chk check (base > 0 and extra > 0 and min_dias <= max_dias) not valid;
+        end if;
+        if not exists (select 1 from pg_constraint where conname = 'agenda_reservas_total_chk') then
+          alter table agenda_reservas add constraint agenda_reservas_total_chk check (total > 0) not valid;
+        end if;
+      end $$;
+    `);
   }
 }

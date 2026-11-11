@@ -47,7 +47,13 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   }
 
   const edita = (i: number, k: keyof Linha, v: string | boolean) => setPers((l) => l.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
-  const novo = () => setPers((l) => [...l, { nome: 'Novo período', entrada: dados.hoje, saida: dados.hoje, preco: '0', bloqueado: false }]);
+  const novo = () => setPers((l) => [...l, { nome: 'Novo período', entrada: dados.hoje, saida: dados.hoje, preco: '', bloqueado: false }]);
+  // O site não pode vender de graça nem ficar com regras que se contradizem.
+  const cfgErro =
+    !(cfg.base > 0) ? 'O preço base precisa ser maior que zero.'
+    : !(cfg.extra > 0) ? 'O valor do dia extra precisa ser maior que zero.'
+    : cfg.minDias > cfg.maxDias ? `O máximo de dias (${cfg.maxDias}) não pode ser menor que os dias do pacote base (${cfg.minDias}).`
+    : '';
 
   return (
     <div className="space-y-6">
@@ -79,7 +85,8 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
             })}
           </div>
         </fieldset>
-        <button onClick={() => chamar('cfg', { ...cfg })} className={`${botaoPri} mt-6`}>Salvar preços e regras</button>
+        {cfgErro && <p className="mt-4 rounded-md bg-[#F6DAD5] p-3 text-sm text-[#8F2517]">{cfgErro}</p>}
+        <button disabled={!!cfgErro} onClick={() => chamar('cfg', { ...cfg })} className={`${botaoPri} mt-6`}>Salvar preços e regras</button>
       </Secao>
 
       <Secao titulo="Períodos especiais" texto="Feriados e datas com pacote fechado: o cliente leva o período inteiro, pelo preço que você definir. Marque “Bloqueado” para ninguém reservar (como o Natal).">
@@ -119,7 +126,8 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
                   <input type="checkbox" className="h-4 w-4 accent-[#1B4332]" checked={p.bloqueado} onChange={(e) => edita(i, 'bloqueado', e.target.checked)} />
                   Bloqueado
                 </label>
-                <button onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className={botaoPri}>Salvar</button>
+                {!p.bloqueado && !(+p.preco > 0) && <span className="basis-full text-sm text-[#8F2517] lg:basis-auto">Informe o preço (um período à venda não pode ser grátis).</span>}
+                <button disabled={!p.bloqueado && !(+p.preco > 0)} onClick={() => chamar('periodo', { ...p, preco: +p.preco })} className={botaoPri}>Salvar</button>
                 {p.id ? (
                   <BotaoConfirma compacto className={botaoPerigo} rotulo="Remover" pergunta={`Remover “${p.nome}” (${br(p.entrada)} a ${br(p.saida)})?`} confirmaRotulo="Sim, remover" onConfirma={() => chamar('periodo.remover', { id: p.id })} />
                 ) : (

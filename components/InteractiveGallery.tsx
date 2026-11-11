@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Maximize2, X, Sparkles, Filter, ChevronRight } from 'lucide-react';
 import { GALLERY_ITEMS, GalleryItem } from '@/lib/site-data';
 import { SafeImage } from './SafeImage';
@@ -17,6 +17,16 @@ export function InteractiveGallery() {
     { id: 'dormitorios', label: 'Banheiros' },
   ];
 
+  // Tecla Esc fecha a foto ampliada; ao abrir, o foco vai para o botão de fechar (e o teclado não "escapa" para trás do painel)
+  const fecharRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    fecharRef.current?.focus();
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && setSelectedPhoto(null);
+    window.addEventListener('keydown', tecla);
+    return () => window.removeEventListener('keydown', tecla);
+  }, [selectedPhoto]);
+
   const filteredItems =
     activeCategory === 'todos'
       ? GALLERY_ITEMS
@@ -27,7 +37,7 @@ export function InteractiveGallery() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
+          <span className="text-sm font-semibold uppercase tracking-wider text-[#B45309] mb-2 block">
             Tour Visual do Sítio
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
@@ -47,7 +57,7 @@ export function InteractiveGallery() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1B4332] ${
+                  className={`px-3.5 sm:px-4 py-2 text-sm sm:text-sm font-medium rounded-lg transition-all whitespace-nowrap shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1B4332] ${
                     isActive
                       ? 'bg-white text-stone-900 shadow-xs font-semibold'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
@@ -69,7 +79,16 @@ export function InteractiveGallery() {
               <div
                 key={item.id}
                 onClick={() => setSelectedPhoto(item)}
-                className={`group relative flex flex-col rounded-xl overflow-hidden cursor-pointer bg-stone-900 shadow-sm border border-stone-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                role="button"
+                tabIndex={0}
+                aria-label={`Ampliar foto: ${item.title}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedPhoto(item);
+                  }
+                }}
+                className={`group relative focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-[#1B4332]/50 flex flex-col rounded-xl overflow-hidden cursor-pointer bg-stone-900 shadow-sm border border-stone-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                   isSpan2 ? 'md:col-span-2 md:row-span-1 lg:col-span-2' : ''
                 }`}
               >
@@ -84,7 +103,7 @@ export function InteractiveGallery() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
 
                   {/* Top Badge */}
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 text-xs text-amber-200 bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-md border border-white/10">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 text-sm text-amber-200 bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-md border border-white/10">
                     <Sparkles className="w-3 h-3 text-amber-300" />
                     <span>{item.categoryLabel}</span>
                   </div>
@@ -99,7 +118,7 @@ export function InteractiveGallery() {
                     <h3 className="text-lg sm:text-xl font-serif font-bold leading-tight mb-1 text-white">
                       {item.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-stone-300 line-clamp-2 leading-relaxed">
+                    <p className="text-sm sm:text-sm text-stone-300 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
@@ -111,12 +130,12 @@ export function InteractiveGallery() {
 
         {/* Gallery Bottom Note */}
         <div className="mt-12 text-center">
-          <p className="text-xs sm:text-sm text-stone-500 mb-3">
+          <p className="text-sm sm:text-sm text-stone-500 mb-3">
             Deseja conferir as instalações de perto antes de fechar a data da sua igreja?
           </p>
           <a
             href="#agendar"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#D97706] hover:text-[#B45309] transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#B45309] hover:text-[#B45309] transition-colors"
           >
             <span>Agende uma visita guiada com café da manhã cortesia</span>
             <ChevronRight className="w-4 h-4" />
@@ -131,6 +150,7 @@ export function InteractiveGallery() {
           onClick={() => setSelectedPhoto(null)}
           role="dialog"
           aria-modal="true"
+          aria-label={`Foto ampliada: ${selectedPhoto.title}`}
         >
           <div
             className="relative max-w-4xl w-full bg-stone-900 rounded-2xl overflow-hidden border border-stone-700 shadow-2xl"
@@ -138,6 +158,7 @@ export function InteractiveGallery() {
           >
             {/* Close Button */}
             <button
+              ref={fecharRef}
               onClick={() => setSelectedPhoto(null)}
               className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-colors border border-white/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
               aria-label="Fechar visualização"
@@ -158,7 +179,7 @@ export function InteractiveGallery() {
             {/* Photo Info */}
             <div className="p-6 bg-stone-900 border-t border-stone-800 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <span className="text-xs uppercase font-semibold tracking-wider text-amber-400 block mb-1">
+                <span className="text-sm uppercase font-semibold tracking-wider text-amber-400 block mb-1">
                   {selectedPhoto.categoryLabel}
                 </span>
                 <h4 className="text-xl font-serif font-bold text-white mb-1">
@@ -172,7 +193,7 @@ export function InteractiveGallery() {
               <a
                 href="#agendar"
                 onClick={() => setSelectedPhoto(null)}
-                className="px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#D97706] hover:bg-[#B45309] whitespace-nowrap shrink-0 transition-colors shadow-sm"
+                className="px-4 py-2.5 rounded-lg text-sm sm:text-sm font-semibold text-white bg-[#B45309] hover:bg-[#92400E] whitespace-nowrap shrink-0 transition-colors shadow-sm"
               >
                 Visitar Este Espaço
               </a>

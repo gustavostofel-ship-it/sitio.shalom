@@ -31,6 +31,9 @@ const nextConfig: NextConfig = {
     return [
       // O service worker nunca fica em cache: uma versão nova vale na hora
       { source: '/sw-painel.js', headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }] },
+      // Fotos e marca quase nunca mudam: o navegador guarda por 7 dias e o site carrega mais rápido nas próximas visitas
+      { source: '/fotos/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }] },
+      { source: '/brand/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }] },
       {
         source: '/:path*',
         headers: [

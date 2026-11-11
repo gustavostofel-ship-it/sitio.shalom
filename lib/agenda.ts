@@ -64,7 +64,7 @@ export function statusDia(d: string, x: AgendaData): Status {
   if (d < x.hoje) return 'passado';
   if (d in x.dias) return x.dias[d] ? 'livre' : 'fechado';
   const p = periodoDe(d, x);
-  if (p) return p.bloqueado ? 'fechado' : 'livre';
+  if (p) return p.bloqueado || !(p.preco > 0) ? 'fechado' : 'livre'; // período sem preço nunca é vendido de graça
   return x.cfg.diasPadrao.includes(dow(d)) ? 'livre' : 'padrao';
 }
 
@@ -96,6 +96,10 @@ export function cotar(a: string, b: string, x: AgendaData): Cotacao {
   if (first < 0) return erro(st.includes('reservado') ? 'Essas datas acabaram de ser reservadas por outra pessoa. Escolha outras.' : 'Inclua pelo menos um dia disponível.');
   const meio = dias.slice(first, last + 1).find((d) => statusDia(d, x) !== 'livre');
   if (meio) return erro('O dia ' + br(meio) + ' está indisponível.');
+  // Dia aberto solto (menos de `minDias` seguidos) não aparece para o cliente: não vale nem pela API,
+  // nem "completado" com 1 dia antes e 1 depois para chegar a um pacote.
+  const oculto = dias.slice(first, last + 1).find((d) => !visivel(d, x));
+  if (oculto) return erro('O dia ' + br(oculto) + ' não está disponível para reserva pelo site.');
   const ext = [...dias.slice(0, first), ...dias.slice(last + 1)];
   if (first > 1 || n - 1 - last > 1) return erro('Você pode estender no máximo 1 dia antes e 1 dia depois dos dias abertos.');
   if (ext.some((d) => statusDia(d, x) !== 'padrao')) return erro('Um dos dias escolhidos não está disponível.');

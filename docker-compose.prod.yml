@@ -16,13 +16,18 @@ services:
       - dados:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shalom -d shalom"]
+      # Por TCP (127.0.0.1): só responde depois do db/init.sql terminar (por socket, responderia antes)
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U shalom -d shalom"]
       interval: 5s
       timeout: 3s
       retries: 12
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        # O endereço entra no site na hora de montar (para as páginas poderem ficar em cache e carregar rápido)
+        SITE_URL: ${SITE_URL:?Defina SITE_URL, ex.: https://seudominio.com.br}
     restart: unless-stopped
     depends_on:
       db:
@@ -34,8 +39,19 @@ services:
       PROXY_HOPS: ${PROXY_HOPS:-1}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      LIMITE_RESERVAS_IP: ${LIMITE_RESERVAS_IP:-3}
+      LIMITE_RESERVAS_ABERTAS: ${LIMITE_RESERVAS_ABERTAS:-12}
+      LIMITE_VISITAS_IP: ${LIMITE_VISITAS_IP:-3}
+      LIMITE_VISITAS_ABERTAS: ${LIMITE_VISITAS_ABERTAS:-30}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
     expose:
       - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/saude >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
 
 volumes:
   dados:

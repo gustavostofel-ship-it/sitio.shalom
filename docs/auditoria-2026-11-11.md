@@ -37,6 +37,10 @@ que a pessoa digitou** e **backup/instalação no servidor**.
 
 ## MÉDIA
 
+> **Atualização (branch fix/auditoria-medios):** corrigidos e testados: **M1, M2, M3, M5, M6, M7 (pede a senha atual), M8, M9, M10, M11, M12, M13, M14, M15, M17, M18, M19, M20, M21, M22, M23, M24, M25, M26, M27, M28, M29 (Esc, rótulos e teclado na galeria e nas gavetas), M30 (calendário pelo teclado) e M31.**
+> **Parcial:** M16 (visita num dia que depois ganha bloqueio continua marcada; o painel mostra o dia com visita, mas não alerta sozinho). **Só documentado:** M4 (conferir `PROXY_HOPS` no servidor; veja `docs/docker.md`).
+> **Velocidade:** páginas públicas agora são estáticas e ficam em cache; leituras do calendário ficam 5 s em memória e têm limite por origem; fotos com cache no navegador. Home: ~10 ms no computador (antes ~200 ms por causa do IPv6 e sem cache).
+
 **Segurança**
 
 | # | Problema | Como foi visto |

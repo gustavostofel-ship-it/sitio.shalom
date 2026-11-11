@@ -228,7 +228,13 @@ export function ListaReservas({ dados, abrir, nova }: { dados: AdminData; abrir:
   const linhas = dados.reservas
     .map((r) => ({ r, st: statusReal(r, dados.agora) }))
     .filter(({ r, st }) => (filtro === 'todas' || st === filtro) && (!t || `${r.nome} ${r.igreja ?? ''} ${r.whatsapp}`.toLowerCase().includes(t)))
-    .sort((a, b) => (a.r.entrada < b.r.entrada ? -1 : 1));
+    // Reservas de agora em diante primeiro (a mais próxima no topo); as que já passaram vão para o fim, da mais recente para a mais antiga
+    .sort((a, b) => {
+      const pa = a.r.saida < dados.hoje ? 1 : 0;
+      const pb = b.r.saida < dados.hoje ? 1 : 0;
+      if (pa !== pb) return pa - pb;
+      return pa ? b.r.entrada.localeCompare(a.r.entrada) : a.r.entrada.localeCompare(b.r.entrada);
+    });
   const filtros: [string, string][] = [['todas', 'Todas'], ['aguardando_sinal', 'Aguardando sinal'], ['confirmada', 'Confirmadas'], ['cancelada', 'Canceladas'], ['expirada', 'Expiradas']];
   const regua: Record<string, string> = { confirmada: 'border-l-[#1B4332]', aguardando_sinal: 'border-l-[#E9A43A]', cancelada: 'border-l-[#D9847A]', expirada: 'border-l-stone-300' };
 

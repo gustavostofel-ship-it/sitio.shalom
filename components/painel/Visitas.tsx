@@ -56,9 +56,23 @@ export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData;
   const [aba, setAba] = useState<Aba>('agenda');
   // Vindo de uma notificação: já abre a visita
   const [gaveta, setGaveta] = useState<Gaveta>(() => (abrirId ? { t: 'visita', id: abrirId } : null));
+  // Também vale com a aba Visitas já aberta: tocar noutra notificação de visita abre aquela visita.
   useEffect(() => {
-    if (abrirId) aoAbrir?.();
+    if (!abrirId) return;
+    const t = setTimeout(() => {
+      setGaveta({ t: 'visita', id: abrirId });
+      aoAbrir?.();
+    }, 0);
+    return () => clearTimeout(t);
   }, [abrirId, aoAbrir]);
+  // Tecla Esc fecha a gaveta aberta
+  const gavetaAberta = !!gaveta;
+  useEffect(() => {
+    if (!gavetaAberta) return;
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && setGaveta(null);
+    window.addEventListener('keydown', tecla);
+    return () => window.removeEventListener('keydown', tecla);
+  }, [gavetaAberta]);
   const hoje = dados.hoje;
   const ativas = dados.visitas.filter((v) => ocupaHorario(v.status));
   const aguardando = ativas.filter((v) => v.status === 'pedida' || !v.data);
@@ -220,7 +234,7 @@ export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData;
       {gaveta && (
         <>
           <div className="fixed inset-0 z-40 bg-[#0F291E]/40" onClick={() => setGaveta(null)} />
-          <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true">
+          <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true" aria-label="Detalhes da visita">
             <button onClick={() => setGaveta(null)} aria-label="Fechar" className="absolute right-4 top-4 rounded-md p-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-2 focus-visible:outline-[#D97706]"><X className="h-5 w-5" /></button>
             {gaveta.t === 'visita' && aberta && <GavetaVisita key={`${aberta.id}-${aberta.atualizada_em}`} v={aberta} chamar={chamar} fechar={() => setGaveta(null)} />}
             {gaveta.t === 'nova' && <GavetaNova key={`${gaveta.data}-${gaveta.hora}`} data={gaveta.data} hora={gaveta.hora} chamar={chamar} fechar={() => setGaveta(null)} />}

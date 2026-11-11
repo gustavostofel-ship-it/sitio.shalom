@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { lerJson } from '@/lib/corpo';
-import { confereSenha, hashSenha } from '@/lib/senha.mjs';
+import { confereSenhaAsync, hashSenha } from '@/lib/senha.mjs';
 import { iniciarSessao } from '@/lib/admin-auth';
 import { ipDoPedido } from '@/lib/ip';
 import { contar, estourou, zerar } from '@/lib/limite';
@@ -20,11 +20,13 @@ export async function POST(req: Request) {
   const email = String(b.email ?? '').trim().toLowerCase().slice(0, 120);
   const chaveIp = 'login:ip:' + ip;
   const chaveEmail = 'login:email:' + email;
-  if (estourou(chaveIp, 8) || estourou(chaveEmail, 20)) return NextResponse.json({ erro: 'Muitas tentativas. Espere alguns minutos.' }, { status: 429 });
+  // Por origem o freio é curto (8). Por e-mail é bem mais largo (40): senão, qualquer pessoa conseguiria
+  // trancar o dono para fora só errando a senha dele de propósito.
+  if (estourou(chaveIp, 8) || estourou(chaveEmail, 40)) return NextResponse.json({ erro: 'Muitas tentativas. Espere alguns minutos.' }, { status: 429 });
   try {
     const senha = String(b.senha ?? '').slice(0, 200);
     const r = await db().query('select senha_hash from agenda_admins where email = $1', [email]);
-    const certa = confereSenha(senha, r.rows[0]?.senha_hash ?? FALSO);
+    const certa = await confereSenhaAsync(senha, r.rows[0]?.senha_hash ?? FALSO);
     if (!r.rowCount || !certa) {
       contar(chaveIp, JANELA);
       contar(chaveEmail, JANELA);

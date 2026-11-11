@@ -55,7 +55,7 @@ export function ReservationJourney() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <span className="text-xs font-semibold uppercase tracking-wider text-amber-300 mb-2 block">
+          <span className="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-2 block">
             Processo Transparente e Sem Estresse
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight text-balance">
@@ -81,7 +81,7 @@ export function ReservationJourney() {
                     <span className="text-2xl font-serif font-bold text-amber-300 tabular-nums">
                       {step.number}
                     </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-200 bg-emerald-900/80 px-2.5 py-1 rounded-md border border-emerald-700/40">
+                    <span className="text-[13px] font-semibold uppercase tracking-wider text-emerald-200 bg-emerald-900/80 px-2.5 py-1 rounded-md border border-emerald-700/40">
                       {step.badge}
                     </span>
                   </div>
@@ -104,7 +104,7 @@ export function ReservationJourney() {
                   {/* Bullet perks */}
                   <ul className="space-y-2 mb-8 border-t border-emerald-900/80 pt-4">
                     {step.perks.map((perk, pIdx) => (
-                      <li key={pIdx} className="flex items-start gap-2 text-xs sm:text-sm text-emerald-100/85">
+                      <li key={pIdx} className="flex items-start gap-2 text-sm sm:text-sm text-emerald-100/85">
                         <CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                         <span>{perk}</span>
                       </li>
@@ -116,7 +116,7 @@ export function ReservationJourney() {
                 <div className="pt-2">
                   <a
                     href="#agendar"
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-amber-300 hover:text-amber-200 transition-colors"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors"
                   >
                     <span>Começar pelo Passo {step.number}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -133,7 +133,7 @@ export function ReservationJourney() {
             <h4 className="text-xl sm:text-2xl font-serif font-bold text-white">
               Quer consultar as datas disponíveis para este ano?
             </h4>
-            <p className="text-amber-100 text-xs sm:text-sm mt-1">
+            <p className="text-amber-100 text-sm sm:text-sm mt-1">
               Feriados prolongados e finais de semana costumam fechar com 6 a 12 meses de antecedência.
             </p>
           </div>

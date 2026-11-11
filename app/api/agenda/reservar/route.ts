@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cotar, dia, brl, dataReal } from '@/lib/agenda';
 import { lerJson } from '@/lib/corpo';
+import { limparCache } from '@/lib/cache-curto';
 import { fichaValida } from '@/lib/token-form';
 import { segredo } from '@/lib/admin-auth';
 import { carregarAgenda } from '@/lib/agenda-server';
@@ -90,6 +91,7 @@ export async function POST(req: Request) {
     await avisar(
       `🔔 Nova reserva aguardando sinal (nº ${id})\n${igreja || 'Sem igreja'} · ${nome}\nWhatsApp: ${whats}\n${dia(entrada)} a ${dia(saida)} · ${brl(c.total)} (sinal ${brl(c.sinal)})`
     );
+    limparCache();
     return NextResponse.json({ id, total: c.total, sinal: c.sinal, seguraAte: seguraAte.toISOString() });
   } catch (e) {
     console.error('reservar:', e);

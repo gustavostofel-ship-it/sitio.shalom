@@ -56,7 +56,7 @@ export function SafeImage({
             </svg>
           )}
         </div>
-        <span className="text-xs tracking-wider uppercase text-amber-200/80 font-medium">
+        <span className="text-sm tracking-wider uppercase text-amber-200/80 font-medium">
           {fallbackCategory}
         </span>
         <p className="text-sm font-serif text-white/90 mt-1 max-w-xs">{alt}</p>

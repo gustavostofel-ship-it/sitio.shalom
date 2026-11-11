@@ -36,10 +36,12 @@ export interface Assinatura {
 
 // Liga os avisos neste aparelho. Precisa ser chamado por um toque da pessoa (o iPhone exige).
 export async function ligarPush(chavePublica: string): Promise<Assinatura> {
-  const reg = await navigator.serviceWorker.register('/sw-painel.js', { scope: ESCOPO });
-  await navigator.serviceWorker.ready;
+  // O pedido de permissão vem PRIMEIRO, ainda dentro do toque da pessoa: no Safari do iPhone, depois de esperas
+  // de rede (registrar o service worker), o toque deixa de contar e o pedido pode ser recusado sozinho.
   const permissao = await Notification.requestPermission();
   if (permissao !== 'granted') throw new Error('permissao');
+  const reg = await navigator.serviceWorker.register('/sw-painel.js', { scope: ESCOPO });
+  await navigator.serviceWorker.ready;
   const chave = chaveParaBytes(chavePublica) as unknown as BufferSource;
   let sub = await reg.pushManager.getSubscription();
   try {

@@ -44,7 +44,7 @@ export function Hero() {
           {/* Left Column: Heading, Value Proposition & CTAs */}
           <div className="lg:col-span-6 space-y-6">
             {/* Top Trust Label */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/30 text-emerald-200 text-xs sm:text-sm font-medium backdrop-blur-md shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-950/90 border border-emerald-500/30 text-emerald-200 text-sm sm:text-sm font-medium backdrop-blur-md shadow-xs">
               <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
               <span>Estrutura Exclusiva para Igrejas e Retiros Cristãos</span>
             </div>
@@ -63,7 +63,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
               <a
                 href="#agendar"
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-base font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
+                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-base font-semibold text-white bg-[#B45309] hover:bg-[#92400E] shadow-lg hover:shadow-xl transition-all duration-200 whitespace-nowrap focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-400"
               >
                 <Calendar className="w-5 h-5 text-amber-100" />
                 <span>Agendar Visita Presencial</span>
@@ -79,7 +79,7 @@ export function Hero() {
             </div>
 
             {/* Micro trust indicators */}
-            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-stone-300/80">
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-sm text-stone-300/80">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
                 100% de Exclusividade por Igreja
@@ -149,7 +149,7 @@ export function Hero() {
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-stone-400 mt-2 text-center">
+            <p className="text-[13px] text-stone-400 mt-2 text-center">
               Conheça o Sítio Shalom Xerém
             </p>
           </div>
@@ -170,7 +170,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Até 150 Pessoas
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Hospedagem em comunhão
                 </p>
               </div>
@@ -185,7 +185,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Auditório de Cultos
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Salão dedicado para vigílias e louvores
                 </p>
               </div>
@@ -200,7 +200,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Piscina, Campo & Quadra
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Lazer completo e integração saudável
                 </p>
               </div>
@@ -215,7 +215,7 @@ export function Hero() {
                 <h2 className="text-sm font-semibold text-stone-900 leading-tight">
                   Salão com Mesas
                 </h2>
-                <p className="text-xs text-stone-600 mt-0.5">
+                <p className="text-sm text-stone-600 mt-0.5">
                   Salão aberto com cozinha
                 </p>
               </div>

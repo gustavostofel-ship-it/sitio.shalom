@@ -67,7 +67,7 @@ export function MinistryLogistics() {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">
+          <span className="text-sm font-semibold uppercase tracking-wider text-[#B45309] mb-2 block">
             Estrutura Completa do Sítio Shalom Xerém
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">
@@ -107,13 +107,13 @@ export function MinistryLogistics() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden" />
                     
                     {/* Badge Overlay */}
-                    <div className="absolute top-4 left-4 z-10 bg-[#1B4332]/90 backdrop-blur-md text-amber-200 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm">
+                    <div className="absolute top-4 left-4 z-10 bg-[#1B4332]/90 backdrop-blur-md text-amber-200 text-sm font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm">
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       <span>{pillar.highlightBadge}</span>
                     </div>
 
                     <div className="absolute bottom-4 left-4 z-10 lg:hidden text-white">
-                      <span className="text-xs uppercase tracking-wider text-amber-300 font-semibold">{pillar.tag}</span>
+                      <span className="text-sm uppercase tracking-wider text-amber-300 font-semibold">{pillar.tag}</span>
                       <h3 className="text-xl font-serif font-bold">{pillar.title}</h3>
                     </div>
                   </div>
@@ -126,7 +126,7 @@ export function MinistryLogistics() {
                   >
                     <div>
                       {/* Editorial Tag */}
-                      <div className="hidden lg:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2">
+                      <div className="hidden lg:flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[#B45309] mb-2">
                         <span>{pillar.tag}</span>
                         <span>·</span>
                         <span>Espaço 0{index + 1}</span>
@@ -165,13 +165,13 @@ export function MinistryLogistics() {
 
                     {/* Bottom Action inside card */}
                     <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs text-stone-500">
+                      <div className="flex items-center gap-2 text-sm text-stone-500">
                         <Shield className="w-4 h-4 text-emerald-600" />
                         <span>Visita presencial sem compromisso</span>
                       </div>
                       <a
                         href="#agendar"
-                        className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#1B4332] hover:text-[#D97706] transition-colors"
+                        className="inline-flex items-center gap-1.5 text-sm sm:text-sm font-semibold text-[#1B4332] hover:text-[#B45309] transition-colors"
                       >
                         <span>Conhecer pessoalmente</span>
                         <span aria-hidden="true">&rarr;</span>

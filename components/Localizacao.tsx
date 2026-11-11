@@ -17,7 +17,7 @@ export function Localizacao() {
     <section id="localizacao" className="py-20 sm:py-28 bg-[#F5F1EB] border-t border-stone-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#D97706] mb-2 block">Localização</span>
+          <span className="text-sm font-semibold uppercase tracking-wider text-[#B45309] mb-2 block">Localização</span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1B4332] tracking-tight text-balance">Como chegar ao sítio</h2>
           <p className="mt-4 text-base sm:text-lg text-stone-600 leading-relaxed text-balance">Em Xerém, Duque de Caxias (RJ). Toque em um botão para traçar a rota direto no seu celular.</p>
         </div>
@@ -26,7 +26,7 @@ export function Localizacao() {
           <div className="lg:col-span-5 flex flex-col gap-4">
             <div className="rounded-2xl bg-white border border-stone-200 p-6 shadow-xs">
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-[#D97706]">
+                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-[#B45309]">
                   <MapPin className="h-5 w-5" />
                 </span>
                 <div>
@@ -49,7 +49,7 @@ export function Localizacao() {
             <div className="rounded-2xl bg-[#1B4332] p-6 text-white">
               <div className="flex items-center gap-2 text-amber-200">
                 <Phone className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Ficou com dúvida no caminho?</span>
+                <span className="text-sm font-semibold uppercase tracking-wider">Ficou com dúvida no caminho?</span>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-emerald-100/90">Chame a gente pelo WhatsApp que ajudamos você e a sua comissão a chegar, inclusive com orientação para vans e ônibus.</p>
               <a

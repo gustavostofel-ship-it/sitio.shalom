@@ -82,6 +82,16 @@ export function Calendario({ dados, ag, meses, compacto, sel, aoSelecionar }: Pr
         <div
           key={d}
           data-dia={d}
+          role="button"
+          tabIndex={0}
+          aria-label={`${d.slice(8)}/${d.slice(5, 7)}${r ? ', reservado' : ''}${vis ? ', com visita' : ''}`}
+          onKeyDown={(e) => {
+            // Teclado: Enter ou espaço seleciona o dia
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              aoSelecionar(d, d);
+            }
+          }}
           onMouseDown={(e) => {
             e.preventDefault();
             setArrasto({ a: d, b: d });

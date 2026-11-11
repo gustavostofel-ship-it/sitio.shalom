@@ -66,7 +66,10 @@ export async function rodar() {
     await tarefa('vencendo', async () => {
       const r = await p.query(
         `select ${COLUNAS_RESERVA}, extract(epoch from (segura_ate - now())) * 1000 as falta_ms
-           from agenda_reservas where status = 'aguardando_sinal' and segura_ate > now() and segura_ate <= now() + interval '6 hours'`
+           from agenda_reservas where status = 'aguardando_sinal' and segura_ate > now()
+            and (segura_ate <= now() + interval '6 hours'
+                 -- prazo que vence de madrugada (antes das 7h) é avisado na noite anterior, dentro da janela de avisos
+                 or (segura_ate <= now() + interval '14 hours' and extract(hour from (segura_ate at time zone 'America/Sao_Paulo')) < 7))`
       );
       for (const d of r.rows as (DadosReserva & { falta_ms: number })[]) {
         const falta = Number(d.falta_ms);

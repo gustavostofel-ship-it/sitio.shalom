@@ -296,7 +296,7 @@ export function Painel() {
         setAviso('');
         setIni((m) => m ?? hojeComoMes(j.hoje));
       } else {
-        setDados(null);
+        // Falha passageira do servidor: mantém o que já está na tela (gavetas abertas, números) em vez de derrubar o painel.
         setAviso(j.erro || 'Não foi possível carregar o painel.');
       }
     } catch {
@@ -400,6 +400,14 @@ export function Painel() {
     setGaveta(null);
     setSelCal(null);
   }, []);
+  // Tecla Esc fecha a gaveta aberta
+  const gavetaAberta = !!gaveta;
+  useEffect(() => {
+    if (!gavetaAberta) return;
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && fechar();
+    window.addEventListener('keydown', tecla);
+    return () => window.removeEventListener('keydown', tecla);
+  }, [gavetaAberta, fechar]);
   const abrirReserva = (id: number) => setGaveta({ tipo: 'reserva', id });
   const confirmar = (id: number) => chamar('reserva.status', { id, status: 'confirmada' });
 
@@ -520,7 +528,8 @@ export function Painel() {
       {menu && (
         <>
           <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMenu(false)} />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[272px] lg:hidden">
+          {/* Abre pelo lado direito, o mesmo lado do botão do menu */}
+          <aside className="fixed inset-y-0 right-0 z-50 w-[272px] lg:hidden">
             <button onClick={() => setMenu(false)} aria-label="Fechar o menu" className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-[#CFE0D2] hover:bg-white/10"><X className="h-5 w-5" /></button>
             {lateral(() => setMenu(false))}
           </aside>
@@ -594,7 +603,7 @@ export function Painel() {
       {gaveta && (
         <>
           <div className="fixed inset-0 z-40 bg-[#0F291E]/40" onClick={fechar} />
-          <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true">
+          <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-[440px] overflow-y-auto bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:p-6" role="dialog" aria-modal="true" aria-label="Detalhes">
             <button onClick={fechar} aria-label="Fechar" className="absolute right-4 top-4 rounded-md p-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-2 focus-visible:outline-[#D97706]"><X className="h-5 w-5" /></button>
             {gaveta.tipo === 'reserva' && reservaAberta && <GavetaReserva key={`${reservaAberta.id}-${reservaAberta.status}-${reservaAberta.pago}`} r={reservaAberta} dados={dados} chamar={chamar} fechar={fechar} />}
             {gaveta.tipo === 'dias' && (

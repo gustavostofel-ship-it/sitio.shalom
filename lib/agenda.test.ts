@@ -26,6 +26,21 @@ test('saída absurda ou data que não existe é recusada sem travar', () => {
   assert.ok(Date.now() - t0 < 200);
 });
 
+test('dia aberto solto não vira pacote com 1 dia antes e 1 depois (pela API)', () => {
+  const x = base();
+  x.dias['2026-11-10'] = true; // terça aberta sozinha (segunda e quarta seguem fechadas)
+  assert.equal(cotar('2026-11-09', '2026-11-11', x).ok, false);
+  assert.equal(cotar('2026-11-10', '2026-11-12', x).ok, false);
+  assert.equal(cotar('2026-11-06', '2026-11-08', x).ok, true); // sexta a domingo continua valendo
+});
+
+test('período sem preço nunca é vendido de graça', () => {
+  const x = base();
+  x.periodos.push({ nome: 'Teste grátis', entrada: '2026-12-11', saida: '2026-12-13', preco: 0, bloqueado: false });
+  assert.equal(statusDia('2026-12-12', x), 'fechado');
+  assert.equal(cotar('2026-12-11', '2026-12-13', x).ok, false);
+});
+
 test('dataReal só aceita dias do calendário', () => {
   assert.equal(dataReal('2026-02-28'), true);
   assert.equal(dataReal('2026-02-30'), false);

@@ -29,7 +29,7 @@ export function FloatingWhatsApp() {
     >
       {/* Tooltip bubble */}
       {showTooltip && (
-        <div className="hidden sm:flex items-center gap-2 bg-white text-stone-800 text-xs font-medium py-2 px-3.5 rounded-xl shadow-lg border border-stone-200 animate-in fade-in slide-in-from-right-4 duration-300 max-w-xs">
+        <div className="hidden sm:flex items-center gap-2 bg-white text-stone-800 text-sm font-medium py-2 px-3.5 rounded-xl shadow-lg border border-stone-200 animate-in fade-in slide-in-from-right-4 duration-300 max-w-xs">
           <span>Olá! Posso ajudar a agendar a visita da sua igreja?</span>
           <button
             onClick={() => setShowTooltip(false)}
@@ -47,7 +47,7 @@ export function FloatingWhatsApp() {
         target="_blank"
         rel="noopener noreferrer"
         tabIndex={visivel ? 0 : -1}
-        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-emerald-300"
+        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#15803D] hover:bg-[#166534] text-white flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 focus-visible:outline-hidden focus-visible:ring-4 focus-visible:ring-emerald-300"
         aria-label="Falar com o Sítio Shalom Xerém pelo WhatsApp"
       >
         <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 fill-white" />
