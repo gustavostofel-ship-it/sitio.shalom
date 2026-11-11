@@ -13,6 +13,10 @@ Feito em Next.js 16 e Postgres 16, rodando em Docker.
 
 O banco guarda tudo (reservas, visitas, preços, administradores). O site continua no ar mesmo se o banco cair, mandando o cliente para o WhatsApp.
 
+## Para o desenvolvedor
+
+Vai subir ou manter o sistema? Comece por **[docs/para-o-desenvolvedor.md](docs/para-o-desenvolvedor.md)**: stack, banco de dados, variáveis, deploy na VPS (Easypanel), backup e rotina de atualização.
+
 ## Como rodar
 
 - **No computador** (Docker Desktop): veja [docs/docker.md](docs/docker.md). Resumo: copie `.env.example` para `.env`, preencha as duas senhas e rode `docker compose up -d --build`. O site abre em http://localhost:3200.
