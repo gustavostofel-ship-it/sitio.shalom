@@ -2,6 +2,7 @@
 // Datas são sempre strings "AAAA-MM-DD".
 import type { Visita, VisitaCfg } from './visitas';
 import type { Notificacao } from './notificacoes';
+import type { MsgConfig } from './mensagens';
 
 export interface Cfg {
   base: number; // preço do pacote base
@@ -181,6 +182,7 @@ export interface AdminData {
   visitaCfg: VisitaCfg;
   visitaBloqueios: { data: string; motivo: string | null }[];
   visitaHorasFechadas: { data: string; hora: string }[];
+  mensagens: MsgConfig;
   notificacoes: Notificacao[]; // as 150 mais recentes
   notificacoesLidasAte: number; // id da última notificação que esta pessoa marcou como lida
   naoLidas: number;

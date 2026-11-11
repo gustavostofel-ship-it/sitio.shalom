@@ -37,6 +37,13 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
   const persTxt = JSON.stringify(dados.periodos);
   const [cfgOrigem, setCfgOrigem] = useState(cfgTxt);
   const [persOrigem, setPersOrigem] = useState(persTxt);
+  const msgTxt = JSON.stringify(dados.mensagens);
+  const [msg, setMsg] = useState(() => ({ ...dados.mensagens }));
+  const [msgOrigem, setMsgOrigem] = useState(msgTxt);
+  if (msgOrigem !== msgTxt) {
+    setMsgOrigem(msgTxt);
+    setMsg({ ...dados.mensagens });
+  }
   if (cfgOrigem !== cfgTxt) {
     setCfgOrigem(cfgTxt);
     setCfg({ ...dados.cfg });
@@ -140,6 +147,28 @@ export function Regras({ dados, chamar }: { dados: AdminData; chamar: Chamar }) 
         <button onClick={novo} className={`${botao} mt-4`}>
           <Plus className="h-4 w-4" /> Novo período
         </button>
+      </Secao>
+
+      <Secao titulo="Mensagens do WhatsApp" texto="Estes dados entram nas mensagens prontas que você manda ao cliente (pedido recebido, reserva confirmada, cobrança do saldo...). Só você vê; não aparecem no site.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className={rotulo}>
+            Chave PIX
+            <input className={`${campo} mt-1`} value={msg.pixChave} maxLength={120} onChange={(e) => setMsg({ ...msg, pixChave: e.target.value })} placeholder="CNPJ, e-mail, telefone ou chave aleatória" />
+          </label>
+          <label className={rotulo}>
+            Nome de quem recebe
+            <input className={`${campo} mt-1`} value={msg.pixTitular} maxLength={120} onChange={(e) => setMsg({ ...msg, pixTitular: e.target.value })} placeholder="Como aparece no PIX" />
+          </label>
+          <label className={`${rotulo} sm:col-span-2`}>
+            Quando o saldo deve ser pago
+            <input className={`${campo} mt-1`} value={msg.saldoRegra} maxLength={300} onChange={(e) => setMsg({ ...msg, saldoRegra: e.target.value })} placeholder="Ex.: O saldo deve ser pago até 7 dias antes da entrada." />
+          </label>
+          <label className={`${rotulo} sm:col-span-2`}>
+            Recado no fim das mensagens de confirmação (opcional)
+            <textarea className={`${campo} mt-1 min-h-[90px] resize-y`} value={msg.extras} maxLength={600} onChange={(e) => setMsg({ ...msg, extras: e.target.value })} placeholder="Ex.: Tragam roupa de cama e toalhas. Não é permitido som alto depois das 22h." />
+          </label>
+        </div>
+        <button onClick={() => chamar('msg.config', { ...msg })} className={`${botaoPri} mt-5`}>Salvar dados das mensagens</button>
       </Secao>
     </div>
   );

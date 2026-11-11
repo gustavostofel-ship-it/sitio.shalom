@@ -52,7 +52,7 @@ function erro(e: unknown) {
 }
 
 async function carregar(p: Pool, eu: string): Promise<AdminData> {
-  const [c, per, d, r, adm, vc, vb, vs, nt, ev, vh] = await Promise.all([
+  const [c, per, d, r, adm, vc, vb, vs, nt, ev, vh, mg] = await Promise.all([
     p.query('select * from agenda_config where id = 1'),
     p.query('select id, nome, entrada, saida, preco, bloqueado from agenda_periodos order by entrada'),
     p.query('select data, aberto, motivo from agenda_dias'),
@@ -72,7 +72,9 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
       [eu]
     ),
     p.query('select data, hora from agenda_visita_horas_fechadas where data >= $1 order by data, hora', [hojeSP()]),
+    p.query('select pix_chave, pix_titular, saldo_regra, extras from agenda_mensagens where id = 1'),
   ]);
+  const mgl = mg.rows[0] ?? { pix_chave: '', pix_titular: '', saldo_regra: '', extras: '' };
   const meu = ev.rows[0] ?? { lidas: 0, nao_lidas: 0, desligados: [], aparelhos: 0 };
   return {
     hoje: hojeSP(),
@@ -86,6 +88,7 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
     visitaCfg: cfgDeLinhaVisita(vc.rows[0]),
     visitaBloqueios: vb.rows,
     visitaHorasFechadas: vh.rows,
+    mensagens: { pixChave: mgl.pix_chave, pixTitular: mgl.pix_titular, saldoRegra: mgl.saldo_regra, extras: mgl.extras },
     notificacoes: nt.rows,
     notificacoesLidasAte: Number(meu.lidas),
     naoLidas: Number(meu.nao_lidas),
@@ -356,10 +359,12 @@ async function visitaStatus(p: Pool, b: Corpo, eu: string) {
 async function visitaMover(p: Pool, b: Corpo, eu: string) {
   const id = idVisita(b);
   const [data, hora] = quando(b);
+  const antes = await p.query('select status from agenda_visitas where id = $1', [id]);
   await comHorario(() =>
     p.query("update agenda_visitas set data = $1, hora = $2, status = case when $3::boolean then 'agendada' else status end, atualizada_em = now() where id = $4", [data, hora, b.confirmar === true, id])
   );
-  if (b.confirmar === true) {
+  // Só avisa "visita confirmada" quando ela passou a ser confirmada agora (não a cada clique em "Salvar e confirmar")
+  if (b.confirmar === true && antes.rows[0]?.status !== 'agendada') {
     const d = await visitaPorId(p, id);
     if (d) await notificar(avisoVisitaConfirmada(d, eu));
   }
@@ -399,6 +404,16 @@ async function visitaConfig(p: Pool, b: Corpo) {
     c.antecedenciaH,
     c.horizonteDias,
     JSON.stringify(c.horariosPorDia),
+  ]);
+}
+
+// Dados das mensagens de WhatsApp (chave PIX etc.): só o painel vê e usa.
+async function mensagensConfig(p: Pool, b: Corpo) {
+  await p.query('update agenda_mensagens set pix_chave = $1, pix_titular = $2, saldo_regra = $3, extras = $4 where id = 1', [
+    str(b.pixChave, 120),
+    str(b.pixTitular, 120),
+    str(b.saldoRegra, 300),
+    str(b.extras, 600),
   ]);
 }
 
@@ -487,6 +502,9 @@ export async function POST(req: Request) {
         return ok();
       case 'visita.criar':
         await visitaCriar(p, b, eu);
+        return ok();
+      case 'msg.config':
+        await mensagensConfig(p, b);
         return ok();
       case 'visita.horario':
         await visitaHorario(p, b);

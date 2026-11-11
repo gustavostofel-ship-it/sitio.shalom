@@ -5,6 +5,7 @@ import { Bell, BookOpen, CalendarClock, CalendarDays, Check, ChevronLeft, Chevro
 import { brl, br, diff, faixa, pagamento, paraAgenda, segura, statusDia, type AdminData, type AgendaData, type Reserva } from '@/lib/agenda';
 import { Calendario, hojeComoMes, mesesDe, type Mes } from './Calendario';
 import { NovaReserva } from './NovaReserva';
+import { MensagemZap } from './MensagemZap';
 import { ListaReservas, Resumo, statusReal } from './Visoes';
 import { Regras } from './Regras';
 import { Admins } from './Admins';
@@ -96,17 +97,20 @@ function Login({ aoEntrar, primeiro }: { aoEntrar: () => void; primeiro: boolean
   );
 }
 
-const linkZap = (tel: string) => {
-  const d = tel.replace(/\D/g, '');
-  return d.length >= 10 ? `https://wa.me/${d.length > 11 && d.startsWith('55') ? d : '55' + d}` : null;
-};
-
 // Quanto já foi recebido de uma reserva: sinal, parte ou tudo.
 function BlocoPagamento({ r, st, chamar }: { r: Reserva; st: string; chamar: Chamar }) {
   const [valor, setValor] = useState(String(r.pago));
   const falta = Math.max(0, r.total - r.pago);
   const pct = r.total > 0 ? Math.min(100, (r.pago / r.total) * 100) : 0;
   const salvar = (v: number) => chamar('reserva.pago', { id: r.id, pago: v });
+  // Confirma a reserva (sinal recebido) e, se o cliente pagou outro valor, já registra o valor certo
+  const [recebido, setRecebido] = useState(String(r.sinal));
+  const confirmarComValor = async () => {
+    const r1 = await chamar('reserva.status', { id: r.id, status: 'confirmada' });
+    if (!r1.ok) return;
+    const v = recebido === '' ? r.sinal : +recebido;
+    if (v !== r.sinal) await chamar('reserva.pago', { id: r.id, pago: Math.min(v, r.total) });
+  };
   return (
     <div className="mt-6 rounded-lg border border-[#D2CAB8] bg-[#F6F3EC] p-4">
       <h3 className="font-serif text-lg text-[#14301F]">Pagamento</h3>
@@ -132,7 +136,16 @@ function BlocoPagamento({ r, st, chamar }: { r: Reserva; st: string; chamar: Cha
           )}
         </div>
       ) : st === 'aguardando_sinal' ? (
-        <p className="mt-3 text-sm text-stone-600">Confirme o sinal para começar a registrar pagamentos.</p>
+        <div className="mt-4">
+          <label className={rotulo}>
+            Valor recebido (R$)
+            <CampoReais className={`${campo} mt-1`} value={recebido} onChange={setRecebido} placeholder={`Sinal: ${brl(r.sinal)}`} />
+          </label>
+          <p className="mt-1 text-xs text-stone-600">Já vem com o valor do sinal. Mude se o cliente pagou outro valor.</p>
+          <button className={`${botaoPri} mt-3 w-full`} onClick={confirmarComValor}>
+            <Check className="h-4 w-4" /> Confirmar sinal recebido
+          </button>
+        </div>
       ) : r.pago > 0 ? (
         <p className="mt-3 text-sm text-stone-600">Esta reserva não está ativa e {brl(r.pago)} já tinham sido recebidos. Combine a devolução com o cliente.</p>
       ) : null}
@@ -142,7 +155,6 @@ function BlocoPagamento({ r, st, chamar }: { r: Reserva; st: string; chamar: Cha
 
 function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminData; chamar: Chamar; fechar: () => void }) {
   const st = statusReal(r, dados.agora);
-  const zap = linkZap(r.whatsapp);
   const linha = (k: string, v: React.ReactNode) => (
     <>
       <dt className="text-stone-600">{k}</dt>
@@ -164,17 +176,8 @@ function GavetaReserva({ r, dados, chamar, fechar }: { r: Reserva; dados: AdminD
         {st === 'aguardando_sinal' && linha('Data segurada até', r.segura_ate ? new Date(r.segura_ate).toLocaleString('pt-BR') : '—')}
       </dl>
       <BlocoPagamento r={r} st={st} chamar={chamar} />
+      <MensagemZap r={r} st={st} dados={dados} />
       <div className="mt-6 grid gap-2">
-        {st === 'aguardando_sinal' && (
-          <button className={botaoPri} onClick={() => chamar('reserva.status', { id: r.id, status: 'confirmada' })}>
-            <Check className="h-4 w-4" /> Confirmar sinal recebido
-          </button>
-        )}
-        {zap && (
-          <a className={botao} href={zap} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="h-4 w-4" /> Chamar no WhatsApp
-          </a>
-        )}
         {(st === 'cancelada' || st === 'expirada') && <button className={botao} onClick={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })}>Reativar, se as datas estiverem livres</button>}
         {st === 'confirmada' && (
           <BotaoConfirma className={botao} rotulo="Voltar para aguardando sinal" pergunta="Voltar para aguardando sinal? O valor já recebido continua registrado." confirmaRotulo="Sim, voltar" onConfirma={() => chamar('reserva.status', { id: r.id, status: 'aguardando_sinal' })} />
