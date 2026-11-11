@@ -180,6 +180,7 @@ export interface AdminData {
   visitas: Visita[];
   visitaCfg: VisitaCfg;
   visitaBloqueios: { data: string; motivo: string | null }[];
+  visitaHorasFechadas: { data: string; hora: string }[];
   notificacoes: Notificacao[]; // as 150 mais recentes
   notificacoesLidasAte: number; // id da última notificação que esta pessoa marcou como lida
   naoLidas: number;

@@ -8,6 +8,8 @@ export interface VisitaCfg {
   duracaoMin: number;
   antecedenciaH: number; // quantas horas antes ainda dá para marcar
   horizonteDias: number; // até quantos dias à frente aparecem horários
+  // Horário próprio de um dia da semana (chave "0" a "6"). Sem a chave, vale horaIni/horaFim.
+  horariosPorDia?: Record<string, { ini: string; fim: string }>;
 }
 
 export type StatusVisita = 'pedida' | 'agendada' | 'realizada' | 'cancelada' | 'nao_compareceu';
@@ -65,10 +67,13 @@ export function agoraSP(d = new Date()): { data: string; min: number } {
 }
 
 // Horários de um dia de visita, conforme a configuração (ex.: 09:00, 10:00 ... 15:00).
-export function horariosDoDia(cfg: VisitaCfg): string[] {
+// Com `diaSemana` (0 = domingo), usa o horário próprio daquele dia da semana, se o administrador definiu um.
+export function horariosDoDia(cfg: VisitaCfg, diaSemana?: number): string[] {
+  const proprio = diaSemana === undefined ? undefined : cfg.horariosPorDia?.[String(diaSemana)];
+  const ini = horaParaMin(proprio?.ini ?? cfg.horaIni);
+  const fim = horaParaMin(proprio?.fim ?? cfg.horaFim);
   const out: string[] = [];
-  const fim = horaParaMin(cfg.horaFim);
-  for (let m = horaParaMin(cfg.horaIni); cfg.duracaoMin > 0 && m + cfg.duracaoMin <= fim; m += cfg.duracaoMin) out.push(minParaHora(m));
+  for (let m = ini; cfg.duracaoMin > 0 && m + cfg.duracaoMin <= fim; m += cfg.duracaoMin) out.push(minParaHora(m));
   return out;
 }
 
@@ -76,19 +81,19 @@ export interface Contexto {
   agora: { data: string; min: number };
   bloqueios: Set<string>; // datas fechadas para visita
   ocupados: Set<string>; // "AAAA-MM-DD|HH:MM" com visita pedida ou agendada
+  horasFechadas?: Set<string>; // "AAAA-MM-DD|HH:MM" que o administrador fechou (não aparecem para o cliente)
   emReserva: (data: string) => boolean; // o sítio está alugado nesse dia
 }
 
 // Dias e horários que o cliente pode escolher (ocupados aparecem com livre = false).
 export function diasComHorarios(cfg: VisitaCfg, c: Contexto): DiaVisita[] {
-  const horas = horariosDoDia(cfg);
   const limite = dataParaDias(c.agora.data) * 1440 + c.agora.min + cfg.antecedenciaH * 60;
   const dias: DiaVisita[] = [];
   for (let i = 0; i <= cfg.horizonteDias; i++) {
     const data = somaDias(c.agora.data, i);
     if (!cfg.diasSemana.includes(diaDaSemana(data)) || c.bloqueios.has(data) || c.emReserva(data)) continue;
-    const doDia = horas
-      .filter((h) => dataParaDias(data) * 1440 + horaParaMin(h) >= limite)
+    const doDia = horariosDoDia(cfg, diaDaSemana(data))
+      .filter((h) => dataParaDias(data) * 1440 + horaParaMin(h) >= limite && !c.horasFechadas?.has(`${data}|${h}`))
       .map((hora) => ({ hora, livre: !c.ocupados.has(`${data}|${hora}`) }));
     if (doDia.length) dias.push({ data, horas: doDia });
   }
@@ -108,6 +113,11 @@ export function erroDaConfig(c: Partial<VisitaCfg>): string | null {
   if (!Number.isInteger(c.duracaoMin) || c.duracaoMin! < 15 || c.duracaoMin! > 480) return 'A duração vai de 15 minutos a 8 horas.';
   if (!Number.isInteger(c.antecedenciaH) || c.antecedenciaH! < 0 || c.antecedenciaH! > 720) return 'Antecedência inválida.';
   if (!Number.isInteger(c.horizonteDias) || c.horizonteDias! < 1 || c.horizonteDias! > 365) return 'O período mostrado vai de 1 a 365 dias.';
+  for (const [k, v] of Object.entries(c.horariosPorDia ?? {})) {
+    if (!/^[0-6]$/.test(k)) return 'Dia da semana inválido nos horários por dia.';
+    if (!v || !horaValida(v.ini) || !horaValida(v.fim)) return 'Informe as horas de cada dia no formato 09:00.';
+    if (horaParaMin(v.fim) <= horaParaMin(v.ini)) return `Em ${DIAS_LONGOS[+k]}, a hora final precisa ser depois da inicial.`;
+  }
   return null;
 }
 

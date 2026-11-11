@@ -52,7 +52,7 @@ function erro(e: unknown) {
 }
 
 async function carregar(p: Pool, eu: string): Promise<AdminData> {
-  const [c, per, d, r, adm, vc, vb, vs, nt, ev] = await Promise.all([
+  const [c, per, d, r, adm, vc, vb, vs, nt, ev, vh] = await Promise.all([
     p.query('select * from agenda_config where id = 1'),
     p.query('select id, nome, entrada, saida, preco, bloqueado from agenda_periodos order by entrada'),
     p.query('select data, aberto, motivo from agenda_dias'),
@@ -71,6 +71,7 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
          from agenda_admins ad where ad.email = $1`,
       [eu]
     ),
+    p.query('select data, hora from agenda_visita_horas_fechadas where data >= $1 order by data, hora', [hojeSP()]),
   ]);
   const meu = ev.rows[0] ?? { lidas: 0, nao_lidas: 0, desligados: [], aparelhos: 0 };
   return {
@@ -84,6 +85,7 @@ async function carregar(p: Pool, eu: string): Promise<AdminData> {
     visitas: vs.rows,
     visitaCfg: cfgDeLinhaVisita(vc.rows[0]),
     visitaBloqueios: vb.rows,
+    visitaHorasFechadas: vh.rows,
     notificacoes: nt.rows,
     notificacoesLidasAte: Number(meu.lidas),
     naoLidas: Number(meu.nao_lidas),
@@ -375,23 +377,41 @@ async function visitaConfig(p: Pool, b: Corpo) {
     duracaoMin: Number(b.duracaoMin),
     antecedenciaH: Number(b.antecedenciaH),
     horizonteDias: Number(b.horizonteDias),
+    // Só guarda o horário próprio dos dias da semana que estão abertos
+    horariosPorDia: Object.fromEntries(
+      Object.entries((b.horariosPorDia && typeof b.horariosPorDia === 'object' ? b.horariosPorDia : {}) as Record<string, { ini: string; fim: string }>).filter(([k]) =>
+        (Array.isArray(b.diasSemana) ? (b.diasSemana as number[]) : []).includes(Number(k))
+      )
+    ),
   };
   const erro = erroDaConfig(c);
   if (erro) throw invalido(erro);
   // Visitas já marcadas que deixariam de caber nos novos dias/horários: não deixa mudar às cegas.
-  const novas = horariosDoDia(c as VisitaCfg);
   const marcadas = await p.query("select data, hora from agenda_visitas where status in ('pedida','agendada') and data >= $1 and hora is not null", [hojeSP()]);
-  const foraDoNovo = marcadas.rows.filter((v: { data: string; hora: string }) => !c.diasSemana?.includes(dow(v.data)) || !novas.includes(v.hora));
+  const foraDoNovo = marcadas.rows.filter((v: { data: string; hora: string }) => !c.diasSemana?.includes(dow(v.data)) || !horariosDoDia(c as VisitaCfg, dow(v.data)).includes(v.hora));
   if (foraDoNovo.length)
     throw new HttpErro(409, `Há ${foraDoNovo.length} visita(s) marcada(s) que não caberiam nos novos dias/horários (por exemplo, ${dataBr(foraDoNovo[0].data)} às ${foraDoNovo[0].hora}). Remarque ou cancele essas visitas antes de mudar.`);
-  await p.query('update agenda_visita_config set dias_semana = $1, hora_ini = $2, hora_fim = $3, duracao_min = $4, antecedencia_h = $5, horizonte_dias = $6 where id = 1', [
+  await p.query('update agenda_visita_config set dias_semana = $1, hora_ini = $2, hora_fim = $3, duracao_min = $4, antecedencia_h = $5, horizonte_dias = $6, horarios_por_dia = $7 where id = 1', [
     c.diasSemana,
     c.horaIni,
     c.horaFim,
     c.duracaoMin,
     c.antecedenciaH,
     c.horizonteDias,
+    JSON.stringify(c.horariosPorDia),
   ]);
+}
+
+// Fecha ou reabre UM horário de UM dia (ex.: tirar o das 12:00 por causa do almoço).
+async function visitaHorario(p: Pool, b: Corpo) {
+  if (!dataOk(b.data) || !horaValida(b.hora)) throw invalido('Dia ou hora inválidos.');
+  if (b.remover === true) {
+    await p.query('delete from agenda_visita_horas_fechadas where data = $1 and hora = $2', [b.data, b.hora]);
+    return;
+  }
+  const ocupado = await p.query("select 1 from agenda_visitas where data = $1 and hora = $2 and status in ('pedida','agendada') limit 1", [b.data, b.hora]);
+  if (ocupado.rowCount) throw new HttpErro(409, 'Já existe uma visita nesse horário. Remarque ou cancele a visita primeiro.');
+  await p.query('insert into agenda_visita_horas_fechadas (data, hora) values ($1, $2) on conflict do nothing', [b.data, b.hora]);
 }
 
 // Fecha ou reabre um dia para visitas (ex.: feriado, evento no sítio).
@@ -467,6 +487,9 @@ export async function POST(req: Request) {
         return ok();
       case 'visita.criar':
         await visitaCriar(p, b, eu);
+        return ok();
+      case 'visita.horario':
+        await visitaHorario(p, b);
         return ok();
       case 'reserva.excluir':
         await excluirReserva(p, b);
