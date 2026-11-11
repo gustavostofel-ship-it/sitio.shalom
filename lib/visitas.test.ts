@@ -14,6 +14,26 @@ test('horários do dia: de hora em hora, o último termina na hora final', () =>
   assert.deepEqual(horariosDoDia({ ...cfg, duracaoMin: 0 }), []);
 });
 
+test('horário próprio por dia da semana', () => {
+  const c: VisitaCfg = { ...cfg, diasSemana: [3, 6], horariosPorDia: { '3': { ini: '14:00', fim: '16:00' } } };
+  assert.deepEqual(horariosDoDia(c, 3), ['14:00', '15:00']); // quarta: só à tarde
+  assert.deepEqual(horariosDoDia(c, 6), ['09:00', '10:00', '11:00']); // sábado: o horário geral
+  const dias = diasComHorarios(c, ctx());
+  assert.deepEqual(dias.find((d) => d.data === '2026-11-18')!.horas.map((h) => h.hora), ['14:00', '15:00']);
+  assert.deepEqual(dias.find((d) => d.data === '2026-11-21')!.horas.map((h) => h.hora), ['09:00', '10:00', '11:00']);
+  assert.ok(erroDaConfig({ ...c, horariosPorDia: { '3': { ini: '16:00', fim: '14:00' } } }));
+  assert.ok(erroDaConfig({ ...c, horariosPorDia: { '9': { ini: '09:00', fim: '10:00' } } }));
+  assert.equal(erroDaConfig({ ...c }), null);
+});
+
+test('horário fechado só numa data some para o cliente', () => {
+  const c = ctx({ horasFechadas: new Set(['2026-11-21|10:00']) });
+  const sab = diasComHorarios(cfg, c).find((d) => d.data === '2026-11-21')!;
+  assert.deepEqual(sab.horas.map((h) => h.hora), ['09:00', '11:00']);
+  assert.equal(horarioDisponivel(cfg, c, '2026-11-21', '10:00'), false);
+  assert.equal(horarioDisponivel(cfg, c, '2026-11-28', '10:00'), true); // outra data continua
+});
+
 test('só aparecem os dias da semana configurados, dentro do período', () => {
   const dias = diasComHorarios(cfg, ctx());
   assert.deepEqual(dias.map((d) => d.data), ['2026-11-14', '2026-11-21', '2026-11-28', '2026-12-05']); // 12/12 passa dos 30 dias

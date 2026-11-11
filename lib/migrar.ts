@@ -85,6 +85,15 @@ async function migrarUmaVez() {
       create index if not exists agenda_visitas_data_idx on agenda_visitas (data, status);
       create index if not exists agenda_visitas_ip_idx on agenda_visitas (ip_hash, criada_em);
     `);
+    // Visitas: horário próprio por dia da semana e horários soltos fechados pelo administrador.
+    await db().query(`
+      alter table agenda_visita_config add column if not exists horarios_por_dia jsonb not null default '{}';
+      create table if not exists agenda_visita_horas_fechadas (
+        data date not null,
+        hora text not null check (hora ~ '^[0-2][0-9]:[0-5][0-9]$'),
+        primary key (data, hora)
+      );
+    `);
     // Notificações: histórico de acontecimentos, aparelhos que recebem push e preferências de cada pessoa.
     await db().query(`
       alter table agenda_admins add column if not exists notificacoes_lidas_ate bigint not null default 0;

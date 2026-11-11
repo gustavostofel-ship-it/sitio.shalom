@@ -89,8 +89,9 @@ export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData;
     const porData = new Map<string, Visita[]>();
     for (const v of dados.visitas) if (ocupaHorario(v.status) && v.data && v.data >= dados.hoje) porData.set(v.data, [...(porData.get(v.data) ?? []), v]);
     const reservas = dados.reservas.filter((r) => segura(r, dados.agora));
-    const horas = horariosDoDia(cfg);
-    const out: { data: string; vs: Visita[]; ehDia: boolean; bloqueado: boolean; motivo: string | null; alugado: boolean; horas: string[]; passou: (h: string) => boolean }[] = [];
+    const fechadasPorDia = new Map<string, Set<string>>();
+    for (const f of dados.visitaHorasFechadas) fechadasPorDia.set(f.data, new Set([...(fechadasPorDia.get(f.data) ?? []), f.hora]));
+    const out: { data: string; vs: Visita[]; ehDia: boolean; bloqueado: boolean; motivo: string | null; alugado: boolean; horas: string[]; fechadas: Set<string>; passou: (h: string) => boolean }[] = [];
     for (let i = 0; i <= 42; i++) {
       const data = dataMais(dados.hoje, i);
       const vs = porData.get(data) ?? [];
@@ -103,7 +104,8 @@ export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData;
         bloqueado: bloq.has(data),
         motivo: bloq.get(data) ?? null,
         alugado: reservas.some((r) => data >= r.entrada && data <= r.saida),
-        horas,
+        horas: horariosDoDia(cfg, diaSemanaDe(data)), // cada dia da semana pode ter o seu horário
+        fechadas: fechadasPorDia.get(data) ?? new Set<string>(),
         passou: (h) => data === agora.data && horaParaMin(h) <= agora.min,
       });
     }
@@ -171,7 +173,7 @@ export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData;
             )}
             {dias.length === 0 && <p className="rounded-xl border border-[#D2CAB8] bg-white p-6 text-stone-600">Nenhum dia de visita configurado. Toque em <b>Horários e dias fechados</b> para escolher os dias da semana.</p>}
             {dias.map((d) => {
-              const livres = d.ehDia && !d.bloqueado && !d.alugado ? d.horas.filter((h) => !d.passou(h) && !d.vs.some((v) => v.hora === h)) : [];
+              const livres = d.ehDia && !d.bloqueado && !d.alugado ? d.horas.filter((h) => !d.passou(h) && !d.vs.some((v) => v.hora === h) && !d.fechadas.has(h)) : [];
               const extras = d.vs.filter((v) => !v.hora || !d.horas.includes(v.hora));
               return (
                 <section key={d.data} className="rounded-xl border border-[#D2CAB8] bg-white p-4 shadow-[0_1px_2px_rgba(20,48,31,0.08)]">
@@ -200,11 +202,30 @@ export function Visitas({ dados, chamar, abrirId, aoAbrir }: { dados: AdminData;
                           const v = d.vs.filter((x) => x.hora === h);
                           if (v.length) return <div key={h} className="space-y-2">{v.map((x) => linha(x))}</div>;
                           if (d.passou(h)) return null;
+                          // Horário fechado só para esta data: o cliente não vê, mas dá para reabrir
+                          if (d.fechadas.has(h))
+                            return (
+                              <div key={h} className="flex items-center gap-3 rounded-lg border border-[#D2CAB8] bg-[#EFEBE3] px-3.5 py-2.5 text-sm text-stone-700">
+                                <span className="w-[74px] font-semibold tabular-nums">{h}</span>
+                                <span className="flex flex-1 items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> Fechado para o cliente</span>
+                                <button className="text-xs font-semibold text-[#1B4332] underline" onClick={() => chamar('visita.horario', { data: d.data, hora: h, remover: true })}>Reabrir</button>
+                              </div>
+                            );
                           return (
-                            <button key={h} onClick={() => setGaveta({ t: 'nova', data: d.data, hora: h })} className="grid w-full grid-cols-[auto_1fr] items-center gap-x-3 rounded-lg border border-dashed border-[#B3CDB6] bg-[#F1F6F0] px-3.5 py-2.5 text-left text-sm text-[#1B4332] transition-colors hover:bg-[#E3EFE1] focus-visible:outline-2 focus-visible:outline-[#D97706]">
-                              <span className="w-[74px] font-semibold tabular-nums">{h}</span>
-                              <span>Livre · tocar para marcar uma visita</span>
-                            </button>
+                            <div key={h} className="flex items-stretch gap-2">
+                              <button onClick={() => setGaveta({ t: 'nova', data: d.data, hora: h })} className="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-3 rounded-lg border border-dashed border-[#B3CDB6] bg-[#F1F6F0] px-3.5 py-2.5 text-left text-sm text-[#1B4332] transition-colors hover:bg-[#E3EFE1] focus-visible:outline-2 focus-visible:outline-[#D97706]">
+                                <span className="w-[74px] font-semibold tabular-nums">{h}</span>
+                                <span>Livre · tocar para marcar uma visita</span>
+                              </button>
+                              <button
+                                title="Fechar só este horário"
+                                aria-label={`Fechar o horário das ${h}`}
+                                className="shrink-0 rounded-lg border border-[#D2CAB8] bg-white px-3 text-xs font-semibold text-[#B42318] hover:border-[#B42318] focus-visible:outline-2 focus-visible:outline-[#D97706]"
+                                onClick={() => chamar('visita.horario', { data: d.data, hora: h })}
+                              >
+                                Fechar
+                              </button>
+                            </div>
                           );
                         })
                       : null}
@@ -387,6 +408,32 @@ function GavetaConfig({ dados, chamar }: { dados: AdminData; chamar: Chamar }) {
         <label className={rotulo}>Marcar com pelo menos<select className={`${campo} mt-1`} value={c.antecedenciaH} onChange={(e) => setC({ ...c, antecedenciaH: +e.target.value })}>{opcoes([0, 2, 6, 12, 24, 48, 72], (n) => (n === 0 ? 'Sem antecedência' : `${n} h de antecedência`))}</select></label>
         <label className={`${rotulo} col-span-2`}>Mostrar horários dos próximos<select className={`${campo} mt-1`} value={c.horizonteDias} onChange={(e) => setC({ ...c, horizonteDias: +e.target.value })}>{opcoes([14, 30, 45, 60, 90, 180], (n) => `${n} dias`)}</select></label>
       </div>
+      {c.diasSemana.length > 0 && (
+        <fieldset className="mt-5 rounded-lg border border-[#D2CAB8] bg-[#F6F3EC] p-3">
+          <legend className="px-1 text-sm font-semibold text-[#14301F]">Horário de cada dia da semana</legend>
+          <p className="mb-2 text-xs text-stone-600">Por padrão todos usam o horário acima. Mude só o dia que for diferente (ex.: quarta só à tarde).</p>
+          <ul className="space-y-2">
+            {c.diasSemana.map((n) => {
+              const proprio = c.horariosPorDia?.[String(n)];
+              const ini = proprio?.ini ?? c.horaIni;
+              const fim = proprio?.fim ?? c.horaFim;
+              const muda = (novoIni: string, novoFim: string) => {
+                const resto = { ...(c.horariosPorDia ?? {}) };
+                if (novoIni === c.horaIni && novoFim === c.horaFim) delete resto[String(n)]; // igual ao geral: sem horário próprio
+                else resto[String(n)] = { ini: novoIni, fim: novoFim };
+                setC({ ...c, horariosPorDia: resto });
+              };
+              return (
+                <li key={n} className="grid grid-cols-[64px_1fr_1fr] items-center gap-2 text-sm">
+                  <span className="font-semibold text-[#14301F]">{DIAS_LONGOS[n].slice(0, 3)}</span>
+                  <input type="time" aria-label={`${DIAS_LONGOS[n]}: primeira visita`} className={campo} value={ini} onChange={(e) => muda(e.target.value, fim)} />
+                  <input type="time" aria-label={`${DIAS_LONGOS[n]}: última termina`} className={campo} value={fim} onChange={(e) => muda(ini, e.target.value)} />
+                </li>
+              );
+            })}
+          </ul>
+        </fieldset>
+      )}
       <button className={`${botaoPri} mt-4 w-full`} onClick={() => chamar('visita.config', c)}>Salvar horários</button>
 
       <div className="mt-8 border-t border-[#EEE9DF] pt-5">
